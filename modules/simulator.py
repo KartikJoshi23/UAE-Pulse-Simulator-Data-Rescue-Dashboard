@@ -202,112 +202,102 @@ class Simulator:
                 'stockout_risk_pct': 0
             }
     
-    def simulate_campaign(self, sales_df, stores_df, products_df, 
-                          discount_pct=10, promo_budget=10000, margin_floor=15,
-                          city='All', channel='All', category='All', campaign_days=7):
-        """Simulate a promotional campaign."""
-        try:
-            # Merge data
-            merged = sales_df.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
-            merged = merged.merge(products_df[['sku', 'cost_aed', 'category']], on='sku', how='left')
-            
-            # Ensure numeric
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
-            
-            # Filter by targeting
-            if city != 'All':
-                merged = merged[merged['city'] == city]
-            if channel != 'All':
-                merged = merged[merged['channel'] == channel]
-            if category != 'All':
-                merged = merged[merged['category'] == category]
-            
-            if len(merged) == 0:
-                return {'outputs': None, 'comparison': None, 'warnings': ['No data matches the selected filters']}
-            
-            # Baseline metrics
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
-            
-            # Calculate baseline per day (assume data spans 30 days)
-            data_days = 30
-            baseline_revenue = merged['revenue'].sum() / data_days * campaign_days
-            baseline_profit = merged['profit'].sum() / data_days * campaign_days
-            baseline_orders = merged['order_id'].nunique() / data_days * campaign_days
-            baseline_units = merged['qty'].sum() / data_days * campaign_days
-            
-            # Get elasticity for category
-            if category != 'All':
-                elasticity = self.category_elasticity.get(category, self.default_elasticity)
-            else:
-                elasticity = self.default_elasticity
-            
-            # Calculate demand lift
-            demand_lift_pct = discount_pct * elasticity
-            
-            # Campaign projections
-            expected_units = baseline_units * (1 + demand_lift_pct / 100)
-            avg_price = merged['selling_price_aed'].mean()
-            avg_cost = merged['cost_aed'].mean()
-            
-            discounted_price = avg_price * (1 - discount_pct / 100)
-            expected_revenue = expected_units * discounted_price
-            
-            # Costs
-            promo_cost = min(promo_budget, expected_revenue * 0.1)  # Cap at 10% of revenue
-            fulfillment_cost = expected_units * 2  # AED 2 per unit
-            cogs = expected_units * avg_cost
-            
-            # Profit calculation
-            expected_gross_profit = expected_revenue - cogs
-            expected_net_profit = expected_gross_profit - promo_cost - fulfillment_cost
-            expected_margin_pct = (expected_net_profit / expected_revenue * 100) if expected_revenue > 0 else 0
-            
-            # ROI
-            total_investment = promo_cost + fulfillment_cost
-            roi_pct = ((expected_net_profit - baseline_profit) / total_investment * 100) if total_investment > 0 else 0
-            
-            # Warnings
-            warnings = []
-            if expected_margin_pct < margin_floor:
-                warnings.append(f"Margin ({expected_margin_pct:.1f}%) is below floor ({margin_floor}%)")
-            if roi_pct < 0:
-                warnings.append(f"Negative ROI expected ({roi_pct:.1f}%)")
-            if discount_pct > 30:
-                warnings.append("High discount may erode brand value")
-            
-            outputs = {
-                'expected_revenue': expected_revenue,
-                'expected_orders': int(baseline_orders * (1 + demand_lift_pct / 100)),
-                'expected_units': expected_units,
-                'expected_net_profit': expected_net_profit,
-                'expected_margin_pct': expected_margin_pct,
-                'demand_lift_pct': demand_lift_pct,
-                'roi_pct': roi_pct,
-                'promo_cost': promo_cost,
-                'fulfillment_cost': fulfillment_cost
-            }
-            
-            comparison = {
-                'baseline_revenue': baseline_revenue,
-                'baseline_profit': baseline_profit,
-                'baseline_orders': int(baseline_orders),
-                'revenue_change_pct': ((expected_revenue - baseline_revenue) / baseline_revenue * 100) if baseline_revenue > 0 else 0,
-                'profit_change_pct': ((expected_net_profit - baseline_profit) / baseline_profit * 100) if baseline_profit > 0 else 0,
-                'order_change_pct': demand_lift_pct
-            }
-            
-            return {
-                'outputs': outputs,
-                'comparison': comparison,
-                'warnings': warnings
-            }
-            
-        except Exception as e:
-            return {
-                'outputs': None,
-                'comparison': None,
-                'warnings': [f'Simulation error: {str(e)}']
-            }
+   def simulate_campaign(self, sales_df, stores_df, products_df, 
+                      discount_pct=10, promo_budget=10000, margin_floor=15,
+                      city='All', channel='All', category='All', campaign_days=7):
+    """Simulate a promotional campaign."""
+    try:
+        # Merge data
+        merged = sales_df.copy()
+        merged = merged.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
+        merged = merged.merge(products_df[['sku', 'cost_aed', 'category']], on='sku', how='left')
+        
+        # Ensure numeric
+        merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
+        merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
+        merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
+        
+        # Filter by targeting
+        if city != 'All' and 'city' in merged.columns:
+            merged = merged[merged['city'] == city]
+        if channel != 'All' and 'channel' in merged.columns:
+            merged = merged[merged['channel'] == channel]
+        if category != 'All' and 'category' in merged.columns:
+            merged = merged[merged['category'] == category]
+        
+        if len(merged) == 0:
+            return {'outputs': None, 'comparison': None, 'warnings': ['No data matches filters']}
+        
+        # Calculate metrics
+        merged['revenue'] = merged['qty'] * merged['selling_price_aed']
+        merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
+        
+        # Baseline (assume 30 days of data)
+        data_days = 30
+        baseline_revenue = merged['revenue'].sum() / data_days * campaign_days
+        baseline_profit = merged['profit'].sum() / data_days * campaign_days
+        baseline_orders = len(merged['order_id'].unique()) / data_days * campaign_days if 'order_id' in merged.columns else len(merged) / data_days * campaign_days
+        baseline_units = merged['qty'].sum() / data_days * campaign_days
+        
+        # Elasticity
+        elasticity = self.category_elasticity.get(category, self.default_elasticity) if category != 'All' else self.default_elasticity
+        
+        # Demand lift
+        demand_lift_pct = discount_pct * elasticity
+        
+        # Projections
+        expected_units = baseline_units * (1 + demand_lift_pct / 100)
+        avg_price = merged['selling_price_aed'].mean()
+        avg_cost = merged['cost_aed'].mean()
+        
+        discounted_price = avg_price * (1 - discount_pct / 100)
+        expected_revenue = expected_units * discounted_price
+        
+        # Costs
+        promo_cost = min(promo_budget, expected_revenue * 0.1)
+        fulfillment_cost = expected_units * 2
+        cogs = expected_units * avg_cost
+        
+        # Profit
+        expected_gross_profit = expected_revenue - cogs
+        expected_net_profit = expected_gross_profit - promo_cost - fulfillment_cost
+        expected_margin_pct = (expected_net_profit / expected_revenue * 100) if expected_revenue > 0 else 0
+        
+        # ROI
+        total_investment = promo_cost + fulfillment_cost
+        roi_pct = ((expected_net_profit - baseline_profit) / total_investment * 100) if total_investment > 0 else 0
+        
+        # Warnings
+        warnings = []
+        if expected_margin_pct < margin_floor:
+            warnings.append(f"Margin ({expected_margin_pct:.1f}%) below floor ({margin_floor}%)")
+        if roi_pct < 0:
+            warnings.append(f"Negative ROI ({roi_pct:.1f}%)")
+        if discount_pct > 30:
+            warnings.append("High discount may erode brand value")
+        
+        outputs = {
+            'expected_revenue': expected_revenue,
+            'expected_orders': int(baseline_orders * (1 + demand_lift_pct / 100)),
+            'expected_units': expected_units,
+            'expected_net_profit': expected_net_profit,
+            'expected_margin_pct': expected_margin_pct,
+            'demand_lift_pct': demand_lift_pct,
+            'roi_pct': roi_pct,
+            'promo_cost': promo_cost,
+            'fulfillment_cost': fulfillment_cost
+        }
+        
+        comparison = {
+            'baseline_revenue': baseline_revenue,
+            'baseline_profit': baseline_profit,
+            'baseline_orders': int(baseline_orders),
+            'revenue_change_pct': ((expected_revenue - baseline_revenue) / baseline_revenue * 100) if baseline_revenue > 0 else 0,
+            'profit_change_pct': ((expected_net_profit - baseline_profit) / abs(baseline_profit) * 100) if baseline_profit != 0 else 0,
+            'order_change_pct': demand_lift_pct
+        }
+        
+        return {'outputs': outputs, 'comparison': comparison, 'warnings': warnings}
+        
+    except Exception as e:
+        return {'outputs': None, 'comparison': None, 'warnings': [f'Error: {str(e)}']}
