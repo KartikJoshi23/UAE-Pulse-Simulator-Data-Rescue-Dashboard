@@ -977,28 +977,6 @@ def show_home_page():
         st.markdown("<br>", unsafe_allow_html=True)
         
         # ===== GET STARTED BUTTON =====
-        st.markdown('<p class="section-title section-title-green">🚀 Ready to Start?</p>', unsafe_allow_html=True)
-        
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("📥 Load Sample Data & Explore", use_container_width=True):
-                with st.spinner("🔄 Loading sample data..."):
-                    try:
-                        products = pd.read_csv('data/products.csv')
-                        stores = pd.read_csv('data/stores.csv')
-                        sales = pd.read_csv('data/sales_raw.csv')
-                        inventory = pd.read_csv('data/inventory_snapshot.csv')
-                        
-                        st.session_state.raw_products = products
-                        st.session_state.raw_stores = stores
-                        st.session_state.raw_sales = sales
-                        st.session_state.raw_inventory = inventory
-                        st.session_state.data_loaded = True
-                        
-                        st.success("✅ Sample data loaded successfully!")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Error loading data: {str(e)}")
     
     else:
         # ===== DATA LOADED - SHOW KPI DASHBOARD =====
