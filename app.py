@@ -1692,56 +1692,62 @@ def show_analytics_page():
     # Tabs with hover effects (CSS handles hover)
     tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🏙️ By City", "📦 By Category", "📋 Inventory"])
     
-    with tab1:
+   with tab1:
         st.markdown('<p class="section-title section-title-cyan">📈 Daily Performance Trends</p>', unsafe_allow_html=True)
-        daily_trends = sim.calculate_daily_trends(sales_df, products_df)
         
-        if len(daily_trends) > 0:
-            fig = px.area(
-                daily_trends,
-                x='date',
-                y='revenue',
-                title='Daily Revenue Trend',
-                color_discrete_sequence=['#06b6d4']
-            )
-            fig = style_plotly_chart(fig)
-            fig.update_traces(line=dict(width=3), fillcolor='rgba(6, 182, 212, 0.2)')
-            st.plotly_chart(fig, use_container_width=True)
+        try:
+            daily_trends = sim.calculate_daily_trends(sales_df, products_df)
             
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                fig = px.line(
+            if daily_trends is None or len(daily_trends) == 0:
+                st.warning("⚠️ No trend data available. This could be due to missing date column in sales data.")
+            else:
+                fig = px.area(
                     daily_trends,
                     x='date',
-                    y='orders',
-                    title='Daily Orders',
-                    color_discrete_sequence=['#3b82f6']
+                    y='revenue',
+                    title='Daily Revenue Trend',
+                    color_discrete_sequence=['#06b6d4']
                 )
                 fig = style_plotly_chart(fig)
-                fig.update_traces(line=dict(width=3))
+                fig.update_traces(line=dict(width=3), fillcolor='rgba(6, 182, 212, 0.2)')
                 st.plotly_chart(fig, use_container_width=True)
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = px.line(
+                        daily_trends,
+                        x='date',
+                        y='orders',
+                        title='Daily Orders',
+                        color_discrete_sequence=['#3b82f6']
+                    )
+                    fig = style_plotly_chart(fig)
+                    fig.update_traces(line=dict(width=3))
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    fig = px.line(
+                        daily_trends,
+                        x='date',
+                        y='profit',
+                        title='Daily Profit',
+                        color_discrete_sequence=['#10b981']
+                    )
+                    fig = style_plotly_chart(fig)
+                    fig.update_traces(line=dict(width=3))
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-purple">💡 Trend Insight</p>', unsafe_allow_html=True)
+                avg_revenue = daily_trends['revenue'].mean()
+                max_revenue = daily_trends['revenue'].max()
+                max_date = daily_trends.loc[daily_trends['revenue'].idxmax(), 'date']
+                date_str = max_date.strftime('%b %d, %Y') if hasattr(max_date, 'strftime') else str(max_date)
+                st.markdown(create_insight_card("Peak Performance Day", f"Best day was {date_str} with AED {max_revenue:,.0f} revenue ({((max_revenue/avg_revenue)-1)*100:.0f}% above average)."), unsafe_allow_html=True)
+        
+        except Exception as e:
+            st.error(f"❌ Error loading trends: {str(e)}")
             
-            with col2:
-                fig = px.line(
-                    daily_trends,
-                    x='date',
-                    y='profit',
-                    title='Daily Profit',
-                    color_discrete_sequence=['#10b981']
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_traces(line=dict(width=3))
-                st.plotly_chart(fig, use_container_width=True)
-            
-            # Trend Insight
-            st.markdown('<p class="section-title section-title-purple">💡 Trend Insight</p>', unsafe_allow_html=True)
-            avg_revenue = daily_trends['revenue'].mean()
-            max_revenue = daily_trends['revenue'].max()
-            max_date = daily_trends.loc[daily_trends['revenue'].idxmax(), 'date']
-            date_str = max_date.strftime('%b %d, %Y') if hasattr(max_date, 'strftime') else str(max_date)
-            st.markdown(create_insight_card("Peak Performance Day", f"Best day was {date_str} with AED {max_revenue:,.0f} revenue ({((max_revenue/avg_revenue)-1)*100:.0f}% above average)."), unsafe_allow_html=True)
-    
     with tab2:
         st.markdown('<p class="section-title section-title-blue">🏙️ Performance by City</p>', unsafe_allow_html=True)
         city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
