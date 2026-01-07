@@ -603,12 +603,31 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
     """
 
 def create_feature_card(icon, title, description, color="cyan"):
-    """Create a feature card with EXACT uniform size."""
+    """Create a feature card with auto height."""
+    colors = {
+        "cyan": "#06b6d4",
+        "blue": "#3b82f6", 
+        "purple": "#8b5cf6",
+        "pink": "#ec4899",
+        "green": "#10b981",
+        "orange": "#f59e0b",
+        "teal": "#14b8a6"
+    }
+    accent = colors.get(color, "#06b6d4")
+    
     return f"""
-    <div class="feature-card feature-card-{color}">
-        <div class="feature-icon">{icon}</div>
-        <div class="feature-title feature-title-{color}">{title}</div>
-        <div class="feature-desc">{description}</div>
+    <div style="
+        background: linear-gradient(145deg, #16161f 0%, #1a1a24 100%);
+        border-radius: 16px;
+        padding: 30px 20px;
+        border: 1px solid #2d2d3a;
+        text-align: center;
+        min-height: 200px;
+        transition: all 0.3s ease;
+    ">
+        <div style="font-size: 48px; margin-bottom: 15px;">{icon}</div>
+        <div style="color: {accent}; font-size: 1.1rem; font-weight: 600; margin-bottom: 10px;">{title}</div>
+        <div style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5;">{description}</div>
     </div>
     """
 
