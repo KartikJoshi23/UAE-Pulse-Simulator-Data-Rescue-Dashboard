@@ -831,7 +831,7 @@ def show_home_page():
     """Display the enhanced home page."""
     
     if not st.session_state.data_loaded:
-# ===== HERO SECTION WITH BIG TITLE =====
+     # ===== HERO SECTION WITH BIG TITLE =====
         st.markdown("""
         <div class="hero-container">
             <div style="margin-bottom: 25px;">
@@ -839,13 +839,13 @@ def show_home_page():
                 <span class="hero-badge" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🚀 v2.0</span>
             </div>
             <h1 style="
-                font-size: 4.5rem !important;
-                font-weight: 800 !important;
+                font-size: 72px;
+                font-weight: 800;
                 background: linear-gradient(135deg, #ffffff 0%, #06b6d4 40%, #8b5cf6 70%, #ec4899 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                margin: 0 0 20px 0;
+                margin: 0 0 25px 0;
                 line-height: 1.1;
                 letter-spacing: -2px;
             ">UAE Pulse Simulator</h1>
