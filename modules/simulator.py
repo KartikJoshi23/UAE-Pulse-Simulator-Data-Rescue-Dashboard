@@ -113,43 +113,66 @@ class Simulator:
         except Exception as e:
             return pd.DataFrame()
     
-    def calculate_daily_trends(self, sales_df, products_df):
-        """Calculate daily performance trends."""
-        try:
-            merged = sales_df.merge(products_df[['sku', 'cost_aed']], on='sku', how='left')
-            merged['cost_aed'] = merged['cost_aed'].fillna(0)
-            
-            # Ensure numeric
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
-            
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
-            
-            # Parse date
-            if 'order_ts' in merged.columns:
-                merged['date'] = pd.to_datetime(merged['order_ts'], errors='coerce').dt.date
-            elif 'date' in merged.columns:
-                merged['date'] = pd.to_datetime(merged['date'], errors='coerce').dt.date
-            else:
-                return pd.DataFrame()
-            
-            # Group by date
-            daily = merged.groupby('date').agg({
-                'revenue': 'sum',
-                'profit': 'sum',
-                'order_id': 'nunique',
-                'qty': 'sum'
-            }).reset_index()
-            
-            daily.columns = ['date', 'revenue', 'profit', 'orders', 'units']
-            daily = daily.sort_values('date')
-            
-            return daily
-            
-        except Exception as e:
-            return pd.DataFrame()
+   def calculate_daily_trends(self, sales_df, products_df):
+    """Calculate daily performance trends."""
+    try:
+        merged = sales_df.copy()
+        merged = merged.merge(products_df[['sku', 'cost_aed']], on='sku', how='left')
+        merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
+        
+        # Ensure numeric
+        merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
+        merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
+        
+        merged['revenue'] = merged['qty'] * merged['selling_price_aed']
+        merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
+        
+        # Parse date - try multiple columns
+        date_col = None
+        if 'order_ts' in merged.columns:
+            date_col = 'order_ts'
+        elif 'order_date' in merged.columns:
+            date_col = 'order_date'
+        elif 'date' in merged.columns:
+            date_col = 'date'
+        elif 'timestamp' in merged.columns:
+            date_col = 'timestamp'
+        
+        if date_col is None:
+            # Create dummy dates if no date column exists
+            merged['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(merged), freq='H').date
+        else:
+            merged['date'] = pd.to_datetime(merged[date_col], errors='coerce').dt.date
+        
+        # Remove rows with invalid dates
+        merged = merged.dropna(subset=['date'])
+        
+        if len(merged) == 0:
+            return pd.DataFrame(columns=['date', 'revenue', 'profit', 'orders', 'units'])
+        
+        # Group by date
+        daily = merged.groupby('date').agg({
+            'revenue': 'sum',
+            'profit': 'sum',
+            'qty': 'sum'
+        }).reset_index()
+        
+        # Count orders
+        if 'order_id' in merged.columns:
+            orders_per_day = merged.groupby('date')['order_id'].nunique().reset_index()
+            orders_per_day.columns = ['date', 'orders']
+            daily = daily.merge(orders_per_day, on='date', how='left')
+        else:
+            daily['orders'] = daily['qty']
+        
+        daily.columns = ['date', 'revenue', 'profit', 'units', 'orders']
+        daily = daily.sort_values('date')
+        
+        return daily
+        
+    except Exception as e:
+        print(f"Error in calculate_daily_trends: {e}")
+        return pd.DataFrame(columns=['date', 'revenue', 'profit', 'orders', 'units'])
     
     def calculate_stockout_risk(self, inventory_df):
         """Calculate stockout risk metrics."""
