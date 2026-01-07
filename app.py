@@ -831,24 +831,48 @@ def show_home_page():
     
     if not st.session_state.data_loaded:
      # ===== HERO SECTION WITH BIG TITLE =====
+      # ===== HERO SECTION =====
         st.markdown("""
-        <div class="hero-container">
-            <div style="margin-bottom: 25px;">
-                <span class="hero-badge">✨ UAE E-Commerce Analytics</span>
-                <span class="hero-badge" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🚀 v2.0</span>
+        <div style="
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%);
+            border-radius: 24px;
+            padding: 50px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            text-align: center;
+        ">
+            <div style="margin-bottom: 20px;">
+                <span style="
+                    display: inline-block;
+                    padding: 10px 24px;
+                    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+                    border-radius: 50px;
+                    color: white;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    margin-right: 12px;
+                ">✨ UAE E-Commerce Analytics</span>
+                <span style="
+                    display: inline-block;
+                    padding: 10px 24px;
+                    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                    border-radius: 50px;
+                    color: white;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                ">🚀 v2.0</span>
             </div>
-            <h1 style="
-                font-size: 72px;
+            <div style="
+                font-size: 64px;
                 font-weight: 800;
-                background: linear-gradient(135deg, #ffffff 0%, #06b6d4 40%, #8b5cf6 70%, #ec4899 100%);
+                background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                margin: 0 0 25px 0;
-                line-height: 1.1;
-                letter-spacing: -2px;
-            ">UAE Pulse Simulator</h1>
-            <p class="hero-subtitle">
+                margin: 20px 0;
+                line-height: 1.2;
+            ">UAE Pulse Simulator</div>
+            <p style="color: #94a3b8; font-size: 1.15rem; margin: 0; line-height: 1.6;">
                 Transform your e-commerce data into actionable insights.<br>
                 Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
             </p>
