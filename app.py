@@ -855,8 +855,7 @@ def show_home_page():
     """Display the enhanced home page."""
     
     if not st.session_state.data_loaded:
-     # ===== HERO SECTION WITH BIG TITLE =====
-      # ===== HERO SECTION =====
+        # ===== HERO SECTION (NO DATA LOADED) =====
         st.markdown("""
         <div style="
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%);
@@ -975,8 +974,6 @@ def show_home_page():
             """, unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        
-        # ===== GET STARTED BUTTON =====
     
     else:
         # ===== DATA LOADED - SHOW KPI DASHBOARD =====
@@ -984,20 +981,21 @@ def show_home_page():
         products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
         stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
         
-        # BIG Header for Dashboard
+        # ===== BIG STYLED TITLE (AFTER DATA LOADED) =====
         st.markdown("""
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="
+        <div style="text-align: center; margin-bottom: 40px; padding: 20px 0;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🛒</div>
+            <div style="
+                font-size: 56px;
+                font-weight: 800;
                 background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                font-size: 3.5rem;
-                font-weight: 800;
                 margin-bottom: 15px;
-                letter-spacing: -1px;
-            ">🛒 UAE Pulse Simulator</h1>
-            <p style="color: #94a3b8; font-size: 1.2rem;">Data Rescue + Campaign Simulation Dashboard</p>
+                line-height: 1.2;
+            ">UAE Pulse Simulator</div>
+            <p style="color: #94a3b8; font-size: 1.2rem; margin: 0;">Data Rescue + Campaign Simulation Dashboard</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1084,7 +1082,6 @@ def show_home_page():
         channel_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'channel')
         
         with col1:
-            # Revenue by City
             if len(city_kpis) > 0:
                 fig = px.pie(
                     city_kpis, 
@@ -1099,7 +1096,6 @@ def show_home_page():
                 st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            # Revenue by Channel
             if len(channel_kpis) > 0:
                 fig = px.bar(
                     channel_kpis,
@@ -1137,7 +1133,6 @@ def show_home_page():
             st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
     
     show_footer()
-
 # ============================================================================
 # PAGE: DATA (FIXED - BIGGER TITLES)
 # ============================================================================
