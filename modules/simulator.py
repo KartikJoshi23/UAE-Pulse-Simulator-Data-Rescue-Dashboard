@@ -49,7 +49,7 @@ def calculate_overall_kpis(self, sales_df, products_df):
         kpis['avg_order_value'] = kpis['total_revenue'] / kpis['total_orders'] if kpis['total_orders'] > 0 else 0
         kpis['profit_margin_pct'] = (kpis['total_profit'] / kpis['total_revenue'] * 100) if kpis['total_revenue'] > 0 else 0
         
-        # Return rate - handle non-numeric safely
+        # Return rate
         if 'is_returned' in sales_df.columns:
             try:
                 returned = pd.to_numeric(sales_df['is_returned'], errors='coerce').fillna(0)
@@ -59,7 +59,7 @@ def calculate_overall_kpis(self, sales_df, products_df):
         else:
             kpis['return_rate_pct'] = 0
         
-        # Discount - handle non-numeric safely
+        # Discount
         if 'discount_pct' in sales_df.columns:
             try:
                 discount = pd.to_numeric(sales_df['discount_pct'], errors='coerce').fillna(0)
@@ -70,7 +70,6 @@ def calculate_overall_kpis(self, sales_df, products_df):
             kpis['avg_discount_pct'] = 0
             
     except Exception as e:
-        # Return default values on error
         kpis = {
             'total_revenue': 0,
             'total_profit': 0,
