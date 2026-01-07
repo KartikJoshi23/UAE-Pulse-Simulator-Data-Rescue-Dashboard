@@ -1097,11 +1097,16 @@ def show_home_page():
     
     show_footer()
 
+# ============================================================================
+# PAGE: DATA (FIXED - BIGGER TITLES)
+# ============================================================================
+
 def show_data_page():
     """Display the data management page."""
     
-    st.markdown('<p class="section-title section-title-cyan">📂 Data Management</p>', unsafe_allow_html=True)
-    st.markdown("Upload, view, and manage your e-commerce data files.")
+    # BIG PAGE TITLE
+    st.markdown('<h1 class="page-title page-title-cyan">📂 Data Management</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Upload, view, and manage your e-commerce data files</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -1244,14 +1249,15 @@ def show_data_page():
     show_footer()
 
 # ============================================================================
-# PAGE: CLEANER
+# PAGE: CLEANER (FIXED - BIGGER TITLES)
 # ============================================================================
 
 def show_cleaner_page():
     """Display the data cleaner page."""
     
-    st.markdown('<p class="section-title section-title-green">🧹 Data Rescue Center</p>', unsafe_allow_html=True)
-    st.markdown("Validate, detect issues, and clean your dirty data automatically.")
+    # BIG PAGE TITLE
+    st.markdown('<h1 class="page-title page-title-green">🧹 Data Rescue Center</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Validate, detect issues, and clean your dirty data automatically</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -1268,8 +1274,8 @@ def show_cleaner_page():
     with col1:
         st.markdown("""
         <div class="info-card">
-            <strong style="color: #06b6d4;">Data Quality</strong>
-            <ul style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0;">
+            <strong style="color: #06b6d4; font-size: 1.1rem;">Data Quality</strong>
+            <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Missing values</li>
                 <li>Null representations</li>
                 <li>Duplicate records</li>
@@ -1281,8 +1287,8 @@ def show_cleaner_page():
     with col2:
         st.markdown("""
         <div class="info-card" style="border-left-color: #8b5cf6;">
-            <strong style="color: #8b5cf6;">Format Issues</strong>
-            <ul style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0;">
+            <strong style="color: #8b5cf6; font-size: 1.1rem;">Format Issues</strong>
+            <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Invalid timestamps</li>
                 <li>Mixed case values</li>
                 <li>Boolean strings</li>
@@ -1294,8 +1300,8 @@ def show_cleaner_page():
     with col3:
         st.markdown("""
         <div class="info-card" style="border-left-color: #ec4899;">
-            <strong style="color: #ec4899;">Value Issues</strong>
-            <ul style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0;">
+            <strong style="color: #ec4899; font-size: 1.1rem;">Value Issues</strong>
+            <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Negative values</li>
                 <li>Outliers</li>
                 <li>FK violations</li>
@@ -1378,13 +1384,11 @@ def show_cleaner_page():
         issues_df = st.session_state.issues_df
         
         if len(issues_df) > 0:
-            # Total issues card
             st.markdown(create_success_card(f"Total {len(issues_df)} issues detected and fixed automatically!"), unsafe_allow_html=True)
             
             col1, col2 = st.columns(2)
             
             with col1:
-                # Issues by type
                 issue_counts = issues_df['issue_type'].value_counts().reset_index()
                 issue_counts.columns = ['Issue Type', 'Count']
                 
@@ -1402,7 +1406,6 @@ def show_cleaner_page():
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                # Issues by table
                 table_counts = issues_df['table'].value_counts().reset_index()
                 table_counts.columns = ['Table', 'Count']
                 
@@ -1428,7 +1431,6 @@ def show_cleaner_page():
             st.markdown('<p class="section-title section-title-blue">📋 Detailed Issues Log</p>', unsafe_allow_html=True)
             st.dataframe(issues_df, use_container_width=True)
             
-            # Download button
             csv = issues_df.to_csv(index=False)
             st.download_button(
                 label="📥 Download Issues Log (CSV)",
@@ -1442,14 +1444,15 @@ def show_cleaner_page():
     show_footer()
 
 # ============================================================================
-# PAGE: SIMULATOR
+# PAGE: SIMULATOR (FIXED - BIGGER TITLES)
 # ============================================================================
 
 def show_simulator_page():
     """Display the campaign simulator page."""
     
-    st.markdown('<p class="section-title section-title-purple">🎯 Campaign Simulator</p>', unsafe_allow_html=True)
-    st.markdown("Run what-if scenarios and forecast campaign outcomes with precision.")
+    # BIG PAGE TITLE
+    st.markdown('<h1 class="page-title page-title-purple">🎯 Campaign Simulator</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Run what-if scenarios and forecast campaign outcomes with precision</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -1459,7 +1462,7 @@ def show_simulator_page():
         return
     
     if not st.session_state.is_cleaned:
-        st.markdown(create_warning_card("Please clean data first. Go to 🧹 Cleaner page for better results."), unsafe_allow_html=True)
+        st.markdown(create_warning_card("Recommend cleaning data first for accurate results. Go to 🧹 Cleaner."), unsafe_allow_html=True)
     
     # Campaign parameters
     st.markdown('<p class="section-title section-title-cyan">⚙️ Campaign Parameters</p>', unsafe_allow_html=True)
@@ -1467,17 +1470,17 @@ def show_simulator_page():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown('<p style="color: #06b6d4; font-weight: 600; margin-bottom: 10px;">💰 Pricing</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #06b6d4; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">💰 Pricing</p>', unsafe_allow_html=True)
         discount_pct = st.slider("Discount %", 0, 50, 15, help="Discount percentage to offer")
         promo_budget = st.number_input("Promo Budget (AED)", 1000, 500000, 25000, step=5000)
     
     with col2:
-        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 10px;">📊 Constraints</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">📊 Constraints</p>', unsafe_allow_html=True)
         margin_floor = st.slider("Margin Floor %", 0, 50, 15, help="Minimum acceptable profit margin")
         campaign_days = st.slider("Campaign Days", 1, 30, 7)
     
     with col3:
-        st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 10px;">🎯 Targeting</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">🎯 Targeting</p>', unsafe_allow_html=True)
         city = st.selectbox("Target City", ['All', 'Dubai', 'Abu Dhabi', 'Sharjah'])
         channel = st.selectbox("Target Channel", ['All', 'App', 'Web', 'Marketplace'])
         category = st.selectbox("Target Category", ['All', 'Electronics', 'Fashion', 'Grocery', 'Beauty', 'Home', 'Sports'])
@@ -1586,7 +1589,7 @@ def show_simulator_page():
             
             # Comparison chart
             st.markdown("---")
-            st.markdown('<p class="section-title section-title-blue">📈 Baseline vs Campaign Comparison</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-title section-title-blue">📈 Baseline vs Campaign</p>', unsafe_allow_html=True)
             
             col1, col2 = st.columns(2)
             
@@ -1605,7 +1608,6 @@ def show_simulator_page():
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                # Orders comparison
                 orders_data = pd.DataFrame({
                     'Type': ['Baseline', 'Campaign'],
                     'Orders': [comparison['baseline_orders'], outputs['expected_orders']]
@@ -1626,14 +1628,15 @@ def show_simulator_page():
     show_footer()
 
 # ============================================================================
-# PAGE: ANALYTICS
+# PAGE: ANALYTICS (FIXED - BIGGER TITLES + TAB HOVER)
 # ============================================================================
 
 def show_analytics_page():
     """Display the analytics page."""
     
-    st.markdown('<p class="section-title section-title-pink">📊 Analytics Dashboard</p>', unsafe_allow_html=True)
-    st.markdown("Deep dive into your e-commerce performance metrics and trends.")
+    # BIG PAGE TITLE
+    st.markdown('<h1 class="page-title page-title-pink">📊 Analytics Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Deep dive into your e-commerce performance metrics and trends</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -1649,7 +1652,7 @@ def show_analytics_page():
     
     sim = Simulator()
     
-    # Tabs
+    # Tabs with hover effects (CSS handles hover)
     tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🏙️ By City", "📦 By Category", "📋 Inventory"])
     
     with tab1:
@@ -1657,7 +1660,6 @@ def show_analytics_page():
         daily_trends = sim.calculate_daily_trends(sales_df, products_df)
         
         if len(daily_trends) > 0:
-            # Main revenue chart
             fig = px.area(
                 daily_trends,
                 x='date',
@@ -1700,7 +1702,8 @@ def show_analytics_page():
             avg_revenue = daily_trends['revenue'].mean()
             max_revenue = daily_trends['revenue'].max()
             max_date = daily_trends.loc[daily_trends['revenue'].idxmax(), 'date']
-            st.markdown(create_insight_card("Peak Performance Day", f"Best performing day was {max_date.strftime('%b %d, %Y') if hasattr(max_date, 'strftime') else max_date} with AED {max_revenue:,.0f} revenue, which is {((max_revenue/avg_revenue)-1)*100:.0f}% above average."), unsafe_allow_html=True)
+            date_str = max_date.strftime('%b %d, %Y') if hasattr(max_date, 'strftime') else str(max_date)
+            st.markdown(create_insight_card("Peak Performance Day", f"Best day was {date_str} with AED {max_revenue:,.0f} revenue ({((max_revenue/avg_revenue)-1)*100:.0f}% above average)."), unsafe_allow_html=True)
     
     with tab2:
         st.markdown('<p class="section-title section-title-blue">🏙️ Performance by City</p>', unsafe_allow_html=True)
@@ -1743,7 +1746,7 @@ def show_analytics_page():
             top_city = city_kpis.iloc[0]
             total_rev = city_kpis['revenue'].sum()
             top_pct = (top_city['revenue'] / total_rev * 100) if total_rev > 0 else 0
-            st.markdown(create_insight_card("Market Leader", f"{top_city['city']} dominates with {top_pct:.0f}% of total revenue (AED {top_city['revenue']:,.0f}). {'Consider diversifying into other cities.' if top_pct > 50 else 'Good market balance across cities.'}"), unsafe_allow_html=True)
+            st.markdown(create_insight_card("Market Leader", f"{top_city['city']} dominates with {top_pct:.0f}% of total revenue (AED {top_city['revenue']:,.0f}). {'Consider diversifying into other cities.' if top_pct > 50 else 'Good market balance.'}"), unsafe_allow_html=True)
     
     with tab3:
         st.markdown('<p class="section-title section-title-purple">📦 Performance by Category</p>', unsafe_allow_html=True)
@@ -1783,7 +1786,7 @@ def show_analytics_page():
             # Category Insight
             st.markdown('<p class="section-title section-title-purple">💡 Category Insight</p>', unsafe_allow_html=True)
             top_cat = cat_kpis.iloc[0]
-            st.markdown(create_insight_card("Top Category", f"{top_cat['category']} is your best performing category with AED {top_cat['revenue']:,.0f} revenue and {top_cat['profit_margin_pct']:.1f}% margin. Focus promotions here for maximum impact."), unsafe_allow_html=True)
+            st.markdown(create_insight_card("Top Category", f"{top_cat['category']} is your best performer with AED {top_cat['revenue']:,.0f} revenue and {top_cat['profit_margin_pct']:.1f}% margin."), unsafe_allow_html=True)
     
     with tab4:
         st.markdown('<p class="section-title section-title-orange">📋 Inventory Health</p>', unsafe_allow_html=True)
@@ -1804,7 +1807,6 @@ def show_analytics_page():
         
         st.markdown("---")
         
-        # Inventory distribution
         if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
             col1, col2 = st.columns(2)
             
@@ -1820,7 +1822,6 @@ def show_analytics_page():
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                # Stock status pie
                 inventory_df_copy = inventory_df.copy()
                 inventory_df_copy['status'] = inventory_df_copy.apply(
                     lambda x: 'Critical' if x['stock_on_hand'] == 0 
@@ -1845,11 +1846,11 @@ def show_analytics_page():
             # Inventory Insight
             st.markdown('<p class="section-title section-title-purple">💡 Inventory Insight</p>', unsafe_allow_html=True)
             if stockout['zero_stock'] > 0:
-                st.markdown(create_insight_card("Critical Stock Alert", f"{stockout['zero_stock']} items are completely out of stock! Immediate reorder required to prevent lost sales and customer dissatisfaction."), unsafe_allow_html=True)
+                st.markdown(create_insight_card("Critical Stock Alert", f"{stockout['zero_stock']} items are out of stock! Immediate reorder required."), unsafe_allow_html=True)
             elif stockout['stockout_risk_pct'] > 15:
-                st.markdown(create_insight_card("Reorder Recommended", f"{stockout['stockout_risk_pct']:.0f}% of your inventory is below reorder point. Plan replenishment soon to avoid stockouts."), unsafe_allow_html=True)
+                st.markdown(create_insight_card("Reorder Recommended", f"{stockout['stockout_risk_pct']:.0f}% of inventory is below reorder point."), unsafe_allow_html=True)
             else:
-                st.markdown(create_insight_card("Healthy Inventory", "Your inventory levels are well-maintained. Continue monitoring for optimal stock levels."), unsafe_allow_html=True)
+                st.markdown(create_insight_card("Healthy Inventory", "Inventory levels are well-maintained."), unsafe_allow_html=True)
     
     show_footer()
 
