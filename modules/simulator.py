@@ -24,59 +24,65 @@ class Simulator:
     # KPI CALCULATOR FUNCTIONS
     # ========================================================================
     
-    def calculate_overall_kpis(self, sales_df, products_df=None):
-        """
-        Calculate overall KPIs from sales data.
+def calculate_overall_kpis(self, sales_df, products_df):
+    """Calculate overall KPIs from sales data."""
+    kpis = {}
+    
+    try:
+        # Merge with products for cost data
+        merged = sales_df.merge(products_df[['sku', 'cost_aed']], on='sku', how='left')
+        merged['cost_aed'] = merged['cost_aed'].fillna(0)
         
-        Args:
-            sales_df: Sales DataFrame
-            products_df: Products DataFrame (optional, for cost calculation)
+        # Ensure numeric columns
+        merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
+        merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
+        merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
         
-        Returns: Dictionary of KPIs
-        """
-        kpis = {}
+        # Calculate revenue and profit
+        merged['revenue'] = merged['qty'] * merged['selling_price_aed']
+        merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
         
-        # Merge with products if available for cost calculation
-        if products_df is not None and 'product_id' in sales_df.columns:
-            merged = sales_df.merge(
-                products_df[['product_id', 'unit_cost_aed']], 
-                on='product_id', 
-                how='left'
-            )
-            merged['line_revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['line_cost'] = merged['qty'] * merged['unit_cost_aed']
-            merged['line_profit'] = merged['line_revenue'] - merged['line_cost']
-        else:
-            merged = sales_df.copy()
-            merged['line_revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['line_cost'] = 0
-            merged['line_profit'] = merged['line_revenue']
-        
-        # Revenue metrics
-        kpis['total_revenue'] = merged['line_revenue'].sum()
-        kpis['total_cost'] = merged['line_cost'].sum()
-        kpis['total_profit'] = merged['line_profit'].sum()
-        
-        # Margin
+        kpis['total_revenue'] = float(merged['revenue'].sum())
+        kpis['total_profit'] = float(merged['profit'].sum())
+        kpis['total_orders'] = int(merged['order_id'].nunique()) if 'order_id' in merged.columns else len(merged)
+        kpis['total_units'] = float(merged['qty'].sum())
+        kpis['avg_order_value'] = kpis['total_revenue'] / kpis['total_orders'] if kpis['total_orders'] > 0 else 0
         kpis['profit_margin_pct'] = (kpis['total_profit'] / kpis['total_revenue'] * 100) if kpis['total_revenue'] > 0 else 0
         
-        # Order metrics
-        kpis['total_orders'] = sales_df['order_id'].nunique() if 'order_id' in sales_df.columns else len(sales_df)
-        kpis['total_units'] = sales_df['qty'].sum() if 'qty' in sales_df.columns else 0
-        kpis['avg_order_value'] = kpis['total_revenue'] / kpis['total_orders'] if kpis['total_orders'] > 0 else 0
-        
-        # Return metrics
-        if 'return_flag' in sales_df.columns:
-            kpis['total_returns'] = sales_df[sales_df['return_flag'] == True]['order_id'].nunique()
-            kpis['return_rate_pct'] = (kpis['total_returns'] / kpis['total_orders'] * 100) if kpis['total_orders'] > 0 else 0
+        # Return rate - handle non-numeric safely
+        if 'is_returned' in sales_df.columns:
+            try:
+                returned = pd.to_numeric(sales_df['is_returned'], errors='coerce').fillna(0)
+                kpis['return_rate_pct'] = float(returned.mean() * 100)
+            except:
+                kpis['return_rate_pct'] = 0
         else:
-            kpis['total_returns'] = 0
             kpis['return_rate_pct'] = 0
         
-        # Average discount
-        kpis['avg_discount_pct'] = sales_df['discount_pct'].mean() if 'discount_pct' in sales_df.columns else 0
-        
-        return kpis
+        # Discount - handle non-numeric safely
+        if 'discount_pct' in sales_df.columns:
+            try:
+                discount = pd.to_numeric(sales_df['discount_pct'], errors='coerce').fillna(0)
+                kpis['avg_discount_pct'] = float(discount.mean())
+            except:
+                kpis['avg_discount_pct'] = 0
+        else:
+            kpis['avg_discount_pct'] = 0
+            
+    except Exception as e:
+        # Return default values on error
+        kpis = {
+            'total_revenue': 0,
+            'total_profit': 0,
+            'total_orders': 0,
+            'total_units': 0,
+            'avg_order_value': 0,
+            'profit_margin_pct': 0,
+            'return_rate_pct': 0,
+            'avg_discount_pct': 0
+        }
+    
+    return kpis
     
     def calculate_kpis_by_dimension(self, sales_df, stores_df, products_df, dimension):
         """
