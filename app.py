@@ -1671,14 +1671,13 @@ def show_simulator_page():
 def show_analytics_page():
     """Display the analytics page."""
     
-    # BIG PAGE TITLE
     st.markdown('<h1 class="page-title page-title-pink">📊 Analytics Dashboard</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="page-description">Deep dive into your e-commerce performance metrics and trends</p>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Deep dive into your e-commerce performance metrics</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
     if not st.session_state.data_loaded:
-        st.markdown(create_warning_card("Please load data first. Go to 📂 Data page."), unsafe_allow_html=True)
+        st.warning("⚠️ Please load data first. Go to 📂 Data page.")
         show_footer()
         return
     
@@ -1689,10 +1688,9 @@ def show_analytics_page():
     
     sim = Simulator()
     
-    # Tabs with hover effects (CSS handles hover)
     tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🏙️ By City", "📦 By Category", "📋 Inventory"])
     
-with tab1:
+    with tab1:
         st.markdown('<p class="section-title section-title-cyan">📈 Daily Performance Trends</p>', unsafe_allow_html=True)
         
         try:
@@ -1747,152 +1745,176 @@ with tab1:
         
         except Exception as e:
             st.error(f"❌ Error loading trends: {str(e)}")
+    
     with tab2:
         st.markdown('<p class="section-title section-title-blue">🏙️ Performance by City</p>', unsafe_allow_html=True)
-        city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
         
-        if len(city_kpis) > 0:
-            col1, col2 = st.columns(2)
+        try:
+            city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
             
-            with col1:
-                fig = px.bar(
-                    city_kpis,
-                    x='city',
-                    y='revenue',
-                    title='Revenue by City',
-                    color='city',
-                    color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6']
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                fig = px.bar(
-                    city_kpis,
-                    x='city',
-                    y='profit_margin_pct',
-                    title='Profit Margin by City',
-                    color='city',
-                    color_discrete_sequence=['#10b981', '#14b8a6', '#06b6d4']
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            st.markdown('<p class="section-title section-title-teal">📋 City Performance Table</p>', unsafe_allow_html=True)
-            st.dataframe(city_kpis, use_container_width=True)
-            
-            # City Insight
-            st.markdown('<p class="section-title section-title-purple">💡 City Insight</p>', unsafe_allow_html=True)
-            top_city = city_kpis.iloc[0]
-            total_rev = city_kpis['revenue'].sum()
-            top_pct = (top_city['revenue'] / total_rev * 100) if total_rev > 0 else 0
-            st.markdown(create_insight_card("Market Leader", f"{top_city['city']} dominates with {top_pct:.0f}% of total revenue (AED {top_city['revenue']:,.0f}). {'Consider diversifying into other cities.' if top_pct > 50 else 'Good market balance.'}"), unsafe_allow_html=True)
+            if city_kpis is None or len(city_kpis) == 0:
+                st.warning("⚠️ No city data available.")
+            else:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = px.bar(
+                        city_kpis,
+                        x='city',
+                        y='revenue',
+                        title='Revenue by City',
+                        color='city',
+                        color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6']
+                    )
+                    fig = style_plotly_chart(fig)
+                    fig.update_layout(showlegend=False)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    fig = px.bar(
+                        city_kpis,
+                        x='city',
+                        y='profit_margin_pct',
+                        title='Profit Margin by City',
+                        color='city',
+                        color_discrete_sequence=['#10b981', '#14b8a6', '#06b6d4']
+                    )
+                    fig = style_plotly_chart(fig)
+                    fig.update_layout(showlegend=False)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-teal">📋 City Performance Table</p>', unsafe_allow_html=True)
+                st.dataframe(city_kpis, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-purple">💡 City Insight</p>', unsafe_allow_html=True)
+                top_city = city_kpis.iloc[0]
+                total_rev = city_kpis['revenue'].sum()
+                top_pct = (top_city['revenue'] / total_rev * 100) if total_rev > 0 else 0
+                st.markdown(create_insight_card("Market Leader", f"{top_city['city']} leads with {top_pct:.0f}% of revenue (AED {top_city['revenue']:,.0f})."), unsafe_allow_html=True)
+        
+        except Exception as e:
+            st.error(f"❌ Error loading city data: {str(e)}")
     
     with tab3:
         st.markdown('<p class="section-title section-title-purple">📦 Performance by Category</p>', unsafe_allow_html=True)
-        cat_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'category')
         
-        if len(cat_kpis) > 0:
-            col1, col2 = st.columns(2)
+        try:
+            cat_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'category')
             
-            with col1:
-                fig = px.pie(
-                    cat_kpis,
-                    values='revenue',
-                    names='category',
-                    title='Revenue Share by Category',
-                    color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'],
-                    hole=0.45
-                )
-                fig = style_plotly_chart(fig)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                fig = px.bar(
-                    cat_kpis,
-                    x='category',
-                    y='profit',
-                    title='Profit by Category',
-                    color='profit',
-                    color_continuous_scale=['#3b82f6', '#8b5cf6', '#ec4899']
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            st.markdown('<p class="section-title section-title-teal">📋 Category Performance Table</p>', unsafe_allow_html=True)
-            st.dataframe(cat_kpis, use_container_width=True)
-            
-            # Category Insight
-            st.markdown('<p class="section-title section-title-purple">💡 Category Insight</p>', unsafe_allow_html=True)
-            top_cat = cat_kpis.iloc[0]
-            st.markdown(create_insight_card("Top Category", f"{top_cat['category']} is your best performer with AED {top_cat['revenue']:,.0f} revenue and {top_cat['profit_margin_pct']:.1f}% margin."), unsafe_allow_html=True)
+            if cat_kpis is None or len(cat_kpis) == 0:
+                st.warning("⚠️ No category data available.")
+            else:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = px.pie(
+                        cat_kpis,
+                        values='revenue',
+                        names='category',
+                        title='Revenue Share by Category',
+                        color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'],
+                        hole=0.45
+                    )
+                    fig = style_plotly_chart(fig)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    fig = px.bar(
+                        cat_kpis,
+                        x='category',
+                        y='profit',
+                        title='Profit by Category',
+                        color='profit',
+                        color_continuous_scale=['#3b82f6', '#8b5cf6', '#ec4899']
+                    )
+                    fig = style_plotly_chart(fig)
+                    fig.update_layout(coloraxis_showscale=False)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-teal">📋 Category Performance Table</p>', unsafe_allow_html=True)
+                st.dataframe(cat_kpis, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-purple">💡 Category Insight</p>', unsafe_allow_html=True)
+                top_cat = cat_kpis.iloc[0]
+                st.markdown(create_insight_card("Top Category", f"{top_cat['category']} leads with AED {top_cat['revenue']:,.0f} revenue and {top_cat['profit_margin_pct']:.1f}% margin."), unsafe_allow_html=True)
+        
+        except Exception as e:
+            st.error(f"❌ Error loading category data: {str(e)}")
     
     with tab4:
         st.markdown('<p class="section-title section-title-orange">📋 Inventory Health</p>', unsafe_allow_html=True)
-        stockout = sim.calculate_stockout_risk(inventory_df)
         
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(create_metric_card("Total SKUs", f"{stockout['total_items']:,}", color="cyan"), unsafe_allow_html=True)
-        
-        with col2:
-            color = "orange" if stockout['stockout_risk_pct'] > 10 else "green"
-            st.markdown(create_metric_card("Stockout Risk", f"{stockout['stockout_risk_pct']:.1f}%", color=color), unsafe_allow_html=True)
-        
-        with col3:
-            color = "pink" if stockout['zero_stock'] > 0 else "green"
-            st.markdown(create_metric_card("Zero Stock", f"{stockout['zero_stock']:,}", color=color), unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-            col1, col2 = st.columns(2)
+        try:
+            stockout = sim.calculate_stockout_risk(inventory_df)
+            
+            col1, col2, col3 = st.columns(3)
             
             with col1:
-                fig = px.histogram(
-                    inventory_df,
-                    x='stock_on_hand',
-                    nbins=50,
-                    title='Stock Level Distribution',
-                    color_discrete_sequence=['#8b5cf6']
-                )
-                fig = style_plotly_chart(fig)
-                st.plotly_chart(fig, use_container_width=True)
+                st.markdown(create_metric_card("Total SKUs", f"{stockout['total_items']:,}", color="cyan"), unsafe_allow_html=True)
             
             with col2:
-                inventory_df_copy = inventory_df.copy()
-                inventory_df_copy['status'] = inventory_df_copy.apply(
-                    lambda x: 'Critical' if x['stock_on_hand'] == 0 
-                    else ('Low' if x['stock_on_hand'] <= x.get('reorder_point', 10) else 'Healthy'),
-                    axis=1
-                )
-                status_counts = inventory_df_copy['status'].value_counts().reset_index()
-                status_counts.columns = ['Status', 'Count']
-                
-                fig = px.pie(
-                    status_counts,
-                    values='Count',
-                    names='Status',
-                    title='Inventory Status',
-                    color='Status',
-                    color_discrete_map={'Healthy': '#10b981', 'Low': '#f59e0b', 'Critical': '#ef4444'},
-                    hole=0.45
-                )
-                fig = style_plotly_chart(fig)
-                st.plotly_chart(fig, use_container_width=True)
+                color = "orange" if stockout['stockout_risk_pct'] > 10 else "green"
+                st.markdown(create_metric_card("Stockout Risk", f"{stockout['stockout_risk_pct']:.1f}%", color=color), unsafe_allow_html=True)
             
-            # Inventory Insight
-            st.markdown('<p class="section-title section-title-purple">💡 Inventory Insight</p>', unsafe_allow_html=True)
-            if stockout['zero_stock'] > 0:
-                st.markdown(create_insight_card("Critical Stock Alert", f"{stockout['zero_stock']} items are out of stock! Immediate reorder required."), unsafe_allow_html=True)
-            elif stockout['stockout_risk_pct'] > 15:
-                st.markdown(create_insight_card("Reorder Recommended", f"{stockout['stockout_risk_pct']:.0f}% of inventory is below reorder point."), unsafe_allow_html=True)
-            else:
-                st.markdown(create_insight_card("Healthy Inventory", "Inventory levels are well-maintained."), unsafe_allow_html=True)
+            with col3:
+                color = "pink" if stockout['zero_stock'] > 0 else "green"
+                st.markdown(create_metric_card("Zero Stock", f"{stockout['zero_stock']:,}", color=color), unsafe_allow_html=True)
+            
+            st.markdown("---")
+            
+            if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = px.histogram(
+                        inventory_df,
+                        x='stock_on_hand',
+                        nbins=50,
+                        title='Stock Level Distribution',
+                        color_discrete_sequence=['#8b5cf6']
+                    )
+                    fig = style_plotly_chart(fig)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    inventory_copy = inventory_df.copy()
+                    inventory_copy['stock_on_hand'] = pd.to_numeric(inventory_copy['stock_on_hand'], errors='coerce').fillna(0)
+                    
+                    if 'reorder_point' in inventory_copy.columns:
+                        inventory_copy['reorder_point'] = pd.to_numeric(inventory_copy['reorder_point'], errors='coerce').fillna(10)
+                    else:
+                        inventory_copy['reorder_point'] = 10
+                    
+                    inventory_copy['status'] = inventory_copy.apply(
+                        lambda x: 'Critical' if x['stock_on_hand'] == 0 
+                        else ('Low' if x['stock_on_hand'] <= x['reorder_point'] else 'Healthy'),
+                        axis=1
+                    )
+                    status_counts = inventory_copy['status'].value_counts().reset_index()
+                    status_counts.columns = ['Status', 'Count']
+                    
+                    fig = px.pie(
+                        status_counts,
+                        values='Count',
+                        names='Status',
+                        title='Inventory Status',
+                        color='Status',
+                        color_discrete_map={'Healthy': '#10b981', 'Low': '#f59e0b', 'Critical': '#ef4444'},
+                        hole=0.45
+                    )
+                    fig = style_plotly_chart(fig)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown('<p class="section-title section-title-purple">💡 Inventory Insight</p>', unsafe_allow_html=True)
+                if stockout['zero_stock'] > 0:
+                    st.markdown(create_insight_card("Critical Stock Alert", f"{stockout['zero_stock']} items are out of stock! Immediate reorder required."), unsafe_allow_html=True)
+                elif stockout['stockout_risk_pct'] > 15:
+                    st.markdown(create_insight_card("Reorder Recommended", f"{stockout['stockout_risk_pct']:.0f}% of inventory is below reorder point."), unsafe_allow_html=True)
+                else:
+                    st.markdown(create_insight_card("Healthy Inventory", "Inventory levels are well-maintained."), unsafe_allow_html=True)
+        
+        except Exception as e:
+            st.error(f"❌ Error loading inventory data: {str(e)}")
     
     show_footer()
 
