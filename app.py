@@ -712,30 +712,31 @@ if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
 
 # ============================================================================
-# SIDEBAR NAVIGATION (ORIGINAL DESIGN)
+# SIDEBAR NAVIGATION
 # ============================================================================
 
 with st.sidebar:
     # Logo/Title
     st.markdown("""
-    <div style="text-align: center; padding: 25px 0;">
-        <div style="font-size: 3rem; margin-bottom: 10px;">🛒</div>
+    <div style="text-align: center; padding: 15px 0 20px 0;">
+        <div style="font-size: 3rem; margin-bottom: 8px;">🛒</div>
         <h1 style="
             background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 1.6rem; 
-            margin-bottom: 5px;
-            font-weight: 700;
+            background-clip: text;
+            font-size: 2rem; 
+            margin: 0 0 5px 0;
+            font-weight: 800;
         ">UAE Pulse</h1>
-        <p style="color: #64748b; font-size: 0.85rem;">Simulator + Data Rescue</p>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Simulator + Data Rescue</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("---")
     
     # Navigation
-    st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 15px; letter-spacing: 1px;">📍 NAVIGATION</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📍 NAVIGATION</p>', unsafe_allow_html=True)
     
     page = st.radio(
         "Navigate",
@@ -746,7 +747,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Data Status
-    st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1px;">📡 STATUS</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
     
     data_loaded = st.session_state.data_loaded
     data_cleaned = st.session_state.is_cleaned
@@ -761,7 +762,7 @@ with st.sidebar:
         padding: 15px;
         border: 1px solid #2d2d3a;
     ">
-        <div style="display: flex; align-items: center; margin: 10px 0;">
+        <div style="display: flex; align-items: center; margin: 8px 0;">
             <div style="
                 width: 12px; 
                 height: 12px; 
@@ -772,7 +773,7 @@ with st.sidebar:
             "></div>
             <span style="color: #e0e0e0; font-size: 0.9rem;">Data Loaded</span>
         </div>
-        <div style="display: flex; align-items: center; margin: 10px 0;">
+        <div style="display: flex; align-items: center; margin: 8px 0;">
             <div style="
                 width: 12px; 
                 height: 12px; 
@@ -789,12 +790,17 @@ with st.sidebar:
     # Quick Stats
     if st.session_state.data_loaded:
         st.markdown("---")
-        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1px;">📈 QUICK STATS</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📈 QUICK STATS</p>', unsafe_allow_html=True)
         
         sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
         if sales_df is not None:
             total_records = len(sales_df)
-            total_revenue = (sales_df['qty'] * sales_df['selling_price_aed']).sum() if 'qty' in sales_df.columns else 0
+            try:
+                qty = pd.to_numeric(sales_df['qty'], errors='coerce').fillna(0)
+                price = pd.to_numeric(sales_df['selling_price_aed'], errors='coerce').fillna(0)
+                total_revenue = (qty * price).sum()
+            except:
+                total_revenue = 0
             
             st.markdown(f"""
             <div style="
@@ -804,16 +810,15 @@ with st.sidebar:
                 border: 1px solid #2d2d3a;
             ">
                 <div style="margin-bottom: 12px;">
-                    <span style="color: #64748b; font-size: 0.8rem;">RECORDS</span><br>
-                    <span style="color: #06b6d4; font-weight: 700; font-size: 1.3rem;">{total_records:,}</span>
+                    <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">RECORDS</span><br>
+                    <span style="color: #06b6d4; font-weight: 700; font-size: 1.4rem;">{total_records:,}</span>
                 </div>
                 <div>
-                    <span style="color: #64748b; font-size: 0.8rem;">REVENUE</span><br>
-                    <span style="color: #10b981; font-weight: 700; font-size: 1.1rem;">AED {total_revenue:,.0f}</span>
+                    <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">REVENUE</span><br>
+                    <span style="color: #10b981; font-weight: 700; font-size: 1.2rem;">AED {total_revenue:,.0f}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
 # ============================================================================
 # PAGE: HOME
 # ============================================================================
@@ -826,14 +831,24 @@ def show_home_page():
     """Display the enhanced home page."""
     
     if not st.session_state.data_loaded:
-        # ===== HERO SECTION WITH BIG TITLE =====
+# ===== HERO SECTION WITH BIG TITLE =====
         st.markdown("""
         <div class="hero-container">
             <div style="margin-bottom: 25px;">
                 <span class="hero-badge">✨ UAE E-Commerce Analytics</span>
                 <span class="hero-badge" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🚀 v2.0</span>
             </div>
-            <h1 class="hero-title">UAE Pulse Simulator</h1>
+            <h1 style="
+                font-size: 4.5rem !important;
+                font-weight: 800 !important;
+                background: linear-gradient(135deg, #ffffff 0%, #06b6d4 40%, #8b5cf6 70%, #ec4899 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin: 0 0 20px 0;
+                line-height: 1.1;
+                letter-spacing: -2px;
+            ">UAE Pulse Simulator</h1>
             <p class="hero-subtitle">
                 Transform your e-commerce data into actionable insights.<br>
                 Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
