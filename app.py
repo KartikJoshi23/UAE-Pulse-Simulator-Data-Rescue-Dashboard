@@ -735,22 +735,22 @@ if 'data_loaded' not in st.session_state:
 # ============================================================================
 
 with st.sidebar:
-    # Logo/Title - NO EMPTY SPACE
+    # Title with NO empty space
     st.markdown("""
-    <div style="text-align: center; padding: 10px 0 15px 0;">
+    <div style="text-align: center; margin-top: -20px; padding-bottom: 15px;">
         <div style="font-size: 48px; margin-bottom: 5px;">🛒</div>
-        <h1 style="
-            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+        <div style="
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 28px; 
-            margin: 0 0 5px 0;
-            font-weight: 800;
-        ">UAE Pulse</h1>
-        <p style="color: #94a3b8; font-size: 14px; margin: 0;">Simulator + Data Rescue</p>
+        ">UAE Pulse</div>
+        <div style="color: #94a3b8; font-size: 13px;">Simulator + Data Rescue</div>
     </div>
-    """, unsafe_allow_html=True)    
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
     
     # Navigation
