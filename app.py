@@ -603,7 +603,7 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
     """
 
 def create_feature_card(icon, title, description, color="cyan"):
-    """Create a feature card with auto height."""
+    """Create a feature card with uniform size and hover effect."""
     colors = {
         "cyan": "#06b6d4",
         "blue": "#3b82f6", 
@@ -622,12 +622,18 @@ def create_feature_card(icon, title, description, color="cyan"):
         padding: 30px 20px;
         border: 1px solid #2d2d3a;
         text-align: center;
-        min-height: 200px;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         transition: all 0.3s ease;
-    ">
+        cursor: pointer;
+    " onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='{accent}'; this.style.boxShadow='0 12px 30px rgba(6,182,212,0.2)';" 
+       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='#2d2d3a'; this.style.boxShadow='none';">
         <div style="font-size: 48px; margin-bottom: 15px;">{icon}</div>
         <div style="color: {accent}; font-size: 1.1rem; font-weight: 600; margin-bottom: 10px;">{title}</div>
-        <div style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5;">{description}</div>
+        <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.5;">{description}</div>
     </div>
     """
 
