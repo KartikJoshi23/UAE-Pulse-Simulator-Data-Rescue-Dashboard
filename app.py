@@ -1692,7 +1692,7 @@ def show_analytics_page():
     # Tabs with hover effects (CSS handles hover)
     tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🏙️ By City", "📦 By Category", "📋 Inventory"])
     
-   with tab1:
+with tab1:
         st.markdown('<p class="section-title section-title-cyan">📈 Daily Performance Trends</p>', unsafe_allow_html=True)
         
         try:
@@ -1747,7 +1747,6 @@ def show_analytics_page():
         
         except Exception as e:
             st.error(f"❌ Error loading trends: {str(e)}")
-            
     with tab2:
         st.markdown('<p class="section-title section-title-blue">🏙️ Performance by City</p>', unsafe_allow_html=True)
         city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
