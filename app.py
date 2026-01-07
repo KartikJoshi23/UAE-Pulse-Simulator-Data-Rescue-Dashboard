@@ -1491,81 +1491,89 @@ def show_cleaner_page():
 def show_simulator_page():
     """Display the campaign simulator page."""
     
-    # BIG PAGE TITLE
     st.markdown('<h1 class="page-title page-title-purple">🎯 Campaign Simulator</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="page-description">Run what-if scenarios and forecast campaign outcomes with precision</p>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Run what-if scenarios and forecast campaign outcomes</p>', unsafe_allow_html=True)
     
     st.markdown("---")
     
     if not st.session_state.data_loaded:
-        st.markdown(create_warning_card("Please load data first. Go to 📂 Data page."), unsafe_allow_html=True)
+        st.warning("⚠️ Please load data first. Go to 📂 Data page.")
         show_footer()
         return
     
-    if not st.session_state.is_cleaned:
-        st.markdown(create_warning_card("Recommend cleaning data first for accurate results. Go to 🧹 Cleaner."), unsafe_allow_html=True)
+    sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
+    stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
+    products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
     
-    # Campaign parameters
     st.markdown('<p class="section-title section-title-cyan">⚙️ Campaign Parameters</p>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown('<p style="color: #06b6d4; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">💰 Pricing</p>', unsafe_allow_html=True)
-        discount_pct = st.slider("Discount %", 0, 50, 15, help="Discount percentage to offer")
+        st.markdown('<p style="color: #06b6d4; font-weight: 600; margin-bottom: 10px;">💰 Pricing</p>', unsafe_allow_html=True)
+        discount_pct = st.slider("Discount %", 0, 50, 15)
         promo_budget = st.number_input("Promo Budget (AED)", 1000, 500000, 25000, step=5000)
     
     with col2:
-        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">📊 Constraints</p>', unsafe_allow_html=True)
-        margin_floor = st.slider("Margin Floor %", 0, 50, 15, help="Minimum acceptable profit margin")
+        st.markdown('<p style="color: #8b5cf6; font-weight: 600; margin-bottom: 10px;">📊 Constraints</p>', unsafe_allow_html=True)
+        margin_floor = st.slider("Margin Floor %", 0, 50, 15)
         campaign_days = st.slider("Campaign Days", 1, 30, 7)
     
     with col3:
-        st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 10px; font-size: 1rem;">🎯 Targeting</p>', unsafe_allow_html=True)
-        city = st.selectbox("Target City", ['All', 'Dubai', 'Abu Dhabi', 'Sharjah'])
-        channel = st.selectbox("Target Channel", ['All', 'App', 'Web', 'Marketplace'])
-        category = st.selectbox("Target Category", ['All', 'Electronics', 'Fashion', 'Grocery', 'Beauty', 'Home', 'Sports'])
+        st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 10px;">🎯 Targeting</p>', unsafe_allow_html=True)
+        
+        cities = ['All']
+        channels = ['All']
+        categories = ['All']
+        
+        if stores_df is not None and 'city' in stores_df.columns:
+            cities += stores_df['city'].dropna().unique().tolist()
+        if stores_df is not None and 'channel' in stores_df.columns:
+            channels += stores_df['channel'].dropna().unique().tolist()
+        if products_df is not None and 'category' in products_df.columns:
+            categories += products_df['category'].dropna().unique().tolist()
+        
+        city = st.selectbox("Target City", cities)
+        channel = st.selectbox("Target Channel", channels)
+        category = st.selectbox("Target Category", categories)
     
     st.markdown("---")
     
-    # Run simulation
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        run_sim = st.button("🚀 Run Simulation", use_container_width=True, type="primary")
+        run_simulation = st.button("🚀 Run Simulation", use_container_width=True, type="primary")
     
-    if run_sim:
+    if run_simulation:
         with st.spinner("🔄 Running simulation..."):
-            sim = Simulator()
-            
-            sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
-            stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
-            products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
-            
-            results = sim.simulate_campaign(
-                sales_df, stores_df, products_df,
-                discount_pct=discount_pct,
-                promo_budget=promo_budget,
-                margin_floor=margin_floor,
-                city=city,
-                channel=channel,
-                category=category,
-                campaign_days=campaign_days
-            )
-            
-            st.session_state.sim_results = results
+            try:
+                sim = Simulator()
+                
+                results = sim.simulate_campaign(
+                    sales_df, stores_df, products_df,
+                    discount_pct=discount_pct,
+                    promo_budget=promo_budget,
+                    margin_floor=margin_floor,
+                    city=city,
+                    channel=channel,
+                    category=category,
+                    campaign_days=campaign_days
+                )
+                
+                st.session_state.sim_results = results
+                
+            except Exception as e:
+                st.error(f"❌ Simulation error: {str(e)}")
     
-    # Display results
     if 'sim_results' in st.session_state and st.session_state.sim_results:
         results = st.session_state.sim_results
-        outputs = results['outputs']
-        comparison = results['comparison']
-        warnings = results['warnings']
+        outputs = results.get('outputs')
+        comparison = results.get('comparison')
+        warnings = results.get('warnings', [])
         
         if outputs:
             st.markdown("---")
             st.markdown('<p class="section-title section-title-teal">📊 Simulation Results</p>', unsafe_allow_html=True)
             
-            # Row 1
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
@@ -1589,7 +1597,6 @@ def show_simulator_page():
             
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Row 2
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
@@ -1605,30 +1612,15 @@ def show_simulator_page():
             with col4:
                 st.markdown(create_metric_card("Fulfillment", f"AED {outputs['fulfillment_cost']:,.0f}", color="blue"), unsafe_allow_html=True)
             
-            # Warnings
             if warnings:
                 st.markdown("---")
                 st.markdown('<p class="section-title section-title-orange">⚠️ Risk Alerts</p>', unsafe_allow_html=True)
                 for warning in warnings:
-                    st.markdown(create_warning_card(warning), unsafe_allow_html=True)
+                    st.warning(warning)
             else:
                 st.markdown("---")
-                st.markdown(create_success_card("All metrics within acceptable range. Campaign looks healthy!"), unsafe_allow_html=True)
+                st.success("✅ All metrics within acceptable range. Campaign looks healthy!")
             
-            # Simulation Insight
-            st.markdown("---")
-            st.markdown('<p class="section-title section-title-purple">💡 Simulation Insight</p>', unsafe_allow_html=True)
-            
-            if outputs['roi_pct'] > 100:
-                st.markdown(create_insight_card("Excellent Campaign ROI", f"Expected ROI of {outputs['roi_pct']:.0f}% is outstanding! This campaign is highly profitable. Consider scaling up the budget."), unsafe_allow_html=True)
-            elif outputs['roi_pct'] > 50:
-                st.markdown(create_insight_card("Strong Campaign ROI", f"Expected ROI of {outputs['roi_pct']:.0f}% is very good. Campaign should deliver solid returns."), unsafe_allow_html=True)
-            elif outputs['roi_pct'] > 0:
-                st.markdown(create_insight_card("Positive Campaign ROI", f"Expected ROI of {outputs['roi_pct']:.0f}% is positive but modest. Consider optimizing targeting or discount level."), unsafe_allow_html=True)
-            else:
-                st.markdown(create_insight_card("Campaign Needs Review", f"Negative ROI of {outputs['roi_pct']:.0f}% expected. Consider reducing discount percentage or targeting higher-margin categories."), unsafe_allow_html=True)
-            
-            # Comparison chart
             st.markdown("---")
             st.markdown('<p class="section-title section-title-blue">📈 Baseline vs Campaign</p>', unsafe_allow_html=True)
             
@@ -1665,6 +1657,10 @@ def show_simulator_page():
                 fig = style_plotly_chart(fig)
                 fig.update_layout(showlegend=False)
                 st.plotly_chart(fig, use_container_width=True)
+        
+        elif warnings:
+            for warning in warnings:
+                st.warning(warning)
     
     show_footer()
 
