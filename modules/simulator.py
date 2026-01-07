@@ -22,47 +22,125 @@ class Simulator:
         }
         self.default_elasticity = 1.5
     
+    def _find_column(self, df, possible_names):
+        """Find a column from a list of possible names."""
+        for name in possible_names:
+            if name in df.columns:
+                return name
+        return None
+    
+    def _get_sku_column(self, df):
+        """Find SKU column."""
+        return self._find_column(df, ['sku', 'SKU', 'product_id', 'ProductID', 'product_sku', 'item_id'])
+    
+    def _get_cost_column(self, df):
+        """Find cost column."""
+        return self._find_column(df, ['cost_aed', 'cost', 'unit_cost', 'cost_price', 'purchase_price', 'buying_price'])
+    
+    def _get_price_column(self, df):
+        """Find selling price column."""
+        return self._find_column(df, ['selling_price_aed', 'selling_price', 'price', 'unit_price', 'sale_price'])
+    
+    def _get_qty_column(self, df):
+        """Find quantity column."""
+        return self._find_column(df, ['qty', 'quantity', 'units', 'qty_sold', 'units_sold'])
+    
+    def _get_date_column(self, df):
+        """Find date column."""
+        return self._find_column(df, ['order_ts', 'order_date', 'date', 'timestamp', 'created_at', 'sale_date', 'transaction_date'])
+    
+    def _get_order_column(self, df):
+        """Find order ID column."""
+        return self._find_column(df, ['order_id', 'OrderID', 'transaction_id', 'invoice_id'])
+    
+    def _get_store_column(self, df):
+        """Find store ID column."""
+        return self._find_column(df, ['store_id', 'StoreID', 'store', 'location_id'])
+    
+    def _get_category_column(self, df):
+        """Find category column."""
+        return self._find_column(df, ['category', 'Category', 'product_category', 'cat'])
+    
+    def _get_city_column(self, df):
+        """Find city column."""
+        return self._find_column(df, ['city', 'City', 'location', 'store_city'])
+    
+    def _get_channel_column(self, df):
+        """Find channel column."""
+        return self._find_column(df, ['channel', 'Channel', 'sales_channel', 'store_channel'])
+    
     def calculate_overall_kpis(self, sales_df, products_df):
         """Calculate overall KPIs from sales data."""
         kpis = {}
         
         try:
-            merged = sales_df.merge(products_df[['sku', 'cost_aed']], on='sku', how='left')
-            merged['cost_aed'] = merged['cost_aed'].fillna(0)
+            # Find column names
+            sku_col_sales = self._get_sku_column(sales_df)
+            sku_col_products = self._get_sku_column(products_df)
+            cost_col = self._get_cost_column(products_df)
+            price_col = self._get_price_column(sales_df)
+            qty_col = self._get_qty_column(sales_df)
+            order_col = self._get_order_column(sales_df)
             
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
+            # Create working copy
+            merged = sales_df.copy()
             
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
+            # Merge with products if possible
+            if sku_col_sales and sku_col_products and cost_col:
+                products_subset = products_df[[sku_col_products, cost_col]].copy()
+                products_subset.columns = ['_sku', '_cost']
+                merged['_sku'] = merged[sku_col_sales]
+                merged = merged.merge(products_subset, on='_sku', how='left')
+                merged['_cost'] = merged['_cost'].fillna(0)
+            else:
+                merged['_cost'] = 0
+            
+            # Get qty and price
+            if qty_col:
+                merged['_qty'] = pd.to_numeric(merged[qty_col], errors='coerce').fillna(0)
+            else:
+                merged['_qty'] = 1
+            
+            if price_col:
+                merged['_price'] = pd.to_numeric(merged[price_col], errors='coerce').fillna(0)
+            else:
+                merged['_price'] = 0
+            
+            merged['_cost'] = pd.to_numeric(merged['_cost'], errors='coerce').fillna(0)
+            
+            # Calculate
+            merged['revenue'] = merged['_qty'] * merged['_price']
+            merged['profit'] = merged['_qty'] * (merged['_price'] - merged['_cost'])
             
             kpis['total_revenue'] = float(merged['revenue'].sum())
             kpis['total_profit'] = float(merged['profit'].sum())
-            kpis['total_orders'] = int(merged['order_id'].nunique()) if 'order_id' in merged.columns else len(merged)
-            kpis['total_units'] = float(merged['qty'].sum())
+            
+            if order_col:
+                kpis['total_orders'] = int(merged[order_col].nunique())
+            else:
+                kpis['total_orders'] = len(merged)
+            
+            kpis['total_units'] = float(merged['_qty'].sum())
             kpis['avg_order_value'] = kpis['total_revenue'] / kpis['total_orders'] if kpis['total_orders'] > 0 else 0
             kpis['profit_margin_pct'] = (kpis['total_profit'] / kpis['total_revenue'] * 100) if kpis['total_revenue'] > 0 else 0
             
+            # Return rate
             if 'is_returned' in sales_df.columns:
-                try:
-                    returned = pd.to_numeric(sales_df['is_returned'], errors='coerce').fillna(0)
-                    kpis['return_rate_pct'] = float(returned.mean() * 100)
-                except:
-                    kpis['return_rate_pct'] = 0
+                returned = pd.to_numeric(sales_df['is_returned'], errors='coerce').fillna(0)
+                kpis['return_rate_pct'] = float(returned.mean() * 100)
             else:
                 kpis['return_rate_pct'] = 0
             
-            if 'discount_pct' in sales_df.columns:
-                try:
-                    discount = pd.to_numeric(sales_df['discount_pct'], errors='coerce').fillna(0)
-                    kpis['avg_discount_pct'] = float(discount.mean())
-                except:
-                    kpis['avg_discount_pct'] = 0
+            # Discount
+            discount_col = self._find_column(sales_df, ['discount_pct', 'discount', 'discount_percent'])
+            if discount_col:
+                discount = pd.to_numeric(sales_df[discount_col], errors='coerce').fillna(0)
+                kpis['avg_discount_pct'] = float(discount.mean())
             else:
                 kpis['avg_discount_pct'] = 0
                 
         except Exception as e:
+            print(f"Error in calculate_overall_kpis: {e}")
             kpis = {
                 'total_revenue': 0,
                 'total_profit': 0,
@@ -79,21 +157,96 @@ class Simulator:
     def calculate_kpis_by_dimension(self, sales_df, stores_df, products_df, dimension):
         """Calculate KPIs grouped by a dimension (city, channel, category)."""
         try:
-            merged = sales_df.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
-            merged = merged.merge(products_df[['sku', 'cost_aed', 'category']], on='sku', how='left')
+            merged = sales_df.copy()
             
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
+            # Find columns
+            sku_col_sales = self._get_sku_column(sales_df)
+            sku_col_products = self._get_sku_column(products_df)
+            store_col_sales = self._get_store_column(sales_df)
+            store_col_stores = self._get_store_column(stores_df)
+            cost_col = self._get_cost_column(products_df)
+            price_col = self._get_price_column(sales_df)
+            qty_col = self._get_qty_column(sales_df)
+            order_col = self._get_order_column(sales_df)
+            category_col = self._get_category_column(products_df)
+            city_col = self._get_city_column(stores_df)
+            channel_col = self._get_channel_column(stores_df)
             
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
+            # Merge with stores
+            if store_col_sales and store_col_stores:
+                stores_cols = [store_col_stores]
+                if city_col:
+                    stores_cols.append(city_col)
+                if channel_col:
+                    stores_cols.append(channel_col)
+                
+                stores_subset = stores_df[stores_cols].copy()
+                stores_subset.columns = ['_store'] + [f'_{c}' for c in stores_cols[1:]]
+                merged['_store'] = merged[store_col_sales]
+                merged = merged.merge(stores_subset, on='_store', how='left')
+                
+                if city_col:
+                    merged['city'] = merged[f'_{city_col}']
+                if channel_col:
+                    merged['channel'] = merged[f'_{channel_col}']
             
+            # Merge with products
+            if sku_col_sales and sku_col_products:
+                products_cols = [sku_col_products]
+                if cost_col:
+                    products_cols.append(cost_col)
+                if category_col:
+                    products_cols.append(category_col)
+                
+                products_subset = products_df[products_cols].copy()
+                new_cols = ['_sku']
+                if cost_col:
+                    new_cols.append('_cost')
+                if category_col:
+                    new_cols.append('category')
+                products_subset.columns = new_cols
+                
+                merged['_sku'] = merged[sku_col_sales]
+                merged = merged.merge(products_subset, on='_sku', how='left')
+            
+            # Set defaults
+            if '_cost' not in merged.columns:
+                merged['_cost'] = 0
+            if 'category' not in merged.columns:
+                merged['category'] = 'Unknown'
+            if 'city' not in merged.columns:
+                merged['city'] = 'Unknown'
+            if 'channel' not in merged.columns:
+                merged['channel'] = 'Unknown'
+            
+            # Get qty and price
+            if qty_col:
+                merged['_qty'] = pd.to_numeric(merged[qty_col], errors='coerce').fillna(0)
+            else:
+                merged['_qty'] = 1
+            
+            if price_col:
+                merged['_price'] = pd.to_numeric(merged[price_col], errors='coerce').fillna(0)
+            else:
+                merged['_price'] = 0
+            
+            merged['_cost'] = pd.to_numeric(merged['_cost'], errors='coerce').fillna(0)
+            
+            merged['revenue'] = merged['_qty'] * merged['_price']
+            merged['profit'] = merged['_qty'] * (merged['_price'] - merged['_cost'])
+            
+            # Set order_id for counting
+            if order_col:
+                merged['_order_id'] = merged[order_col]
+            else:
+                merged['_order_id'] = range(len(merged))
+            
+            # Group by dimension
             grouped = merged.groupby(dimension).agg({
                 'revenue': 'sum',
                 'profit': 'sum',
-                'order_id': 'nunique',
-                'qty': 'sum'
+                '_order_id': 'nunique',
+                '_qty': 'sum'
             }).reset_index()
             
             grouped.columns = [dimension, 'revenue', 'profit', 'orders', 'units']
@@ -104,54 +257,76 @@ class Simulator:
             return grouped
             
         except Exception as e:
+            print(f"Error in calculate_kpis_by_dimension: {e}")
             return pd.DataFrame()
     
     def calculate_daily_trends(self, sales_df, products_df):
         """Calculate daily performance trends."""
         try:
             merged = sales_df.copy()
-            merged = merged.merge(products_df[['sku', 'cost_aed']], on='sku', how='left')
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
             
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
+            # Find columns
+            sku_col_sales = self._get_sku_column(sales_df)
+            sku_col_products = self._get_sku_column(products_df)
+            cost_col = self._get_cost_column(products_df)
+            price_col = self._get_price_column(sales_df)
+            qty_col = self._get_qty_column(sales_df)
+            date_col = self._get_date_column(sales_df)
+            order_col = self._get_order_column(sales_df)
             
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
-            
-            date_col = None
-            if 'order_ts' in merged.columns:
-                date_col = 'order_ts'
-            elif 'order_date' in merged.columns:
-                date_col = 'order_date'
-            elif 'date' in merged.columns:
-                date_col = 'date'
-            elif 'timestamp' in merged.columns:
-                date_col = 'timestamp'
-            
-            if date_col is None:
-                merged['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(merged), freq='H').date
+            # Merge with products for cost
+            if sku_col_sales and sku_col_products and cost_col:
+                products_subset = products_df[[sku_col_products, cost_col]].copy()
+                products_subset.columns = ['_sku', '_cost']
+                merged['_sku'] = merged[sku_col_sales]
+                merged = merged.merge(products_subset, on='_sku', how='left')
+                merged['_cost'] = merged['_cost'].fillna(0)
             else:
+                merged['_cost'] = 0
+            
+            # Get qty and price
+            if qty_col:
+                merged['_qty'] = pd.to_numeric(merged[qty_col], errors='coerce').fillna(0)
+            else:
+                merged['_qty'] = 1
+            
+            if price_col:
+                merged['_price'] = pd.to_numeric(merged[price_col], errors='coerce').fillna(0)
+            else:
+                merged['_price'] = 0
+            
+            merged['_cost'] = pd.to_numeric(merged['_cost'], errors='coerce').fillna(0)
+            
+            merged['revenue'] = merged['_qty'] * merged['_price']
+            merged['profit'] = merged['_qty'] * (merged['_price'] - merged['_cost'])
+            
+            # Parse date
+            if date_col:
                 merged['date'] = pd.to_datetime(merged[date_col], errors='coerce').dt.date
+            else:
+                # No date column found - create dummy dates
+                merged['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(merged), freq='H').date
             
             merged = merged.dropna(subset=['date'])
             
             if len(merged) == 0:
                 return pd.DataFrame(columns=['date', 'revenue', 'profit', 'orders', 'units'])
             
+            # Group by date
             daily = merged.groupby('date').agg({
                 'revenue': 'sum',
                 'profit': 'sum',
-                'qty': 'sum'
+                '_qty': 'sum'
             }).reset_index()
             
-            if 'order_id' in merged.columns:
-                orders_per_day = merged.groupby('date')['order_id'].nunique().reset_index()
+            # Count orders
+            if order_col:
+                orders_per_day = merged.groupby('date')[order_col].nunique().reset_index()
                 orders_per_day.columns = ['date', 'orders']
                 daily = daily.merge(orders_per_day, on='date', how='left')
                 daily.columns = ['date', 'revenue', 'profit', 'units', 'orders']
             else:
-                daily['orders'] = daily['qty']
+                daily['orders'] = daily['_qty']
                 daily.columns = ['date', 'revenue', 'profit', 'units', 'orders']
             
             daily = daily.sort_values('date')
@@ -159,21 +334,28 @@ class Simulator:
             return daily
             
         except Exception as e:
+            print(f"Error in calculate_daily_trends: {e}")
             return pd.DataFrame(columns=['date', 'revenue', 'profit', 'orders', 'units'])
     
     def calculate_stockout_risk(self, inventory_df):
         """Calculate stockout risk metrics."""
         try:
-            inventory_df['stock_on_hand'] = pd.to_numeric(inventory_df['stock_on_hand'], errors='coerce').fillna(0)
+            stock_col = self._find_column(inventory_df, ['stock_on_hand', 'stock', 'quantity', 'qty', 'inventory'])
+            reorder_col = self._find_column(inventory_df, ['reorder_point', 'reorder_level', 'min_stock'])
             
-            if 'reorder_point' in inventory_df.columns:
-                inventory_df['reorder_point'] = pd.to_numeric(inventory_df['reorder_point'], errors='coerce').fillna(10)
+            if stock_col:
+                inventory_df['_stock'] = pd.to_numeric(inventory_df[stock_col], errors='coerce').fillna(0)
             else:
-                inventory_df['reorder_point'] = 10
+                inventory_df['_stock'] = 0
+            
+            if reorder_col:
+                inventory_df['_reorder'] = pd.to_numeric(inventory_df[reorder_col], errors='coerce').fillna(10)
+            else:
+                inventory_df['_reorder'] = 10
             
             total_items = len(inventory_df)
-            zero_stock = len(inventory_df[inventory_df['stock_on_hand'] == 0])
-            low_stock = len(inventory_df[inventory_df['stock_on_hand'] <= inventory_df['reorder_point']])
+            zero_stock = len(inventory_df[inventory_df['_stock'] == 0])
+            low_stock = len(inventory_df[inventory_df['_stock'] <= inventory_df['_reorder']])
             
             return {
                 'total_items': total_items,
@@ -181,7 +363,8 @@ class Simulator:
                 'low_stock': low_stock,
                 'stockout_risk_pct': (low_stock / total_items * 100) if total_items > 0 else 0
             }
-        except:
+        except Exception as e:
+            print(f"Error in calculate_stockout_risk: {e}")
             return {
                 'total_items': 0,
                 'zero_stock': 0,
@@ -195,39 +378,107 @@ class Simulator:
         """Simulate a promotional campaign."""
         try:
             merged = sales_df.copy()
-            merged = merged.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
-            merged = merged.merge(products_df[['sku', 'cost_aed', 'category']], on='sku', how='left')
             
-            merged['qty'] = pd.to_numeric(merged['qty'], errors='coerce').fillna(0)
-            merged['selling_price_aed'] = pd.to_numeric(merged['selling_price_aed'], errors='coerce').fillna(0)
-            merged['cost_aed'] = pd.to_numeric(merged['cost_aed'], errors='coerce').fillna(0)
+            # Find columns
+            sku_col_sales = self._get_sku_column(sales_df)
+            sku_col_products = self._get_sku_column(products_df)
+            store_col_sales = self._get_store_column(sales_df)
+            store_col_stores = self._get_store_column(stores_df)
+            cost_col = self._get_cost_column(products_df)
+            price_col = self._get_price_column(sales_df)
+            qty_col = self._get_qty_column(sales_df)
+            order_col = self._get_order_column(sales_df)
+            category_col = self._get_category_column(products_df)
+            city_col = self._get_city_column(stores_df)
+            channel_col = self._get_channel_column(stores_df)
             
-            if city != 'All' and 'city' in merged.columns:
-                merged = merged[merged['city'] == city]
-            if channel != 'All' and 'channel' in merged.columns:
-                merged = merged[merged['channel'] == channel]
+            # Merge with stores
+            if store_col_sales and store_col_stores:
+                stores_cols = [store_col_stores]
+                if city_col:
+                    stores_cols.append(city_col)
+                if channel_col:
+                    stores_cols.append(channel_col)
+                
+                stores_subset = stores_df[stores_cols].copy()
+                stores_subset.columns = ['_store'] + stores_cols[1:]
+                merged['_store'] = merged[store_col_sales]
+                merged = merged.merge(stores_subset, on='_store', how='left')
+            
+            # Merge with products
+            if sku_col_sales and sku_col_products:
+                products_cols = [sku_col_products]
+                if cost_col:
+                    products_cols.append(cost_col)
+                if category_col:
+                    products_cols.append(category_col)
+                
+                products_subset = products_df[products_cols].copy()
+                new_names = ['_sku']
+                if cost_col:
+                    new_names.append('_cost')
+                if category_col:
+                    new_names.append('category')
+                products_subset.columns = new_names
+                
+                merged['_sku'] = merged[sku_col_sales]
+                merged = merged.merge(products_subset, on='_sku', how='left')
+            
+            # Set defaults
+            if '_cost' not in merged.columns:
+                merged['_cost'] = 0
+            if 'category' not in merged.columns:
+                merged['category'] = 'Unknown'
+            if city_col and city_col not in merged.columns:
+                merged[city_col] = 'Unknown'
+            if channel_col and channel_col not in merged.columns:
+                merged[channel_col] = 'Unknown'
+            
+            # Get qty and price
+            if qty_col:
+                merged['_qty'] = pd.to_numeric(merged[qty_col], errors='coerce').fillna(0)
+            else:
+                merged['_qty'] = 1
+            
+            if price_col:
+                merged['_price'] = pd.to_numeric(merged[price_col], errors='coerce').fillna(0)
+            else:
+                merged['_price'] = 0
+            
+            merged['_cost'] = pd.to_numeric(merged['_cost'], errors='coerce').fillna(0)
+            
+            # Filter by targeting
+            if city != 'All' and city_col and city_col in merged.columns:
+                merged = merged[merged[city_col] == city]
+            if channel != 'All' and channel_col and channel_col in merged.columns:
+                merged = merged[merged[channel_col] == channel]
             if category != 'All' and 'category' in merged.columns:
                 merged = merged[merged['category'] == category]
             
             if len(merged) == 0:
                 return {'outputs': None, 'comparison': None, 'warnings': ['No data matches filters']}
             
-            merged['revenue'] = merged['qty'] * merged['selling_price_aed']
-            merged['profit'] = merged['qty'] * (merged['selling_price_aed'] - merged['cost_aed'])
+            merged['revenue'] = merged['_qty'] * merged['_price']
+            merged['profit'] = merged['_qty'] * (merged['_price'] - merged['_cost'])
             
             data_days = 30
             baseline_revenue = merged['revenue'].sum() / data_days * campaign_days
             baseline_profit = merged['profit'].sum() / data_days * campaign_days
-            baseline_orders = len(merged['order_id'].unique()) / data_days * campaign_days if 'order_id' in merged.columns else len(merged) / data_days * campaign_days
-            baseline_units = merged['qty'].sum() / data_days * campaign_days
+            
+            if order_col and order_col in merged.columns:
+                baseline_orders = merged[order_col].nunique() / data_days * campaign_days
+            else:
+                baseline_orders = len(merged) / data_days * campaign_days
+            
+            baseline_units = merged['_qty'].sum() / data_days * campaign_days
             
             elasticity = self.category_elasticity.get(category, self.default_elasticity) if category != 'All' else self.default_elasticity
             
             demand_lift_pct = discount_pct * elasticity
             
             expected_units = baseline_units * (1 + demand_lift_pct / 100)
-            avg_price = merged['selling_price_aed'].mean()
-            avg_cost = merged['cost_aed'].mean()
+            avg_price = merged['_price'].mean()
+            avg_cost = merged['_cost'].mean()
             
             discounted_price = avg_price * (1 - discount_pct / 100)
             expected_revenue = expected_units * discounted_price
@@ -275,4 +526,5 @@ class Simulator:
             return {'outputs': outputs, 'comparison': comparison, 'warnings': warnings}
             
         except Exception as e:
+            print(f"Error in simulate_campaign: {e}")
             return {'outputs': None, 'comparison': None, 'warnings': [f'Error: {str(e)}']}
