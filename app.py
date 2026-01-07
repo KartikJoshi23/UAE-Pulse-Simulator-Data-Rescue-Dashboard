@@ -818,19 +818,25 @@ with st.sidebar:
 # PAGE: HOME
 # ============================================================================
 
+# ============================================================================
+# PAGE: HOME (FIXED - BIG TITLE, BETTER LAYOUT)
+# ============================================================================
+
 def show_home_page():
     """Display the enhanced home page."""
     
     if not st.session_state.data_loaded:
-        # ===== HERO SECTION =====
+        # ===== HERO SECTION WITH BIG TITLE =====
         st.markdown("""
         <div class="hero-container">
-            <div class="hero-badge">✨ UAE E-Commerce Analytics</div>
-            <div class="hero-badge" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🚀 v2.0</div>
+            <div style="margin-bottom: 25px;">
+                <span class="hero-badge">✨ UAE E-Commerce Analytics</span>
+                <span class="hero-badge" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🚀 v2.0</span>
+            </div>
             <h1 class="hero-title">UAE Pulse Simulator</h1>
             <p class="hero-subtitle">
-                Transform your e-commerce data into actionable insights. Clean dirty data, 
-                simulate promotional campaigns, and visualize performance metrics.
+                Transform your e-commerce data into actionable insights.<br>
+                Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -880,8 +886,8 @@ def show_home_page():
         with col1:
             st.markdown("""
             <div class="info-card">
-                <h4 style="color: #06b6d4; margin-top: 0;">🧹 Data Cleaning Capabilities</h4>
-                <ul style="color: #94a3b8; margin-bottom: 0;">
+                <h4 style="color: #06b6d4; margin-top: 0; font-size: 1.1rem;">🧹 Data Cleaning Capabilities</h4>
+                <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
                     <li>Missing value detection & imputation</li>
                     <li>Duplicate record removal</li>
                     <li>Outlier detection & capping</li>
@@ -894,8 +900,8 @@ def show_home_page():
         with col2:
             st.markdown("""
             <div class="info-card" style="border-left-color: #8b5cf6;">
-                <h4 style="color: #8b5cf6; margin-top: 0;">🎯 Simulation Features</h4>
-                <ul style="color: #94a3b8; margin-bottom: 0;">
+                <h4 style="color: #8b5cf6; margin-top: 0; font-size: 1.1rem;">🎯 Simulation Features</h4>
+                <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
                     <li>Discount impact modeling</li>
                     <li>Category elasticity analysis</li>
                     <li>Channel performance comparison</li>
@@ -937,17 +943,20 @@ def show_home_page():
         products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
         stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
         
-        # Header
+        # BIG Header for Dashboard
         st.markdown("""
-        <div style="text-align: center; margin-bottom: 30px;">
+        <div style="text-align: center; margin-bottom: 40px;">
             <h1 style="
                 background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                font-size: 2.5rem;
-                margin-bottom: 10px;
+                background-clip: text;
+                font-size: 3.5rem;
+                font-weight: 800;
+                margin-bottom: 15px;
+                letter-spacing: -1px;
             ">🛒 UAE Pulse Simulator</h1>
-            <p style="color: #64748b; font-size: 1rem;">Data Rescue + Campaign Simulation Dashboard</p>
+            <p style="color: #94a3b8; font-size: 1.2rem;">Data Rescue + Campaign Simulation Dashboard</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1005,7 +1014,7 @@ def show_home_page():
         with col2:
             st.markdown(create_metric_card(
                 "Total Units", 
-                f"{kpis['total_units']:,}",
+                f"{kpis['total_units']:,.0f}",
                 color="orange"
             ), unsafe_allow_html=True)
         
@@ -1087,9 +1096,6 @@ def show_home_page():
             st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
     
     show_footer()
-    # ============================================================================
-# PAGE: DATA
-# ============================================================================
 
 def show_data_page():
     """Display the data management page."""
