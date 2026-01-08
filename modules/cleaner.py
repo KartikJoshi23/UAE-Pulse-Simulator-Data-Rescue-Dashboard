@@ -383,3 +383,72 @@ class DataCleaner:
         self.cleaning_report['foreign_key_issues'] = fk_issues
         
         return clean_products, clean_stores, clean_sales, clean_inventory
+        
+        #New Method
+    
+    def get_issues_df(self):
+        """Return a DataFrame summarizing all issues found."""
+        issues_list = []
+        
+        for df_name, report in self.cleaning_report.items():
+            if df_name == 'foreign_key_issues':
+                if report.get('invalid_skus', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': 'Sales',
+                        'Issue Type': 'Invalid SKU',
+                        'Count': report['invalid_skus'],
+                        'Status': 'Warning'
+                    })
+                if report.get('invalid_stores', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': 'Sales',
+                        'Issue Type': 'Invalid Store ID',
+                        'Count': report['invalid_stores'],
+                        'Status': 'Warning'
+                    })
+            elif isinstance(report, dict):
+                if report.get('missing_fixed', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': report.get('name', df_name),
+                        'Issue Type': 'Missing Values',
+                        'Count': report['missing_fixed'],
+                        'Status': 'Fixed'
+                    })
+                if report.get('duplicates_removed', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': report.get('name', df_name),
+                        'Issue Type': 'Duplicates',
+                        'Count': report['duplicates_removed'],
+                        'Status': 'Fixed'
+                    })
+                if report.get('outliers_fixed', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': report.get('name', df_name),
+                        'Issue Type': 'Outliers',
+                        'Count': report['outliers_fixed'],
+                        'Status': 'Fixed'
+                    })
+                if report.get('negatives_fixed', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': report.get('name', df_name),
+                        'Issue Type': 'Negative Values',
+                        'Count': report['negatives_fixed'],
+                        'Status': 'Fixed'
+                    })
+                if report.get('text_standardized', 0) > 0:
+                    issues_list.append({
+                        'DataFrame': report.get('name', df_name),
+                        'Issue Type': 'Text Standardized',
+                        'Count': report['text_standardized'],
+                        'Status': 'Fixed'
+                    })
+        
+        if len(issues_list) == 0:
+            issues_list.append({
+                'DataFrame': 'All',
+                'Issue Type': 'None',
+                'Count': 0,
+                'Status': 'Clean'
+            })
+        
+        return pd.DataFrame(issues_list)
