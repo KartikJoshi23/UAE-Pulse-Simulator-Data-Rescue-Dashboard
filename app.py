@@ -822,7 +822,7 @@ page = st.radio(
     label_visibility="collapsed"
 )
     
-    st.markdown("---")
+st.markdown("---")
     
     # Data Status
     st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
