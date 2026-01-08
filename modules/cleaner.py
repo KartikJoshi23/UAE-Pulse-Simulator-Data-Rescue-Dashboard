@@ -364,22 +364,22 @@ class DataCleaner:
         return df, report
     
     def clean_all(self, products_df, stores_df, sales_df, inventory_df):
-        """Clean all DataFrames and return cleaned versions with reports."""
-        all_reports = {}
+        """Clean all DataFrames and return cleaned versions."""
+        self.cleaning_report = {}
         
         clean_products, report = self.clean_dataframe(products_df.copy(), "Products")
-        all_reports['products'] = report
+        self.cleaning_report['products'] = report
         
         clean_stores, report = self.clean_dataframe(stores_df.copy(), "Stores")
-        all_reports['stores'] = report
+        self.cleaning_report['stores'] = report
         
         clean_sales, report = self.clean_dataframe(sales_df.copy(), "Sales")
-        all_reports['sales'] = report
+        self.cleaning_report['sales'] = report
         
         clean_inventory, report = self.clean_dataframe(inventory_df.copy(), "Inventory")
-        all_reports['inventory'] = report
+        self.cleaning_report['inventory'] = report
         
         fk_issues = self.validate_foreign_keys(clean_sales, clean_products, clean_stores)
-        all_reports['foreign_key_issues'] = fk_issues
+        self.cleaning_report['foreign_key_issues'] = fk_issues
         
-        return clean_products, clean_stores, clean_sales, clean_inventory, all_reports
+        return clean_products, clean_stores, clean_sales, clean_inventory
