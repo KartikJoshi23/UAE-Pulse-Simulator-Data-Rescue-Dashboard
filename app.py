@@ -2007,13 +2007,12 @@ def show_cleaner_page():
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                table_counts = issues_df.groupby('DataFrame')['count'].sum().reset_index()
-                table_counts.columns = ['Table', 'count']
+                table_counts = issues_df.groupby('table').size().reset_index(name='count')
                 
                 fig = px.pie(
                     table_counts,
                     values='count',
-                    names='Table',
+                    names='table',
                     title='Issues by Table',
                     color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'],
                     hole=0.45
