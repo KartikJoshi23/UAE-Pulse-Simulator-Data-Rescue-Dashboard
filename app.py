@@ -852,285 +852,177 @@ with st.sidebar:
 # ============================================================================
 
 def show_home_page():
-    """Display the enhanced home page."""
+    """Display the home page - always static, never changes."""
     
-    if not st.session_state.data_loaded:
-        # ===== HERO SECTION (NO DATA LOADED) =====
-        st.markdown("""
+    # ===== HERO SECTION =====
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%);
+        border-radius: 24px;
+        padding: 50px;
+        margin-bottom: 40px;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        text-align: center;
+    ">
+        <div style="margin-bottom: 20px;">
+            <span style="
+                display: inline-block;
+                padding: 10px 24px;
+                background: linear-gradient(135deg, #06b6d4, #3b82f6);
+                border-radius: 50px;
+                color: white;
+                font-size: 0.95rem;
+                font-weight: 600;
+                margin-right: 12px;
+            ">✨ UAE E-Commerce Analytics</span>
+            <span style="
+                display: inline-block;
+                padding: 10px 24px;
+                background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                border-radius: 50px;
+                color: white;
+                font-size: 0.95rem;
+                font-weight: 600;
+            ">🚀 v2.0</span>
+        </div>
         <div style="
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%);
-            border-radius: 24px;
-            padding: 50px;
-            margin-bottom: 40px;
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            text-align: center;
-        ">
-            <div style="margin-bottom: 20px;">
-                <span style="
-                    display: inline-block;
-                    padding: 10px 24px;
-                    background: linear-gradient(135deg, #06b6d4, #3b82f6);
-                    border-radius: 50px;
-                    color: white;
-                    font-size: 0.95rem;
-                    font-weight: 600;
-                    margin-right: 12px;
-                ">✨ UAE E-Commerce Analytics</span>
-                <span style="
-                    display: inline-block;
-                    padding: 10px 24px;
-                    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-                    border-radius: 50px;
-                    color: white;
-                    font-size: 0.95rem;
-                    font-weight: 600;
-                ">🚀 v2.0</span>
-            </div>
-            <div style="
-                font-size: 64px;
-                font-weight: 800;
-                background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                margin: 20px 0;
-                line-height: 1.2;
-            ">UAE Pulse Simulator</div>
-            <p style="color: #94a3b8; font-size: 1.15rem; margin: 0; line-height: 1.6;">
-                Transform your e-commerce data into actionable insights.<br>
-                Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # ===== FEATURE CARDS =====
-        st.markdown('<p class="section-title section-title-purple">✨ Powerful Features</p>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(create_feature_card(
-                "📂", "Data Upload", 
-                "Upload and preview your e-commerce CSV files with instant validation",
-                "cyan"
-            ), unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(create_feature_card(
-                "🧹", "Data Rescue", 
-                "Detect & auto-fix 15+ types of data quality issues",
-                "blue"
-            ), unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(create_feature_card(
-                "🎯", "Simulator", 
-                "Run what-if scenarios and forecast campaign ROI",
-                "purple"
-            ), unsafe_allow_html=True)
-        
-        with col4:
-            st.markdown(create_feature_card(
-                "📊", "Analytics", 
-                "Interactive dashboards with real-time KPI tracking",
-                "pink"
-            ), unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # ===== CAPABILITIES SECTION =====
-        st.markdown('<p class="section-title section-title-teal">🔥 What You Can Do</p>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            <div class="info-card">
-                <h4 style="color: #06b6d4; margin-top: 0; font-size: 1.1rem;">🧹 Data Cleaning Capabilities</h4>
-                <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
-                    <li>Missing value detection & imputation</li>
-                    <li>Duplicate record removal</li>
-                    <li>Outlier detection & capping</li>
-                    <li>Format standardization</li>
-                    <li>Foreign key validation</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            <div class="info-card" style="border-left-color: #8b5cf6;">
-                <h4 style="color: #8b5cf6; margin-top: 0; font-size: 1.1rem;">🎯 Simulation Features</h4>
-                <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
-                    <li>Discount impact modeling</li>
-                    <li>Category elasticity analysis</li>
-                    <li>Channel performance comparison</li>
-                    <li>ROI & margin forecasting</li>
-                    <li>Risk warning system</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+            line-height: 1.2;
+        ">UAE Pulse Simulator</div>
+        <p style="color: #94a3b8; font-size: 1.15rem; margin: 0; line-height: 1.6;">
+            Transform your e-commerce data into actionable insights.<br>
+            Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    else:
-        # ===== DATA LOADED - SHOW KPI DASHBOARD =====
-        sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
-        products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
-        stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
-        
-        # ===== BIG STYLED TITLE (AFTER DATA LOADED) =====
+    # ===== FEATURE CARDS =====
+    st.markdown('<p class="section-title section-title-purple">✨ Powerful Features</p>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(create_feature_card(
+            "📂", "Data Upload", 
+            "Upload and preview your e-commerce CSV files with instant validation",
+            "cyan"
+        ), unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(create_feature_card(
+            "🧹", "Data Rescue", 
+            "Detect & auto-fix 15+ types of data quality issues",
+            "blue"
+        ), unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(create_feature_card(
+            "🎯", "Simulator", 
+            "Run what-if scenarios and forecast campaign ROI",
+            "purple"
+        ), unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(create_feature_card(
+            "📊", "Analytics", 
+            "Interactive dashboards with real-time KPI tracking",
+            "pink"
+        ), unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ===== CAPABILITIES SECTION =====
+    st.markdown('<p class="section-title section-title-teal">🔥 What You Can Do</p>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
         st.markdown("""
-        <div style="text-align: center; margin-bottom: 40px; padding: 20px 0;">
-            <div style="font-size: 48px; margin-bottom: 10px;">🛒</div>
-            <div style="
-                font-size: 56px;
-                font-weight: 800;
-                background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                margin-bottom: 15px;
-                line-height: 1.2;
-            ">UAE Pulse Simulator</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin: 0;">Data Rescue + Campaign Simulation Dashboard</p>
+        <div class="info-card">
+            <h4 style="color: #06b6d4; margin-top: 0; font-size: 1.1rem;">🧹 Data Cleaning Capabilities</h4>
+            <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
+                <li>Missing value detection & imputation</li>
+                <li>Duplicate record removal</li>
+                <li>Outlier detection & capping</li>
+                <li>Format standardization</li>
+                <li>Foreign key validation</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Initialize simulator
-        sim = Simulator()
-        
-        # Calculate KPIs
-        kpis = sim.calculate_overall_kpis(sales_df, products_df)
-        
-        st.markdown('<p class="section-title section-title-cyan">📈 Key Performance Indicators</p>', unsafe_allow_html=True)
-        
-        # ===== KPI CARDS ROW 1 =====
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(create_metric_card(
-                "Total Revenue", 
-                f"AED {kpis['total_revenue']:,.0f}",
-                color="cyan"
-            ), unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(create_metric_card(
-                "Total Orders", 
-                f"{kpis['total_orders']:,}",
-                color="blue"
-            ), unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(create_metric_card(
-                "Avg Order Value", 
-                f"AED {kpis['avg_order_value']:,.2f}",
-                color="purple"
-            ), unsafe_allow_html=True)
-        
-        with col4:
-            st.markdown(create_metric_card(
-                "Profit Margin", 
-                f"{kpis['profit_margin_pct']:.1f}%",
-                color="green"
-            ), unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # ===== KPI CARDS ROW 2 =====
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(create_metric_card(
-                "Total Profit", 
-                f"AED {kpis['total_profit']:,.0f}",
-                color="teal"
-            ), unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(create_metric_card(
-                "Total Units", 
-                f"{kpis['total_units']:,.0f}",
-                color="orange"
-            ), unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(create_metric_card(
-                "Return Rate", 
-                f"{kpis['return_rate_pct']:.1f}%",
-                color="pink"
-            ), unsafe_allow_html=True)
-        
-        with col4:
-            st.markdown(create_metric_card(
-                "Avg Discount", 
-                f"{kpis['avg_discount_pct']:.1f}%",
-                color="blue"
-            ), unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # ===== CHARTS =====
-        st.markdown('<p class="section-title section-title-blue">📊 Quick Overview</p>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
-        channel_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'channel')
-        
-        with col1:
-            if len(city_kpis) > 0:
-                fig = px.pie(
-                    city_kpis, 
-                    values='revenue', 
-                    names='city',
-                    title='Revenue by City',
-                    color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6'],
-                    hole=0.45
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_traces(textposition='outside', textinfo='percent+label', textfont_size=14)
-                st.plotly_chart(fig, width='stretch')
-        
-        with col2:
-            if len(channel_kpis) > 0:
-                fig = px.bar(
-                    channel_kpis,
-                    x='channel',
-                    y='revenue',
-                    title='Revenue by Channel',
-                    color='channel',
-                    color_discrete_sequence=['#10b981', '#f59e0b', '#ec4899']
-                )
-                fig = style_plotly_chart(fig)
-                fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, width='stretch')
-        
-        # ===== BUSINESS INSIGHTS =====
-        st.markdown("---")
-        st.markdown('<p class="section-title section-title-purple">💡 Key Business Insights</p>', unsafe_allow_html=True)
-        
-        insights = generate_insights(kpis, city_kpis, channel_kpis)
-        
-        for title, text in insights:
-            st.markdown(create_insight_card(title, text), unsafe_allow_html=True)
-        
-        # ===== STATUS CARDS =====
-        st.markdown("---")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.session_state.is_cleaned:
-                st.markdown(create_success_card("Data has been cleaned and validated. Ready for simulation!"), unsafe_allow_html=True)
-            else:
-                st.markdown(create_warning_card("Data not yet cleaned. Go to 🧹 Cleaner to validate and fix issues."), unsafe_allow_html=True)
-        
-        with col2:
-            source = "Cleaned Data ✨" if st.session_state.is_cleaned else "Raw Data 📥"
-            st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="info-card" style="border-left-color: #8b5cf6;">
+            <h4 style="color: #8b5cf6; margin-top: 0; font-size: 1.1rem;">🎯 Simulation Features</h4>
+            <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
+                <li>Discount impact modeling</li>
+                <li>Category elasticity analysis</li>
+                <li>Channel performance comparison</li>
+                <li>ROI & margin forecasting</li>
+                <li>Risk warning system</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ===== QUICK START GUIDE =====
+    st.markdown('<p class="section-title section-title-blue">🚀 Quick Start Guide</p>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown("""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">1️⃣</div>
+            <div style="color: #06b6d4; font-weight: 600; margin-bottom: 5px;">Load Data</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Go to 📂 Data page and upload your files or load sample data</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">2️⃣</div>
+            <div style="color: #3b82f6; font-weight: 600; margin-bottom: 5px;">Clean Data</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Go to 🧹 Cleaner to detect and fix data issues</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">3️⃣</div>
+            <div style="color: #8b5cf6; font-weight: 600; margin-bottom: 5px;">View Insights</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Check 👔 Executive or 📋 Manager views for KPIs</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("""
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">4️⃣</div>
+            <div style="color: #ec4899; font-weight: 600; margin-bottom: 5px;">Simulate</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Go to 🎯 Simulator to run what-if campaigns</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ===== DATA STATUS =====
+    if st.session_state.data_loaded:
+        st.markdown(create_success_card("✅ Data is loaded! Go to 👔 Executive View to see your KPIs."), unsafe_allow_html=True)
+    else:
+        st.markdown(create_info_card("💡 Start by loading data. Go to 📂 Data page."), unsafe_allow_html=True)
     
     show_footer()
 # ============================================================================
