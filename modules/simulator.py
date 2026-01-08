@@ -305,7 +305,7 @@ class Simulator:
                 merged['date'] = pd.to_datetime(merged[date_col], errors='coerce').dt.date
             else:
                 # No date column found - create dummy dates
-                merged['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(merged), freq='H').date
+                merged['date'] = pd.date_range(end=pd.Timestamp.today(), periods=len(merged), freq='h').date
             
             merged = merged.dropna(subset=['date'])
             
