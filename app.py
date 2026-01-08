@@ -897,6 +897,99 @@ with st.sidebar:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+def validate_file_columns(df, file_type):
+    """Validate that uploaded file has required columns for its type."""
+    
+    required_columns = {
+        'products': {
+            'must_have': ['sku'],
+            'should_have': ['product_name', 'category', 'cost', 'price'],
+            'alternate_names': {
+                'sku': ['sku', 'SKU', 'product_id', 'ProductID', 'product_sku'],
+                'product_name': ['product_name', 'name', 'product', 'ProductName'],
+                'category': ['category', 'Category', 'product_category', 'cat'],
+                'cost': ['cost', 'cost_aed', 'Cost', 'unit_cost'],
+                'price': ['price', 'selling_price', 'selling_price_aed', 'Price', 'unit_price']
+            }
+        },
+        'stores': {
+            'must_have': ['store_id'],
+            'should_have': ['city', 'channel'],
+            'alternate_names': {
+                'store_id': ['store_id', 'StoreID', 'store', 'Store'],
+                'city': ['city', 'City', 'location', 'store_city'],
+                'channel': ['channel', 'Channel', 'sales_channel', 'store_channel']
+            }
+        },
+        'sales': {
+            'must_have': ['sku', 'store_id'],
+            'should_have': ['date', 'qty', 'revenue'],
+            'alternate_names': {
+                'sku': ['sku', 'SKU', 'product_id', 'ProductID'],
+                'store_id': ['store_id', 'StoreID', 'store', 'Store'],
+                'date': ['date', 'Date', 'transaction_date', 'sale_date', 'order_date'],
+                'qty': ['qty', 'quantity', 'Qty', 'Quantity', 'units'],
+                'revenue': ['revenue', 'Revenue', 'sales', 'total', 'amount']
+            }
+        },
+        'inventory': {
+            'must_have': ['sku', 'store_id'],
+            'should_have': ['stock_on_hand'],
+            'alternate_names': {
+                'sku': ['sku', 'SKU', 'product_id', 'ProductID'],
+                'store_id': ['store_id', 'StoreID', 'store', 'Store'],
+                'stock_on_hand': ['stock_on_hand', 'stock', 'inventory', 'qty', 'quantity', 'on_hand']
+            }
+        }
+    }
+    
+    if file_type not in required_columns:
+        return True, "Unknown file type", []
+    
+    config = required_columns[file_type]
+    df_columns = [col.lower().strip() for col in df.columns]
+    df_columns_original = list(df.columns)
+    
+    missing_must_have = []
+    found_columns = []
+    
+    # Check must-have columns
+    for col in config['must_have']:
+        alternates = config['alternate_names'].get(col, [col])
+        found = False
+        for alt in alternates:
+            if alt.lower() in df_columns:
+                found = True
+                found_columns.append(alt)
+                break
+        if not found:
+            missing_must_have.append(col)
+    
+    # Check should-have columns (for better confidence)
+    should_have_found = 0
+    for col in config['should_have']:
+        alternates = config['alternate_names'].get(col, [col])
+        for alt in alternates:
+            if alt.lower() in df_columns:
+                should_have_found += 1
+                found_columns.append(alt)
+                break
+    
+    # Validation result
+    if len(missing_must_have) > 0:
+        return False, f"Missing required columns: {', '.join(missing_must_have)}", found_columns
+    
+    # Check if at least some expected columns exist
+    total_expected = len(config['must_have']) + len(config['should_have'])
+    total_found = len(config['must_have']) - len(missing_must_have) + should_have_found
+    confidence = total_found / total_expected * 100
+    
+    if confidence < 40:
+        return False, f"This doesn't look like a {file_type} file. Only {confidence:.0f}% columns match.", found_columns
+    
+    return True, f"Valid {file_type} file ({confidence:.0f}% confidence)", found_columns
+    
 # ============================================================================
 # PAGE: HOME
 # ============================================================================
