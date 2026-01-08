@@ -363,7 +363,7 @@ class DataCleaner:
         
         return df, report
     
-    def clean_all_dataframes(self, products_df, stores_df, sales_df, inventory_df):
+    def clean_all(self, products_df, stores_df, sales_df, inventory_df):
         """Clean all DataFrames and return cleaned versions with reports."""
         all_reports = {}
         
