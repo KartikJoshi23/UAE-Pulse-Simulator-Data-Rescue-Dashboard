@@ -764,7 +764,7 @@ with st.sidebar:
     
     page = st.radio(
         "Navigate",
-        ["🏠 Home", "📂 Data", "🧹 Cleaner", "🎯 Simulator", "📊 Analytics"],
+        ["🏠 Home", "📂 Data", "🧹 Cleaner", "👔 Executive", "📋 Manager", "🎯 Simulator", "📊 Analytics"],
         label_visibility="collapsed"
     )
     
@@ -2247,6 +2247,10 @@ elif page == "📂 Data":
     show_data_page()
 elif page == "🧹 Cleaner":
     show_cleaner_page()
+elif page == "👔 Executive":
+    show_executive_page()
+elif page == "📋 Manager":
+    show_manager_page()
 elif page == "🎯 Simulator":
     show_simulator_page()
 elif page == "📊 Analytics":
