@@ -601,39 +601,63 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
         {delta_html}
     </div>
     """
-
 def create_feature_card(icon, title, description, color="cyan"):
-    """Create a feature card with uniform size and hover effect."""
+    """Create a styled feature card with border effect and hover."""
     colors = {
-        "cyan": "#06b6d4",
-        "blue": "#3b82f6", 
-        "purple": "#8b5cf6",
-        "pink": "#ec4899",
-        "green": "#10b981",
-        "orange": "#f59e0b",
-        "teal": "#14b8a6"
+        "cyan": ("#06b6d4", "#0891b2"),
+        "blue": ("#3b82f6", "#2563eb"),
+        "purple": ("#8b5cf6", "#7c3aed"),
+        "pink": ("#ec4899", "#db2777"),
+        "green": ("#10b981", "#059669"),
+        "orange": ("#f59e0b", "#d97706"),
+        "teal": ("#14b8a6", "#0d9488"),
     }
-    accent = colors.get(color, "#06b6d4")
+    primary, secondary = colors.get(color, colors["cyan"])
     
     return f"""
     <div style="
-        background: linear-gradient(145deg, #16161f 0%, #1a1a24 100%);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
         border-radius: 16px;
-        padding: 30px 20px;
-        border: 1px solid #2d2d3a;
+        padding: 30px 24px;
         text-align: center;
-        height: 220px;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        border-left: 4px solid {primary};
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        min-height: 200px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    " onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='{accent}'; this.style.boxShadow='0 12px 30px rgba(6,182,212,0.2)';" 
-       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='#2d2d3a'; this.style.boxShadow='none';">
-        <div style="font-size: 48px; margin-bottom: 15px;">{icon}</div>
-        <div style="color: {accent}; font-size: 1.1rem; font-weight: 600; margin-bottom: 10px;">{title}</div>
-        <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.5;">{description}</div>
+    "
+    onmouseover="
+        this.style.transform='translateY(-5px)';
+        this.style.boxShadow='0 20px 40px rgba(0,0,0,0.3), 0 0 30px {primary}33';
+        this.style.borderLeftColor='{secondary}';
+    "
+    onmouseout="
+        this.style.transform='translateY(0)';
+        this.style.boxShadow='none';
+        this.style.borderLeftColor='{primary}';
+    ">
+        <div style="
+            font-size: 48px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        ">{icon}</div>
+        <div style="
+            color: {primary};
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        ">{title}</div>
+        <div style="
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        ">{description}</div>
     </div>
     """
 
