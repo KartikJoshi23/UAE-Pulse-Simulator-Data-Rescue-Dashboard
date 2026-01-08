@@ -1,482 +1,385 @@
-# ============================================================================
-# UAE Pulse Simulator + Data Rescue Dashboard
-# Data Cleaner Module
-# ============================================================================
+"""
+Data Cleaner Module for UAE Pulse Dashboard
+Handles data cleaning, validation, and multi-language text standardization
+"""
 
 import pandas as pd
 import numpy as np
-from .utils import CONFIG
+import json
+import os
+import re
+from difflib import SequenceMatcher
 
-# ============================================================================
-# DATA CLEANER CLASS
-# ============================================================================
 
 class DataCleaner:
-    """
-    Data validation and cleaning class.
-    Detects 15+ types of dirty data issues and fixes them.
-    """
+    """Data cleaning and validation for UAE e-commerce data."""
     
     def __init__(self):
-        """Initialize the cleaner with configuration."""
-        self.config = CONFIG
-        self.issues = []
-        self.stats = {
-            'products': {'before': 0, 'after': 0, 'issues': 0},
-            'stores': {'before': 0, 'after': 0, 'issues': 0},
-            'sales': {'before': 0, 'after': 0, 'issues': 0},
-            'inventory': {'before': 0, 'after': 0, 'issues': 0}
+        """Initialize the DataCleaner with config."""
+        self.config_path = 'config/text_mappings.json'
+        self.mappings = self.load_mappings()
+        self.fuzzy_threshold = 0.85
+        self.cleaning_report = {}
+    
+    def load_mappings(self):
+        """Load mappings from JSON config file."""
+        default_mappings = {
+            "cities": {},
+            "channels": {},
+            "categories": {},
+            "standard_values": {
+                "cities": ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"],
+                "channels": ["Online", "Offline", "Store", "Website", "Mobile", "Marketplace"],
+                "categories": ["Electronics", "Fashion", "Grocery", "Beauty", "Home", "Sports", "Toys", "Books"]
+            }
         }
+        
+        try:
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            print(f"Error loading mappings: {e}")
+        
+        return default_mappings
     
-    def log_issue(self, record_id, table, column, issue_type, issue_detail, 
-                  original_value, action_taken, new_value=None):
-        """Log a single issue to the issues list."""
-        self.issues.append({
-            'record_identifier': str(record_id),
-            'table': table,
-            'column': column,
-            'issue_type': issue_type,
-            'issue_detail': issue_detail,
-            'original_value': str(original_value),
-            'action_taken': action_taken,
-            'new_value': str(new_value) if new_value is not None else ''
-        })
+    def save_mappings(self):
+        """Save current mappings to JSON config file."""
+        try:
+            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                json.dump(self.mappings, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            print(f"Error saving mappings: {e}")
+            return False
     
-    def get_issues_df(self):
-        """Return issues as DataFrame."""
-        return pd.DataFrame(self.issues)
+    def add_mapping(self, category, original, standard):
+        """Add a new mapping dynamically."""
+        if category in self.mappings:
+            self.mappings[category][original] = standard
+            self.save_mappings()
+            return True
+        return False
     
-    def get_issues_summary(self):
-        """Get summary of issues by type."""
-        if len(self.issues) == 0:
-            return {}
-        df = pd.DataFrame(self.issues)
-        return df['issue_type'].value_counts().to_dict()
+    def has_non_english(self, text):
+        """Check if text contains non-English/non-ASCII characters."""
+        if pd.isna(text):
+            return False
+        return bool(re.search(r'[^\x00-\x7F]', str(text)))
     
-    # ========================================================================
-    # VALIDATION FUNCTIONS (Detect Issues)
-    # ========================================================================
-    
-    def detect_nulls(self, df, column):
-        """Detect NULL/NaN values in a column."""
-        null_mask = df[column].isna()
-        return df[null_mask].index.tolist()
-    
-    def detect_null_representations(self, df, column):
-        """Detect string representations of null: 'N/A', 'null', '-', etc."""
-        if df[column].dtype != 'object':
-            return []
-        null_reprs = self.config['null_representations']
-        mask = df[column].isin(null_reprs)
-        return df[mask].index.tolist()
-    
-    def detect_duplicates(self, df, column):
-        """Detect duplicate values in a column."""
-        duplicate_mask = df[column].duplicated(keep='first')
-        return df[duplicate_mask].index.tolist()
-    
-    def detect_invalid_values(self, df, column, valid_list):
-        """Detect values not in the valid list."""
-        invalid_mask = ~df[column].isin(valid_list) & df[column].notna()
-        return [(idx, df.loc[idx, column]) for idx in df[invalid_mask].index]
-    
-    def detect_whitespace(self, df, column):
-        """Detect leading/trailing whitespace in string column."""
-        if df[column].dtype != 'object':
-            return []
+    def fuzzy_match(self, value, standard_values, threshold=None):
+        """Find the best fuzzy match from standard values."""
+        if threshold is None:
+            threshold = self.fuzzy_threshold
         
-        def has_whitespace(val):
-            if pd.isna(val):
-                return False
-            return str(val) != str(val).strip()
+        if pd.isna(value):
+            return None, 0
         
-        mask = df[column].apply(has_whitespace)
-        return df[mask].index.tolist()
-    
-    def detect_negative_values(self, df, column):
-        """Detect negative values where they shouldn't exist."""
-        if not pd.api.types.is_numeric_dtype(df[column]):
-            return []
-        mask = df[column] < 0
-        return [(idx, df.loc[idx, column]) for idx in df[mask].index]
-    
-    def detect_outliers(self, df, column, max_normal=None, multiplier=None):
-        """Detect outlier values using threshold or multiplier method."""
-        if not pd.api.types.is_numeric_dtype(df[column]):
-            return []
+        str_value = str(value).strip().lower()
+        best_match = None
+        best_score = 0
         
-        if max_normal is not None:
-            mask = df[column] > max_normal
-        elif multiplier is not None:
-            median_val = df[column].median()
-            threshold = median_val * multiplier
-            mask = df[column] > threshold
-        else:
-            return []
-        
-        return [(idx, df.loc[idx, column]) for idx in df[mask].index]
-    
-    # ========================================================================
-    # CLEANING FUNCTIONS (Fix Issues)
-    # ========================================================================
-    
-    def clean_whitespace(self, df, column, table_name):
-        """Strip leading/trailing whitespace from string column."""
-        if df[column].dtype != 'object':
-            return 0
-        
-        count = 0
-        for idx, val in df[column].items():
-            if pd.isna(val):
-                continue
-            stripped = str(val).strip()
-            if str(val) != stripped:
-                self.log_issue(idx, table_name, column, 'WHITESPACE',
-                              'Leading/trailing whitespace', f'"{val}"',
-                              'Stripped whitespace', stripped)
-                df.loc[idx, column] = stripped
-                count += 1
-        return count
-    
-    def clean_with_mapping(self, df, column, mapping_dict, table_name):
-        """Fix invalid values using a mapping dictionary."""
-        count = 0
-        for idx, val in df[column].items():
-            if pd.isna(val):
-                continue
-            val_stripped = str(val).strip()
-            if val_stripped in mapping_dict:
-                new_val = mapping_dict[val_stripped]
-                self.log_issue(idx, table_name, column, 'INVALID_VALUE',
-                              'Non-standard value mapped', val,
-                              'Mapped to standard value', new_val)
-                df.loc[idx, column] = new_val
-                count += 1
-        return count
-    
-    def clean_nulls_with_value(self, df, column, fill_value, table_name):
-        """Replace NULL/NaN values with a specified value."""
-        null_mask = df[column].isna()
-        null_count = null_mask.sum()
-        
-        if null_count > 0:
-            for idx in df[null_mask].index:
-                self.log_issue(idx, table_name, column, 'MISSING_VALUE',
-                              f'Null value in {column}', 'NULL',
-                              f'Imputed with {fill_value}', fill_value)
-            df.loc[null_mask, column] = fill_value
-        return null_count
-    
-    def clean_nulls_with_median(self, df, column, table_name):
-        """Replace NULL/NaN values with column median."""
-        null_mask = df[column].isna()
-        null_count = null_mask.sum()
-        
-        if null_count > 0:
-            median_val = df[column].median()
-            for idx in df[null_mask].index:
-                self.log_issue(idx, table_name, column, 'MISSING_VALUE',
-                              f'Null value in {column}', 'NULL',
-                              f'Imputed with median ({median_val:.2f})', median_val)
-            df.loc[null_mask, column] = median_val
-        return null_count
-    
-    def clean_duplicates(self, df, column, table_name):
-        """Remove duplicate rows based on column (keep first)."""
-        duplicate_mask = df[column].duplicated(keep='first')
-        duplicate_count = duplicate_mask.sum()
-        
-        if duplicate_count > 0:
-            for idx in df[duplicate_mask].index:
-                self.log_issue(idx, table_name, column, 'DUPLICATE_VALUE',
-                              f'Duplicate {column}', df.loc[idx, column],
-                              'Row removed (kept first occurrence)', '')
-            df = df[~duplicate_mask].reset_index(drop=True)
-        return df, duplicate_count
-    
-    def clean_negative_values(self, df, column, table_name):
-        """Floor negative values at 0."""
-        if not pd.api.types.is_numeric_dtype(df[column]):
-            return 0
-        
-        mask = df[column] < 0
-        count = mask.sum()
-        
-        if count > 0:
-            for idx in df[mask].index:
-                self.log_issue(idx, table_name, column, 'NEGATIVE_VALUE',
-                              'Negative value not allowed', df.loc[idx, column],
-                              'Floored to 0', 0)
-            df.loc[mask, column] = 0
-        return count
-    
-    def clean_outliers_cap(self, df, column, max_value, table_name):
-        """Cap outlier values at maximum threshold."""
-        if not pd.api.types.is_numeric_dtype(df[column]):
-            return 0
-        
-        mask = df[column] > max_value
-        count = mask.sum()
-        
-        if count > 0:
-            for idx in df[mask].index:
-                self.log_issue(idx, table_name, column, 'OUTLIER_VALUE',
-                              f'Value exceeds threshold {max_value}', df.loc[idx, column],
-                              f'Capped at {max_value}', max_value)
-            df.loc[mask, column] = max_value
-        return count
-    
-    def clean_mixed_case(self, df, column, valid_values, table_name):
-        """Standardize case of values to match valid values list."""
-        if df[column].dtype != 'object':
-            return 0
-        
-        valid_lower_map = {v.lower(): v for v in valid_values}
-        count = 0
-        
-        for idx, val in df[column].items():
-            if pd.isna(val):
-                continue
-            val_str = str(val).strip()
-            val_lower = val_str.lower()
-            if val_lower in valid_lower_map and val_str != valid_lower_map[val_lower]:
-                correct_val = valid_lower_map[val_lower]
-                self.log_issue(idx, table_name, column, 'MIXED_CASE',
-                              'Inconsistent case', val,
-                              'Standardized case', correct_val)
-                df.loc[idx, column] = correct_val
-                count += 1
-        return count
-    
-    def clean_boolean_strings(self, df, column, table_name):
-        """Convert string boolean representations to actual booleans."""
-        true_vals = self.config['true_values']
-        false_vals = self.config['false_values']
-        count = 0
-        
-        for idx, val in df[column].items():
-            if pd.isna(val):
-                continue
-            if isinstance(val, str):
-                if val in true_vals:
-                    self.log_issue(idx, table_name, column, 'BOOLEAN_AS_STRING',
-                                  'Boolean stored as string', val,
-                                  'Converted to boolean', True)
-                    df.loc[idx, column] = True
-                    count += 1
-                elif val in false_vals:
-                    self.log_issue(idx, table_name, column, 'BOOLEAN_AS_STRING',
-                                  'Boolean stored as string', val,
-                                  'Converted to boolean', False)
-                    df.loc[idx, column] = False
-                    count += 1
-        return count
-    
-    def clean_fk_violations(self, df, column, valid_keys, table_name):
-        """Remove rows with invalid foreign key references."""
-        invalid_mask = ~df[column].isin(valid_keys) & df[column].notna()
-        invalid_count = invalid_mask.sum()
-        
-        if invalid_count > 0:
-            for idx in df[invalid_mask].index:
-                self.log_issue(idx, table_name, column, 'FK_VIOLATION',
-                              f'Invalid reference not in parent table', df.loc[idx, column],
-                              'Row removed', '')
-            df = df[~invalid_mask].reset_index(drop=True)
-        return df, invalid_count
-    
-    def clean_invalid_timestamps(self, df, column, table_name):
-        """Remove rows with invalid timestamps."""
-        invalid_indices = []
-        
-        for idx, val in df[column].items():
-            if pd.isna(val):
-                continue
-            try:
-                pd.to_datetime(val)
-            except:
-                invalid_indices.append(idx)
-                self.log_issue(idx, table_name, column, 'INVALID_TIMESTAMP',
-                              'Cannot parse timestamp', val,
-                              'Row removed', '')
-        
-        if len(invalid_indices) > 0:
-            df = df.drop(invalid_indices).reset_index(drop=True)
-        return df, len(invalid_indices)
-    
-    # ========================================================================
-    # TABLE-LEVEL CLEANING FUNCTIONS
-    # ========================================================================
-    
-    def clean_products(self, df):
-        """Clean the products table."""
-        self.stats['products']['before'] = len(df)
-        df = df.copy()
-        
-        # Clean whitespace
-        for col in ['brand', 'category', 'launch_flag']:
-            if col in df.columns:
-                self.clean_whitespace(df, col, 'products')
-        
-        # Clean missing unit_cost_aed with category median
-        if 'unit_cost_aed' in df.columns and df['unit_cost_aed'].isna().sum() > 0:
-            for idx in df[df['unit_cost_aed'].isna()].index:
-                category = df.loc[idx, 'category']
-                category_costs = df[(df['category'] == category) & (df['unit_cost_aed'].notna())]['unit_cost_aed']
-                
-                if len(category_costs) > 0:
-                    median_cost = category_costs.median()
-                else:
-                    median_cost = df.loc[idx, 'base_price_aed'] * 0.5 if 'base_price_aed' in df.columns else 50
-                
-                self.log_issue(df.loc[idx, 'product_id'] if 'product_id' in df.columns else idx,
-                              'products', 'unit_cost_aed', 'MISSING_VALUE',
-                              f'Missing unit cost for {category} product', 'NULL',
-                              'Imputed with category median', round(median_cost, 2))
-                df.loc[idx, 'unit_cost_aed'] = round(median_cost, 2)
-        
-        # Remove duplicates
-        if 'product_id' in df.columns:
-            df, _ = self.clean_duplicates(df, 'product_id', 'products')
-        
-        self.stats['products']['after'] = len(df)
-        self.stats['products']['issues'] = len([i for i in self.issues if i['table'] == 'products'])
-        return df
-    
-    def clean_stores(self, df):
-        """Clean the stores table."""
-        self.stats['stores']['before'] = len(df)
-        df = df.copy()
-        
-        # Clean whitespace
-        for col in ['city', 'channel', 'fulfillment_type']:
-            if col in df.columns:
-                self.clean_whitespace(df, col, 'stores')
-        
-        # Clean city names using mapping
-        if 'city' in df.columns:
-            self.clean_with_mapping(df, 'city', self.config['city_mapping'], 'stores')
-        
-        # Clean mixed case in channel and fulfillment_type
-        if 'channel' in df.columns:
-            self.clean_mixed_case(df, 'channel', self.config['valid_channels'], 'stores')
-        if 'fulfillment_type' in df.columns:
-            self.clean_mixed_case(df, 'fulfillment_type', self.config['valid_fulfillment_types'], 'stores')
-        
-        # Remove duplicates
-        if 'store_id' in df.columns:
-            df, _ = self.clean_duplicates(df, 'store_id', 'stores')
-        
-        self.stats['stores']['after'] = len(df)
-        self.stats['stores']['issues'] = len([i for i in self.issues if i['table'] == 'stores'])
-        return df
-    
-    def clean_sales(self, df, valid_product_ids=None, valid_store_ids=None):
-        """Clean the sales table."""
-        self.stats['sales']['before'] = len(df)
-        df = df.copy()
-        
-        # Remove duplicate order_ids
-        if 'order_id' in df.columns:
-            df, _ = self.clean_duplicates(df, 'order_id', 'sales')
-        
-        # Clean invalid timestamps
-        if 'order_time' in df.columns:
-            df, _ = self.clean_invalid_timestamps(df, 'order_time', 'sales')
-            # Standardize date format
-            df['order_time'] = pd.to_datetime(df['order_time'], errors='coerce')
-            df = df.dropna(subset=['order_time'])
-            df['order_time'] = df['order_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
-        
-        # Clean discount_pct
-        if 'discount_pct' in df.columns:
-            # Convert null representations
-            null_reprs = self.config['null_representations']
-            for idx, val in df['discount_pct'].items():
-                if pd.notna(val) and str(val).strip() in null_reprs:
-                    self.log_issue(idx, 'sales', 'discount_pct', 'NULL_REPRESENTATION',
-                                  'String null representation', val,
-                                  'Replaced with 0', 0)
-                    df.loc[idx, 'discount_pct'] = np.nan
+        for standard in standard_values:
+            if str_value == standard.lower():
+                return standard, 1.0
             
-            # Fill missing with 0
-            self.clean_nulls_with_value(df, 'discount_pct', 0, 'sales')
-            df['discount_pct'] = pd.to_numeric(df['discount_pct'], errors='coerce').fillna(0)
+            score = SequenceMatcher(None, str_value, standard.lower()).ratio()
+            if score > best_score and score >= threshold:
+                best_score = score
+                best_match = standard
         
-        # Clean outlier quantities
-        if 'qty' in df.columns:
-            self.clean_outliers_cap(df, 'qty', self.config['qty_max_normal'], 'sales')
-        
-        # Clean outlier prices
-        if 'selling_price_aed' in df.columns:
-            median_price = df['selling_price_aed'].median()
-            threshold = median_price * self.config['price_outlier_multiplier']
-            self.clean_outliers_cap(df, 'selling_price_aed', threshold, 'sales')
-        
-        # Clean payment_status case
-        if 'payment_status' in df.columns:
-            self.clean_mixed_case(df, 'payment_status', self.config['valid_payment_statuses'], 'sales')
-        
-        # Clean return_flag boolean strings
-        if 'return_flag' in df.columns:
-            self.clean_boolean_strings(df, 'return_flag', 'sales')
-            # Ensure all values are boolean
-            df['return_flag'] = df['return_flag'].apply(
-                lambda x: True if x in [True, 'True', 'true', 1] else False if pd.notna(x) else False
-            )
-        
-        # Clean FK violations
-        if valid_product_ids is not None and 'product_id' in df.columns:
-            df, _ = self.clean_fk_violations(df, 'product_id', valid_product_ids, 'sales')
-        if valid_store_ids is not None and 'store_id' in df.columns:
-            df, _ = self.clean_fk_violations(df, 'store_id', valid_store_ids, 'sales')
-        
-        self.stats['sales']['after'] = len(df)
-        self.stats['sales']['issues'] = len([i for i in self.issues if i['table'] == 'sales'])
-        return df
+        return best_match, best_score
     
-    def clean_inventory(self, df, valid_product_ids=None, valid_store_ids=None):
-        """Clean the inventory table."""
-        self.stats['inventory']['before'] = len(df)
-        df = df.copy()
+    def standardize_value(self, value, mapping_type):
+        """Standardize a single value using mapping and fuzzy matching."""
+        if pd.isna(value):
+            return value, None, 'empty'
         
-        # Clean negative stock
-        if 'stock_on_hand' in df.columns:
-            self.clean_negative_values(df, 'stock_on_hand', 'inventory')
+        str_value = str(value).strip()
         
-        # Clean extreme stock
-        if 'stock_on_hand' in df.columns:
-            self.clean_outliers_cap(df, 'stock_on_hand', self.config['stock_max_normal'], 'inventory')
+        mapping_dict = self.mappings.get(mapping_type, {})
+        if str_value in mapping_dict:
+            return mapping_dict[str_value], str_value, 'mapped'
         
-        # Clean FK violations
-        if valid_product_ids is not None and 'product_id' in df.columns:
-            df, _ = self.clean_fk_violations(df, 'product_id', valid_product_ids, 'inventory')
-        if valid_store_ids is not None and 'store_id' in df.columns:
-            df, _ = self.clean_fk_violations(df, 'store_id', valid_store_ids, 'inventory')
+        for key, standard in mapping_dict.items():
+            if str_value.lower() == key.lower():
+                return standard, str_value, 'mapped'
         
-        # Standardize date format
-        if 'snapshot_date' in df.columns:
-            df['snapshot_date'] = pd.to_datetime(df['snapshot_date'], errors='coerce').dt.strftime('%Y-%m-%d')
+        standard_values = self.mappings.get('standard_values', {}).get(mapping_type, [])
+        match, score = self.fuzzy_match(str_value, standard_values)
         
-        self.stats['inventory']['after'] = len(df)
-        self.stats['inventory']['issues'] = len([i for i in self.issues if i['table'] == 'inventory'])
-        return df
+        if match:
+            return match, str_value, f'fuzzy ({score:.0%})'
+        
+        for standard in standard_values:
+            if str_value.lower() == standard.lower():
+                return standard, None, 'standard'
+        
+        return str_value, str_value, 'unknown'
     
-    def clean_all(self, products_df, stores_df, sales_df, inventory_df):
-        """Clean all tables and return cleaned versions."""
-        # Reset issues list
-        self.issues = []
+    def standardize_column_dynamic(self, df, column, mapping_type):
+        """Dynamically standardize a column with reporting."""
+        if column not in df.columns:
+            return df, {'changes': 0, 'mapped': [], 'fuzzy': [], 'unknown': []}
         
-        # Clean in order (products & stores first for FK validation)
-        clean_products = self.clean_products(products_df)
-        clean_stores = self.clean_stores(stores_df)
+        report = {
+            'changes': 0,
+            'mapped': [],
+            'fuzzy': [],
+            'unknown': []
+        }
         
-        # Get valid IDs for FK validation
-        valid_product_ids = set(clean_products['product_id'].tolist()) if 'product_id' in clean_products.columns else None
-        valid_store_ids = set(clean_stores['store_id'].tolist()) if 'store_id' in clean_stores.columns else None
+        new_values = []
         
-        # Clean sales and inventory
-        clean_sales = self.clean_sales(sales_df, valid_product_ids, valid_store_ids)
-        clean_inventory = self.clean_inventory(inventory_df, valid_product_ids, valid_store_ids)
+        for val in df[column]:
+            new_val, original, method = self.standardize_value(val, mapping_type)
+            new_values.append(new_val)
+            
+            if original:
+                if method == 'mapped':
+                    report['mapped'].append(f"'{original}' → '{new_val}'")
+                    report['changes'] += 1
+                elif method.startswith('fuzzy'):
+                    report['fuzzy'].append(f"'{original}' → '{new_val}' {method}")
+                    report['changes'] += 1
+                elif method == 'unknown':
+                    if self.has_non_english(original):
+                        report['unknown'].append(f"'{original}' (non-English)")
+                    else:
+                        report['unknown'].append(f"'{original}'")
         
-        return clean_products, clean_stores, clean_sales, clean_inventory
+        df[column] = new_values
+        
+        report['mapped'] = list(set(report['mapped']))
+        report['fuzzy'] = list(set(report['fuzzy']))
+        report['unknown'] = list(set(report['unknown']))
+        
+        return df, report
+    
+    def standardize_all_text(self, df):
+        """Dynamically standardize all text columns."""
+        full_report = {
+            'total_changes': 0,
+            'cities': None,
+            'channels': None,
+            'categories': None
+        }
+        
+        city_cols = ['city', 'City', 'store_city', 'location']
+        for col in city_cols:
+            if col in df.columns:
+                df, report = self.standardize_column_dynamic(df, col, 'cities')
+                full_report['cities'] = report
+                full_report['total_changes'] += report['changes']
+                break
+        
+        channel_cols = ['channel', 'Channel', 'sales_channel', 'store_channel']
+        for col in channel_cols:
+            if col in df.columns:
+                df, report = self.standardize_column_dynamic(df, col, 'channels')
+                full_report['channels'] = report
+                full_report['total_changes'] += report['changes']
+                break
+        
+        cat_cols = ['category', 'Category', 'product_category', 'cat']
+        for col in cat_cols:
+            if col in df.columns:
+                df, report = self.standardize_column_dynamic(df, col, 'categories')
+                full_report['categories'] = report
+                full_report['total_changes'] += report['changes']
+                break
+        
+        return df, full_report
+    
+    def detect_issues(self, df, df_name="DataFrame"):
+        """Detect all data quality issues in a DataFrame."""
+        issues = {
+            'missing_values': {},
+            'duplicates': 0,
+            'outliers': {},
+            'invalid_formats': {},
+            'negative_values': {},
+            'non_english': {}
+        }
+        
+        for col in df.columns:
+            missing = df[col].isna().sum()
+            if missing > 0:
+                issues['missing_values'][col] = int(missing)
+        
+        issues['duplicates'] = int(df.duplicated().sum())
+        
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        for col in numeric_cols:
+            q1 = df[col].quantile(0.25)
+            q3 = df[col].quantile(0.75)
+            iqr = q3 - q1
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+            outlier_count = ((df[col] < lower) | (df[col] > upper)).sum()
+            if outlier_count > 0:
+                issues['outliers'][col] = int(outlier_count)
+            
+            if col in ['qty', 'quantity', 'price', 'selling_price_aed', 'cost_aed', 'stock_on_hand']:
+                neg_count = (df[col] < 0).sum()
+                if neg_count > 0:
+                    issues['negative_values'][col] = int(neg_count)
+        
+        text_cols = df.select_dtypes(include=['object']).columns
+        for col in text_cols:
+            non_english_count = df[col].apply(self.has_non_english).sum()
+            if non_english_count > 0:
+                issues['non_english'][col] = int(non_english_count)
+        
+        return issues
+    
+    def clean_missing_values(self, df):
+        """Clean missing values based on column type."""
+        changes = 0
+        
+        for col in df.columns:
+            missing = df[col].isna().sum()
+            if missing > 0:
+                if df[col].dtype in ['float64', 'int64']:
+                    median_val = df[col].median()
+                    df[col] = df[col].fillna(median_val)
+                    changes += missing
+                elif df[col].dtype == 'object':
+                    mode_val = df[col].mode()
+                    if len(mode_val) > 0:
+                        df[col] = df[col].fillna(mode_val[0])
+                        changes += missing
+        
+        return df, changes
+    
+    def remove_duplicates(self, df):
+        """Remove duplicate rows."""
+        original_len = len(df)
+        df = df.drop_duplicates()
+        removed = original_len - len(df)
+        return df, removed
+    
+    def fix_outliers(self, df, method='cap'):
+        """Fix outliers using IQR method."""
+        changes = 0
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        
+        for col in numeric_cols:
+            q1 = df[col].quantile(0.25)
+            q3 = df[col].quantile(0.75)
+            iqr = q3 - q1
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+            
+            if method == 'cap':
+                outlier_mask = (df[col] < lower) | (df[col] > upper)
+                changes += outlier_mask.sum()
+                df[col] = df[col].clip(lower=lower, upper=upper)
+        
+        return df, changes
+    
+    def fix_negative_values(self, df):
+        """Fix negative values in columns that should be positive."""
+        changes = 0
+        positive_cols = ['qty', 'quantity', 'price', 'selling_price_aed', 'cost_aed', 'stock_on_hand', 'units']
+        
+        for col in positive_cols:
+            if col in df.columns:
+                neg_mask = df[col] < 0
+                neg_count = neg_mask.sum()
+                if neg_count > 0:
+                    df.loc[neg_mask, col] = df.loc[neg_mask, col].abs()
+                    changes += neg_count
+        
+        return df, changes
+    
+    def validate_foreign_keys(self, sales_df, products_df, stores_df):
+        """Validate foreign key relationships."""
+        issues = {
+            'invalid_skus': 0,
+            'invalid_stores': 0
+        }
+        
+        sku_col_sales = None
+        sku_col_products = None
+        store_col_sales = None
+        store_col_stores = None
+        
+        for col in ['sku', 'SKU', 'product_id', 'ProductID']:
+            if col in sales_df.columns:
+                sku_col_sales = col
+            if col in products_df.columns:
+                sku_col_products = col
+        
+        for col in ['store_id', 'StoreID', 'store']:
+            if col in sales_df.columns:
+                store_col_sales = col
+            if col in stores_df.columns:
+                store_col_stores = col
+        
+        if sku_col_sales and sku_col_products:
+            valid_skus = set(products_df[sku_col_products].unique())
+            invalid_mask = ~sales_df[sku_col_sales].isin(valid_skus)
+            issues['invalid_skus'] = int(invalid_mask.sum())
+        
+        if store_col_sales and store_col_stores:
+            valid_stores = set(stores_df[store_col_stores].unique())
+            invalid_mask = ~sales_df[store_col_sales].isin(valid_stores)
+            issues['invalid_stores'] = int(invalid_mask.sum())
+        
+        return issues
+    
+    def clean_dataframe(self, df, df_name="DataFrame"):
+        """Clean a single DataFrame with all cleaning operations."""
+        report = {
+            'name': df_name,
+            'original_rows': len(df),
+            'missing_fixed': 0,
+            'duplicates_removed': 0,
+            'outliers_fixed': 0,
+            'negatives_fixed': 0,
+            'text_standardized': 0,
+            'final_rows': 0
+        }
+        
+        df, missing_fixed = self.clean_missing_values(df)
+        report['missing_fixed'] = missing_fixed
+        
+        df, dups_removed = self.remove_duplicates(df)
+        report['duplicates_removed'] = dups_removed
+        
+        df, outliers_fixed = self.fix_outliers(df)
+        report['outliers_fixed'] = outliers_fixed
+        
+        df, negatives_fixed = self.fix_negative_values(df)
+        report['negatives_fixed'] = negatives_fixed
+        
+        df, text_report = self.standardize_all_text(df)
+        report['text_standardized'] = text_report['total_changes']
+        report['text_details'] = text_report
+        
+        report['final_rows'] = len(df)
+        
+        return df, report
+    
+    def clean_all_dataframes(self, products_df, stores_df, sales_df, inventory_df):
+        """Clean all DataFrames and return cleaned versions with reports."""
+        all_reports = {}
+        
+        clean_products, report = self.clean_dataframe(products_df.copy(), "Products")
+        all_reports['products'] = report
+        
+        clean_stores, report = self.clean_dataframe(stores_df.copy(), "Stores")
+        all_reports['stores'] = report
+        
+        clean_sales, report = self.clean_dataframe(sales_df.copy(), "Sales")
+        all_reports['sales'] = report
+        
+        clean_inventory, report = self.clean_dataframe(inventory_df.copy(), "Inventory")
+        all_reports['inventory'] = report
+        
+        fk_issues = self.validate_foreign_keys(clean_sales, clean_products, clean_stores)
+        all_reports['foreign_key_issues'] = fk_issues
+        
+        return clean_products, clean_stores, clean_sales, clean_inventory, all_reports
