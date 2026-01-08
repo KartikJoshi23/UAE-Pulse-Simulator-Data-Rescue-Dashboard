@@ -1991,21 +1991,20 @@ def show_cleaner_page():
             col1, col2 = st.columns(2)
             
             with col1:
-                issue_counts = issues_df.groupby('Issue Type')['Count'].sum().reset_index()
-                issue_counts.columns = ['Issue Type', 'Count']
+                issue_counts = issues_df.groupby('issue_type').size().reset_index(name='count')
                 
                 fig = px.bar(
                     issue_counts,
-                    x='Count',
-                    y='Issue Type',
+                    x='count',
+                    y='issue_type',
                     orientation='h',
                     title='Issues by Type',
-                    color='Count',
+                    color='count',
                     color_continuous_scale=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, width='stretch')
+                st.plotly_chart(fig, use_container_width=True)
             
             with col2:
                 table_counts = issues_df.groupby('DataFrame')['Count'].sum().reset_index()
