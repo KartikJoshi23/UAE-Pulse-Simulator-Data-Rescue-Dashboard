@@ -824,21 +824,25 @@ page = st.radio(
     
 st.markdown("---")
     
-    # Data Status
-    st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
+   )
     
-    data_loaded = st.session_state.data_loaded
-    data_cleaned = st.session_state.is_cleaned
-    
-    status_color_loaded = "#10b981" if data_loaded else "#ef4444"
-    status_color_cleaned = "#10b981" if data_cleaned else "#f59e0b" if data_loaded else "#ef4444"
-    
-    st.markdown(f"""
-    <div style="
-        background: linear-gradient(135deg, #16161f 0%, #1a1a24 100%);
-        border-radius: 12px;
-        padding: 15px;
-        border: 1px solid #2d2d3a;
+st.markdown("---")
+
+# Data Status
+st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
+
+data_loaded = st.session_state.data_loaded
+data_cleaned = st.session_state.is_cleaned
+
+status_color_loaded = "#10b981" if data_loaded else "#ef4444"
+status_color_cleaned = "#10b981" if data_cleaned else "#f59e0b" if data_loaded else "#ef4444"
+
+st.markdown(f"""
+<div style="
+    background: linear-gradient(135deg, #16161f 0%, #1a1a24 100%);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #2d2d3a;
     ">
         <div style="display: flex; align-items: center; margin: 8px 0;">
             <div style="
