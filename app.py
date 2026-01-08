@@ -1291,7 +1291,6 @@ def show_data_page():
 def show_cleaner_page():
     """Display the data cleaner page."""
     
-    # BIG PAGE TITLE
     st.markdown('<h1 class="page-title page-title-green">🧹 Data Rescue Center</h1>', unsafe_allow_html=True)
     st.markdown('<p class="page-description">Validate, detect issues, and clean your dirty data automatically</p>', unsafe_allow_html=True)
     
@@ -1302,7 +1301,6 @@ def show_cleaner_page():
         show_footer()
         return
     
-    # Issue types info
     st.markdown('<p class="section-title section-title-cyan">🔍 Issues We Detect & Fix</p>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
@@ -1313,9 +1311,9 @@ def show_cleaner_page():
             <strong style="color: #06b6d4; font-size: 1.1rem;">Data Quality</strong>
             <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Missing values</li>
-                <li>Null representations</li>
                 <li>Duplicate records</li>
                 <li>Whitespace issues</li>
+                <li>Text standardization</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -1325,10 +1323,10 @@ def show_cleaner_page():
         <div class="info-card" style="border-left-color: #8b5cf6;">
             <strong style="color: #8b5cf6; font-size: 1.1rem;">Format Issues</strong>
             <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
-                <li>Invalid timestamps</li>
-                <li>Mixed case values</li>
-                <li>Boolean strings</li>
-                <li>Invalid categories</li>
+                <li>Multi-language text</li>
+                <li>Non-English values</li>
+                <li>Fuzzy matching</li>
+                <li>Case normalization</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -1339,7 +1337,7 @@ def show_cleaner_page():
             <strong style="color: #ec4899; font-size: 1.1rem;">Value Issues</strong>
             <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Negative values</li>
-                <li>Outliers</li>
+                <li>Outliers (IQR)</li>
                 <li>FK violations</li>
                 <li>Invalid references</li>
             </ul>
@@ -1348,7 +1346,6 @@ def show_cleaner_page():
     
     st.markdown("---")
     
-    # Clean data button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🚀 Run Data Cleaning", width='stretch', type="primary"):
@@ -1369,6 +1366,7 @@ def show_cleaner_page():
                     st.session_state.clean_inventory = clean_inventory
                     st.session_state.issues_df = cleaner.get_issues_df()
                     st.session_state.cleaner_stats = cleaner.stats
+                    st.session_state.cleaning_report = cleaner.cleaning_report
                     st.session_state.is_cleaned = True
                     
                     st.success("✅ Data cleaning complete!")
@@ -1376,56 +1374,97 @@ def show_cleaner_page():
                 except Exception as e:
                     st.error(f"❌ Error during cleaning: {str(e)}")
     
-    # Show results if cleaned
     if st.session_state.is_cleaned:
         st.markdown("---")
         st.markdown('<p class="section-title section-title-blue">📊 Cleaning Results</p>', unsafe_allow_html=True)
         
         stats = st.session_state.cleaner_stats
+        report = st.session_state.cleaning_report
         
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            before = stats['products']['before']
-            after = stats['products']['after']
-            delta = f"{before - after} removed" if before > after else "No change"
-            delta_type = "negative" if before > after else "positive"
+            if 'products' in report:
+                before = report['products'].get('original_rows', 0)
+                after = report['products'].get('final_rows', 0)
+                fixed = report['products'].get('missing_fixed', 0) + report['products'].get('duplicates_removed', 0)
+                delta = f"{fixed} fixed" if fixed > 0 else "Clean"
+                delta_type = "positive"
+            else:
+                after = len(st.session_state.clean_products)
+                delta = "Processed"
+                delta_type = "positive"
             st.markdown(create_metric_card("Products", f"{after:,}", delta, delta_type, "cyan"), unsafe_allow_html=True)
         
         with col2:
-            before = stats['stores']['before']
-            after = stats['stores']['after']
-            delta = f"{before - after} removed" if before > after else "No change"
-            delta_type = "negative" if before > after else "positive"
+            if 'stores' in report:
+                before = report['stores'].get('original_rows', 0)
+                after = report['stores'].get('final_rows', 0)
+                fixed = report['stores'].get('missing_fixed', 0) + report['stores'].get('duplicates_removed', 0)
+                delta = f"{fixed} fixed" if fixed > 0 else "Clean"
+                delta_type = "positive"
+            else:
+                after = len(st.session_state.clean_stores)
+                delta = "Processed"
+                delta_type = "positive"
             st.markdown(create_metric_card("Stores", f"{after:,}", delta, delta_type, "blue"), unsafe_allow_html=True)
         
         with col3:
-            before = stats['sales']['before']
-            after = stats['sales']['after']
-            delta = f"{before - after} removed" if before > after else "No change"
-            delta_type = "negative" if before > after else "positive"
+            if 'sales' in report:
+                before = report['sales'].get('original_rows', 0)
+                after = report['sales'].get('final_rows', 0)
+                fixed = report['sales'].get('missing_fixed', 0) + report['sales'].get('duplicates_removed', 0)
+                delta = f"{fixed} fixed" if fixed > 0 else "Clean"
+                delta_type = "positive"
+            else:
+                after = len(st.session_state.clean_sales)
+                delta = "Processed"
+                delta_type = "positive"
             st.markdown(create_metric_card("Sales", f"{after:,}", delta, delta_type, "purple"), unsafe_allow_html=True)
         
         with col4:
-            before = stats['inventory']['before']
-            after = stats['inventory']['after']
-            delta = f"{before - after} removed" if before > after else "No change"
-            delta_type = "negative" if before > after else "positive"
+            if 'inventory' in report:
+                before = report['inventory'].get('original_rows', 0)
+                after = report['inventory'].get('final_rows', 0)
+                fixed = report['inventory'].get('missing_fixed', 0) + report['inventory'].get('duplicates_removed', 0)
+                delta = f"{fixed} fixed" if fixed > 0 else "Clean"
+                delta_type = "positive"
+            else:
+                after = len(st.session_state.clean_inventory)
+                delta = "Processed"
+                delta_type = "positive"
             st.markdown(create_metric_card("Inventory", f"{after:,}", delta, delta_type, "pink"), unsafe_allow_html=True)
         
-        # Issues summary
         st.markdown("---")
-        st.markdown('<p class="section-title section-title-teal">🔍 Issues Detected & Fixed</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-title section-title-teal">📈 Cleaning Summary</p>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(create_metric_card("Missing Fixed", f"{stats.get('missing_values_fixed', 0):,}", color="cyan"), unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(create_metric_card("Duplicates Removed", f"{stats.get('duplicates_removed', 0):,}", color="blue"), unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(create_metric_card("Outliers Fixed", f"{stats.get('outliers_fixed', 0):,}", color="purple"), unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown(create_metric_card("Text Standardized", f"{stats.get('text_standardized', 0):,}", color="pink"), unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown('<p class="section-title section-title-orange">🔍 Issues Detected & Fixed</p>', unsafe_allow_html=True)
         
         issues_df = st.session_state.issues_df
         
-        if len(issues_df) > 0:
-            st.markdown(create_success_card(f"Total {len(issues_df)} issues detected and fixed automatically!"), unsafe_allow_html=True)
+        if len(issues_df) > 0 and not (len(issues_df) == 1 and issues_df.iloc[0]['Issue Type'] == 'None'):
+            total_fixed = stats.get('total_issues_fixed', 0)
+            st.markdown(create_success_card(f"Total {total_fixed} issues detected and fixed automatically!"), unsafe_allow_html=True)
             
             col1, col2 = st.columns(2)
             
             with col1:
-                issue_counts = issues_df['issue_type'].value_counts().reset_index()
+                issue_counts = issues_df.groupby('Issue Type')['Count'].sum().reset_index()
                 issue_counts.columns = ['Issue Type', 'Count']
                 
                 fig = px.bar(
@@ -1442,7 +1481,7 @@ def show_cleaner_page():
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
-                table_counts = issues_df['table'].value_counts().reset_index()
+                table_counts = issues_df.groupby('DataFrame')['Count'].sum().reset_index()
                 table_counts.columns = ['Table', 'Count']
                 
                 fig = px.pie(
@@ -1456,14 +1495,12 @@ def show_cleaner_page():
                 fig = style_plotly_chart(fig)
                 st.plotly_chart(fig, width='stretch')
             
-            # Cleaning Insight
             st.markdown('<p class="section-title section-title-purple">💡 Cleaning Insight</p>', unsafe_allow_html=True)
             
-            top_issue = issues_df['issue_type'].value_counts().idxmax()
-            top_count = issues_df['issue_type'].value_counts().max()
+            top_issue = issue_counts.loc[issue_counts['Count'].idxmax(), 'Issue Type']
+            top_count = issue_counts['Count'].max()
             st.markdown(create_insight_card("Most Common Issue", f"'{top_issue}' was the most frequent issue with {top_count} occurrences. All instances have been automatically fixed."), unsafe_allow_html=True)
             
-            # Issues table
             st.markdown('<p class="section-title section-title-blue">📋 Detailed Issues Log</p>', unsafe_allow_html=True)
             st.dataframe(issues_df, width='stretch')
             
@@ -1475,7 +1512,18 @@ def show_cleaner_page():
                 mime="text/csv"
             )
         else:
-            st.markdown(create_success_card("No issues found! Your data is already clean."), unsafe_allow_html=True)
+            st.markdown(create_success_card("No major issues found! Your data is already clean."), unsafe_allow_html=True)
+        
+        if 'foreign_key_issues' in report:
+            fk = report['foreign_key_issues']
+            if fk.get('invalid_skus', 0) > 0 or fk.get('invalid_stores', 0) > 0:
+                st.markdown("---")
+                st.markdown('<p class="section-title section-title-orange">⚠️ Foreign Key Warnings</p>', unsafe_allow_html=True)
+                
+                if fk.get('invalid_skus', 0) > 0:
+                    st.warning(f"⚠️ {fk['invalid_skus']} sales records have SKUs not found in products table")
+                if fk.get('invalid_stores', 0) > 0:
+                    st.warning(f"⚠️ {fk['invalid_stores']} sales records have store IDs not found in stores table")
     
     show_footer()
 
