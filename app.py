@@ -750,7 +750,7 @@ def generate_insights(kpis, city_kpis=None, channel_kpis=None, cat_kpis=None):
     if return_rate > 10:
         insights.append(("High Returns", f"Return rate of {return_rate:.1f}% is above normal. Investigate product quality or description accuracy."))
     elif return_rate < 3:
-        insights.append(("Excellent Quality", f"Low return rate of {return_rate:.1f}% indicates high customer satisfaction."))
+        insights.append(("Excellent Quality", f"Low return rate of {return_rate:.1f}% indicates high customer satisfaction_taken."))
     
     # City insight
     if city_kpis is not None and len(city_kpis) > 0:
@@ -937,7 +937,7 @@ def validate_file_columns(df, file_type):
             'alternate_names': {
                 'sku': ['sku', 'SKU', 'product_id', 'ProductID'],
                 'store_id': ['store_id', 'StoreID', 'store', 'Store'],
-                'date': ['date', 'Date', 'transaction_date', 'sale_date', 'order_date'],
+                'date': ['date', 'Date', 'transaction_taken_date', 'sale_date', 'order_date'],
                 'qty': ['qty', 'quantity', 'Qty', 'Quantity', 'units'],
                 'revenue': ['revenue', 'Revenue', 'sales', 'total', 'amount']
             }
@@ -1052,7 +1052,7 @@ def show_home_page():
             line-height: 1.2;
         ">UAE Pulse Simulator</div>
         <p style="color: #94a3b8; font-size: 1.15rem; margin: 0; line-height: 1.6;">
-            Transform your e-commerce data into actionable insights.<br>
+            Transform your e-commerce data into action_takenable insights.<br>
             Clean dirty data, simulate promotional campaigns, and visualize performance metrics.
         </p>
     </div>
@@ -1563,15 +1563,15 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
             issues_df = st.session_state.issues_df
             if len(issues_df) > 0 and 'issue_type' in issues_df.columns:
                 issue_counts = issues_df['issue_type'].value_counts().head(10).reset_index()
-                issue_counts.columns = ['issue_type', 'Count']
+                issue_counts.columns = ['issue_type', 'count']
                 
                 fig = px.bar(
                     issue_counts,
-                    x='Count',
+                    x='count',
                     y='issue_type',
                     orientation='h',
                     title='Top Issues (Pareto)',
-                    color='Count',
+                    color='count',
                     color_continuous_scale=['#06b6d4', '#8b5cf6', '#ec4899']
                 )
                 fig = style_plotly_chart(fig)
@@ -2007,12 +2007,12 @@ def show_cleaner_page():
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                table_counts = issues_df.groupby('DataFrame')['Count'].sum().reset_index()
-                table_counts.columns = ['Table', 'Count']
+                table_counts = issues_df.groupby('DataFrame')['count'].sum().reset_index()
+                table_counts.columns = ['Table', 'count']
                 
                 fig = px.pie(
                     table_counts,
-                    values='Count',
+                    values='count',
                     names='Table',
                     title='Issues by Table',
                     color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'],
@@ -2023,11 +2023,11 @@ def show_cleaner_page():
             
             st.markdown('<p class="section-title section-title-purple">💡 Cleaning Insight</p>', unsafe_allow_html=True)
             
-            top_issue = issue_counts.loc[issue_counts['Count'].idxmax(), 'issue_type']
-            top_count = issue_counts['Count'].max()
+            top_issue = issue_counts.loc[issue_counts['count'].idxmax(), 'issue_type']
+            top_count = issue_counts['count'].max()
             st.markdown(create_insight_card("Most Common Issue", f"'{top_issue}' was the most frequent issue with {top_count} occurrences. All instances have been automatically fixed."), unsafe_allow_html=True)
             
-            st.markdown('<p class="section-title section-title-blue">📋 Detailed Issues Log</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-title section-title-blue">📋 issue_issue_detailed Issues Log</p>', unsafe_allow_html=True)
             st.dataframe(issues_df, width='stretch')
             
             csv = issues_df.to_csv(index=False)
@@ -2460,11 +2460,11 @@ def show_analytics_page():
                         axis=1
                     )
                     status_counts = inventory_copy['status'].value_counts().reset_index()
-                    status_counts.columns = ['Status', 'Count']
+                    status_counts.columns = ['Status', 'count']
                     
                     fig = px.pie(
                         status_counts,
-                        values='Count',
+                        values='count',
                         names='Status',
                         title='Inventory Status',
                         color='Status',
