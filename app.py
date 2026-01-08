@@ -816,11 +816,11 @@ with st.sidebar:
     # Navigation
     st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📍 NAVIGATION</p>', unsafe_allow_html=True)
     
-    page = st.radio(
-        "Navigate",
-        ["🏠 Home", "📂 Data", "🧹 Cleaner", "👔 Executive", "📋 Manager", "🎯 Simulator", "📊 Analytics"],
-        label_visibility="collapsed"
-    )
+page = st.radio(
+    "Navigate",
+    ["🏠 Home", "📂 Data", "🧹 Cleaner", "📊 Dashboard", "🎯 Simulator"],
+    label_visibility="collapsed"
+)
     
     st.markdown("---")
     
