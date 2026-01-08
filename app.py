@@ -1180,6 +1180,235 @@ def show_executive_page():
         st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
     
     show_footer()
+    
+def show_manager_page():
+    """Display the Manager View - detailed operational metrics."""
+    
+    st.markdown('<h1 class="page-title page-title-blue">📋 Manager View</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">Detailed operational metrics and performance breakdown</p>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    if not st.session_state.data_loaded:
+        st.markdown(create_warning_card("Please load data first. Go to 📂 Data page."), unsafe_allow_html=True)
+        show_footer()
+        return
+    
+    # Get the appropriate data
+    sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
+    products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
+    stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
+    inventory_df = st.session_state.clean_inventory if st.session_state.is_cleaned else st.session_state.raw_inventory
+    
+    # Initialize simulator for KPI calculations
+    sim = Simulator()
+    
+    # Calculate KPIs
+    kpis = sim.calculate_overall_kpis(sales_df, products_df)
+    city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
+    channel_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'channel')
+    category_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'category')
+    
+    # ===== DATA SUMMARY =====
+    st.markdown('<p class="section-title section-title-cyan">📊 Data Summary</p>', unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(create_metric_card(
+            "Products", 
+            f"{len(products_df):,}",
+            color="cyan"
+        ), unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(create_metric_card(
+            "Stores", 
+            f"{len(stores_df):,}",
+            color="blue"
+        ), unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(create_metric_card(
+            "Sales Records", 
+            f"{len(sales_df):,}",
+            color="purple"
+        ), unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(create_metric_card(
+            "Inventory Items", 
+            f"{len(inventory_df):,}",
+            color="pink"
+        ), unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ===== PERFORMANCE BY CITY =====
+    st.markdown('<p class="section-title section-title-teal">🏙️ Performance by City</p>', unsafe_allow_html=True)
+    
+    if len(city_kpis) > 0:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig = px.bar(
+                city_kpis,
+                x='city',
+                y='revenue',
+                title='Revenue by City',
+                color='revenue',
+                color_continuous_scale=['#06b6d4', '#3b82f6', '#8b5cf6']
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_layout(coloraxis_showscale=False)
+            st.plotly_chart(fig, width='stretch')
+        
+        with col2:
+            fig = px.bar(
+                city_kpis,
+                x='city',
+                y='orders',
+                title='Orders by City',
+                color='orders',
+                color_continuous_scale=['#10b981', '#f59e0b', '#ec4899']
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_layout(coloraxis_showscale=False)
+            st.plotly_chart(fig, width='stretch')
+        
+        # City table
+        st.markdown("**📋 City Performance Table**")
+        display_city = city_kpis.copy()
+        display_city['revenue'] = display_city['revenue'].apply(lambda x: f"AED {x:,.0f}")
+        display_city['orders'] = display_city['orders'].apply(lambda x: f"{x:,}")
+        st.dataframe(display_city, width='stretch')
+    
+    st.markdown("---")
+    
+    # ===== PERFORMANCE BY CHANNEL =====
+    st.markdown('<p class="section-title section-title-purple">📺 Performance by Channel</p>', unsafe_allow_html=True)
+    
+    if len(channel_kpis) > 0:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig = px.pie(
+                channel_kpis,
+                values='revenue',
+                names='channel',
+                title='Revenue Share by Channel',
+                color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899'],
+                hole=0.4
+            )
+            fig = style_plotly_chart(fig)
+            st.plotly_chart(fig, width='stretch')
+        
+        with col2:
+            fig = px.pie(
+                channel_kpis,
+                values='orders',
+                names='channel',
+                title='Orders Share by Channel',
+                color_discrete_sequence=['#10b981', '#f59e0b', '#3b82f6'],
+                hole=0.4
+            )
+            fig = style_plotly_chart(fig)
+            st.plotly_chart(fig, width='stretch')
+        
+        # Channel table
+        st.markdown("**📋 Channel Performance Table**")
+        display_channel = channel_kpis.copy()
+        display_channel['revenue'] = display_channel['revenue'].apply(lambda x: f"AED {x:,.0f}")
+        display_channel['orders'] = display_channel['orders'].apply(lambda x: f"{x:,}")
+        st.dataframe(display_channel, width='stretch')
+    
+    st.markdown("---")
+    
+    # ===== PERFORMANCE BY CATEGORY =====
+    st.markdown('<p class="section-title section-title-orange">📦 Performance by Category</p>', unsafe_allow_html=True)
+    
+    if len(category_kpis) > 0:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig = px.bar(
+                category_kpis.head(10),
+                x='revenue',
+                y='category',
+                orientation='h',
+                title='Top 10 Categories by Revenue',
+                color='revenue',
+                color_continuous_scale=['#06b6d4', '#3b82f6', '#8b5cf6']
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_layout(coloraxis_showscale=False)
+            st.plotly_chart(fig, width='stretch')
+        
+        with col2:
+            fig = px.bar(
+                category_kpis.head(10),
+                x='orders',
+                y='category',
+                orientation='h',
+                title='Top 10 Categories by Orders',
+                color='orders',
+                color_continuous_scale=['#10b981', '#f59e0b', '#ec4899']
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_layout(coloraxis_showscale=False)
+            st.plotly_chart(fig, width='stretch')
+        
+        # Category table
+        st.markdown("**📋 Category Performance Table**")
+        display_cat = category_kpis.copy()
+        display_cat['revenue'] = display_cat['revenue'].apply(lambda x: f"AED {x:,.0f}")
+        display_cat['orders'] = display_cat['orders'].apply(lambda x: f"{x:,}")
+        st.dataframe(display_cat, width='stretch')
+    
+    st.markdown("---")
+    
+    # ===== OPERATIONAL ALERTS =====
+    st.markdown('<p class="section-title section-title-pink">⚠️ Operational Alerts</p>', unsafe_allow_html=True)
+    
+    alerts = []
+    
+    # Check profit margin
+    if kpis['profit_margin_pct'] < 20:
+        alerts.append(("Low Profit Margin", f"Profit margin is {kpis['profit_margin_pct']:.1f}%. Consider reviewing pricing strategy.", "warning"))
+    
+    # Check return rate
+    if kpis['return_rate_pct'] > 5:
+        alerts.append(("High Return Rate", f"Return rate is {kpis['return_rate_pct']:.1f}%. Investigate product quality issues.", "warning"))
+    
+    # Check discount
+    if kpis['avg_discount_pct'] > 15:
+        alerts.append(("High Discounting", f"Average discount is {kpis['avg_discount_pct']:.1f}%. Monitor impact on margins.", "warning"))
+    
+    if len(alerts) == 0:
+        st.markdown(create_success_card("✅ No operational alerts. All metrics are within healthy ranges."), unsafe_allow_html=True)
+    else:
+        for title, message, alert_type in alerts:
+            if alert_type == "warning":
+                st.markdown(create_warning_card(f"**{title}:** {message}"), unsafe_allow_html=True)
+            else:
+                st.markdown(create_info_card(f"**{title}:** {message}"), unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ===== DATA STATUS =====
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.session_state.is_cleaned:
+            st.markdown(create_success_card("✅ Viewing cleaned data."), unsafe_allow_html=True)
+        else:
+            st.markdown(create_warning_card("⚠️ Viewing raw data. Clean data for better accuracy."), unsafe_allow_html=True)
+    
+    with col2:
+        source = "Cleaned Data ✨" if st.session_state.is_cleaned else "Raw Data 📥"
+        st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
+    
+    show_footer()
 # ============================================================================
 # PAGE: DATA (FIXED - BIGGER TITLES)
 # ============================================================================
