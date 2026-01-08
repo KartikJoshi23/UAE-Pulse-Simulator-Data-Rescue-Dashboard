@@ -1025,6 +1025,161 @@ def show_home_page():
         st.markdown(create_info_card("💡 Start by loading data. Go to 📂 Data page."), unsafe_allow_html=True)
     
     show_footer()
+    
+def show_executive_page():
+    """Display the Executive View - high-level KPIs and insights."""
+    
+    st.markdown('<h1 class="page-title page-title-cyan">👔 Executive View</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="page-description">High-level business performance at a glance</p>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    if not st.session_state.data_loaded:
+        st.markdown(create_warning_card("Please load data first. Go to 📂 Data page."), unsafe_allow_html=True)
+        show_footer()
+        return
+    
+    # Get the appropriate data
+    sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
+    products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
+    stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
+    
+    # Initialize simulator for KPI calculations
+    sim = Simulator()
+    
+    # Calculate KPIs
+    kpis = sim.calculate_overall_kpis(sales_df, products_df)
+    
+    # ===== KPI CARDS ROW 1 =====
+    st.markdown('<p class="section-title section-title-cyan">📈 Key Performance Indicators</p>', unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(create_metric_card(
+            "Total Revenue", 
+            f"AED {kpis['total_revenue']:,.0f}",
+            color="cyan"
+        ), unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(create_metric_card(
+            "Total Orders", 
+            f"{kpis['total_orders']:,}",
+            color="blue"
+        ), unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(create_metric_card(
+            "Avg Order Value", 
+            f"AED {kpis['avg_order_value']:,.2f}",
+            color="purple"
+        ), unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(create_metric_card(
+            "Profit Margin", 
+            f"{kpis['profit_margin_pct']:.1f}%",
+            color="green"
+        ), unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ===== KPI CARDS ROW 2 =====
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(create_metric_card(
+            "Total Profit", 
+            f"AED {kpis['total_profit']:,.0f}",
+            color="teal"
+        ), unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(create_metric_card(
+            "Total Units", 
+            f"{kpis['total_units']:,.0f}",
+            color="orange"
+        ), unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(create_metric_card(
+            "Return Rate", 
+            f"{kpis['return_rate_pct']:.1f}%",
+            color="pink"
+        ), unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(create_metric_card(
+            "Avg Discount", 
+            f"{kpis['avg_discount_pct']:.1f}%",
+            color="blue"
+        ), unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ===== CHARTS =====
+    st.markdown('<p class="section-title section-title-blue">📊 Revenue Overview</p>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
+    channel_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'channel')
+    
+    with col1:
+        if len(city_kpis) > 0:
+            fig = px.pie(
+                city_kpis, 
+                values='revenue', 
+                names='city',
+                title='Revenue by City',
+                color_discrete_sequence=['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+                hole=0.45
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_traces(textposition='outside', textinfo='percent+label', textfont_size=12)
+            st.plotly_chart(fig, width='stretch')
+    
+    with col2:
+        if len(channel_kpis) > 0:
+            fig = px.bar(
+                channel_kpis,
+                x='channel',
+                y='revenue',
+                title='Revenue by Channel',
+                color='channel',
+                color_discrete_sequence=['#10b981', '#f59e0b', '#ec4899']
+            )
+            fig = style_plotly_chart(fig)
+            fig.update_layout(showlegend=False)
+            st.plotly_chart(fig, width='stretch')
+    
+    st.markdown("---")
+    
+    # ===== BUSINESS INSIGHTS =====
+    st.markdown('<p class="section-title section-title-purple">💡 Key Business Insights</p>', unsafe_allow_html=True)
+    
+    insights = generate_insights(kpis, city_kpis, channel_kpis)
+    
+    for title, text in insights:
+        st.markdown(create_insight_card(title, text), unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ===== STATUS =====
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.session_state.is_cleaned:
+            st.markdown(create_success_card("✅ Data has been cleaned and validated."), unsafe_allow_html=True)
+        else:
+            st.markdown(create_warning_card("⚠️ Data not yet cleaned. Go to 🧹 Cleaner to validate."), unsafe_allow_html=True)
+    
+    with col2:
+        source = "Cleaned Data ✨" if st.session_state.is_cleaned else "Raw Data 📥"
+        st.markdown(create_info_card(f"<strong>Data Source:</strong> {source}"), unsafe_allow_html=True)
+    
+    show_footer()
 # ============================================================================
 # PAGE: DATA (FIXED - BIGGER TITLES)
 # ============================================================================
