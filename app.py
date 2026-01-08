@@ -816,29 +816,29 @@ with st.sidebar:
     # Navigation
     st.markdown('<p style="color: #ec4899; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📍 NAVIGATION</p>', unsafe_allow_html=True)
     
-page = st.radio(
-    "Navigate",
-    ["🏠 Home", "📂 Data", "🧹 Cleaner", "📊 Dashboard", "🎯 Simulator"],
-    label_visibility="collapsed"
-)
+    page = st.radio(
+        "Navigate",
+        ["🏠 Home", "📂 Data", "🧹 Cleaner", "📊 Dashboard", "🎯 Simulator"],
+        label_visibility="collapsed"
+    )
     
-st.markdown("---")
-
-# Data Status
-st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
-
-data_loaded = st.session_state.data_loaded
-data_cleaned = st.session_state.is_cleaned
-
-status_color_loaded = "#10b981" if data_loaded else "#ef4444"
-status_color_cleaned = "#10b981" if data_cleaned else "#f59e0b" if data_loaded else "#ef4444"
-
-st.markdown(f"""
-<div style="
-    background: linear-gradient(135deg, #16161f 0%, #1a1a24 100%);
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid #2d2d3a;
+    st.markdown("---")
+    
+    # Data Status
+    st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📡 STATUS</p>', unsafe_allow_html=True)
+    
+    data_loaded = st.session_state.data_loaded
+    data_cleaned = st.session_state.is_cleaned
+    
+    status_color_loaded = "#10b981" if data_loaded else "#ef4444"
+    status_color_cleaned = "#10b981" if data_cleaned else "#f59e0b" if data_loaded else "#ef4444"
+    
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #16161f 0%, #1a1a24 100%);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #2d2d3a;
     ">
         <div style="display: flex; align-items: center; margin: 8px 0;">
             <div style="
@@ -862,6 +862,15 @@ st.markdown(f"""
             "></div>
             <span style="color: #e0e0e0; font-size: 0.9rem;">Data Cleaned</span>
         </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Footer
+    st.markdown("---")
+    st.markdown('<p style="color: #3b82f6; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">🔬 TECH</p>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="color: #64748b; font-size: 11px; line-height: 1.6;">
+        Python • Pandas • Plotly • Streamlit
     </div>
     """, unsafe_allow_html=True)
     
