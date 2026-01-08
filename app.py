@@ -881,7 +881,7 @@ with st.sidebar:
         
         sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
         if sales_df is not None:
-            total_record_identifier_identifier_identifier_identifiers = len(sales_df)
+            total_records = len(sales_df)
             try:
                 qty = pd.to_numeric(sales_df['qty'], errors='coerce').fillna(0)
                 price = pd.to_numeric(sales_df['selling_price_aed'], errors='coerce').fillna(0)
@@ -897,8 +897,8 @@ with st.sidebar:
                 border: 1px solid #2d2d3a;
             ">
                 <div style="margin-bottom: 12px;">
-                    <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">record_identifier_identifier_identifier_identifierS</span><br>
-                    <span style="color: #06b6d4; font-weight: 700; font-size: 1.4rem;">{total_record_identifier_identifier_identifier_identifiers:,}</span>
+                    <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">records</span><br>
+                    <span style="color: #06b6d4; font-weight: 700; font-size: 1.4rem;">{total_records:,}</span>
                 </div>
                 <div>
                     <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">REVENUE</span><br>
@@ -1106,7 +1106,7 @@ def show_home_page():
             <h4 style="color: #06b6d4; margin-top: 0; font-size: 1.1rem;">🧹 Data Cleaning Capabilities</h4>
             <ul style="color: #94a3b8; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8;">
                 <li>Missing value detection & imputation</li>
-                <li>Duplicate record_identifier_identifier_identifier_identifier removal</li>
+                <li>Duplicate record_identifier removal</li>
                 <li>Outlier detection & capping</li>
                 <li>Format standardization</li>
                 <li>Foreign key validation</li>
@@ -1838,7 +1838,7 @@ def show_cleaner_page():
             <strong style="color: #06b6d4; font-size: 1.1rem;">Data Quality</strong>
             <ul style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; line-height: 1.8;">
                 <li>Missing values</li>
-                <li>Duplicate record_identifier_identifier_identifier_identifiers</li>
+                <li>Duplicate Recordss</li>
                 <li>Whitespace issues</li>
                 <li>Text standardization</li>
             </ul>
@@ -2046,9 +2046,9 @@ def show_cleaner_page():
                 st.markdown('<p class="section-title section-title-orange">⚠️ Foreign Key Warnings</p>', unsafe_allow_html=True)
                 
                 if fk.get('invalid_skus', 0) > 0:
-                    st.warning(f"⚠️ {fk['invalid_skus']} sales record_identifier_identifier_identifier_identifiers have SKUs not found in products table")
+                    st.warning(f"⚠️ {fk['invalid_skus']} sales records have SKUs not found in products table")
                 if fk.get('invalid_stores', 0) > 0:
-                    st.warning(f"⚠️ {fk['invalid_stores']} sales record_identifier_identifier_identifier_identifiers have store IDs not found in stores table")
+                    st.warning(f"⚠️ {fk['invalid_stores']} sales records have store IDs not found in stores table")
     
     show_footer()
 
