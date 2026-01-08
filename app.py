@@ -1093,7 +1093,7 @@ def show_home_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_traces(textposition='outside', textinfo='percent+label', textfont_size=14)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with col2:
             if len(channel_kpis) > 0:
@@ -1107,7 +1107,7 @@ def show_home_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         # ===== BUSINESS INSIGHTS =====
         st.markdown("---")
@@ -1161,7 +1161,7 @@ def show_data_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Uploaded Files", use_container_width=True):
+        if st.button("📥 Load Uploaded Files", width='stretch'):
             try:
                 if products_file:
                     st.session_state.raw_products = pd.read_csv(products_file)
@@ -1186,7 +1186,7 @@ def show_data_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Sample Data", use_container_width=True, key='sample_data_btn'):
+        if st.button("📥 Load Sample Data", width='stretch', key='sample_data_btn'):
             try:
                 st.session_state.raw_products = pd.read_csv('data/products.csv')
                 st.session_state.raw_stores = pd.read_csv('data/stores.csv')
@@ -1218,7 +1218,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
         
         with tab2:
             if st.session_state.raw_stores is not None:
@@ -1232,7 +1232,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
         
         with tab3:
             if st.session_state.raw_sales is not None:
@@ -1246,7 +1246,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
         
         with tab4:
             if st.session_state.raw_inventory is not None:
@@ -1260,7 +1260,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
         
         # Data Quality Insight
         st.markdown("---")
@@ -1351,7 +1351,7 @@ def show_cleaner_page():
     # Clean data button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("🚀 Run Data Cleaning", use_container_width=True, type="primary"):
+        if st.button("🚀 Run Data Cleaning", width='stretch', type="primary"):
             with st.spinner("🔄 Analyzing and cleaning data... This may take a moment."):
                 try:
                     cleaner = DataCleaner()
@@ -1439,7 +1439,7 @@ def show_cleaner_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 table_counts = issues_df['table'].value_counts().reset_index()
@@ -1454,7 +1454,7 @@ def show_cleaner_page():
                     hole=0.45
                 )
                 fig = style_plotly_chart(fig)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             # Cleaning Insight
             st.markdown('<p class="section-title section-title-purple">💡 Cleaning Insight</p>', unsafe_allow_html=True)
@@ -1465,7 +1465,7 @@ def show_cleaner_page():
             
             # Issues table
             st.markdown('<p class="section-title section-title-blue">📋 Detailed Issues Log</p>', unsafe_allow_html=True)
-            st.dataframe(issues_df, use_container_width=True)
+            st.dataframe(issues_df, width='stretch')
             
             csv = issues_df.to_csv(index=False)
             st.download_button(
@@ -1536,7 +1536,7 @@ def show_simulator_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        run_simulation = st.button("🚀 Run Simulation", use_container_width=True, type="primary")
+        run_simulation = st.button("🚀 Run Simulation", width='stretch', type="primary")
     
     if run_simulation:
         with st.spinner("🔄 Running simulation..."):
@@ -1633,7 +1633,7 @@ def show_simulator_page():
                 fig.add_trace(go.Bar(name='Campaign', x=comp_data['Metric'], y=comp_data['Campaign'], marker_color='#06b6d4'))
                 fig = style_plotly_chart(fig)
                 fig.update_layout(barmode='group', title='Revenue & Profit Comparison')
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 orders_data = pd.DataFrame({
@@ -1651,7 +1651,7 @@ def show_simulator_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         elif warnings:
             for warning in warnings:
@@ -1703,7 +1703,7 @@ def show_analytics_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_traces(line=dict(width=3), fillcolor='rgba(6, 182, 212, 0.2)')
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 
                 col1, col2 = st.columns(2)
                 
@@ -1717,7 +1717,7 @@ def show_analytics_page():
                     )
                     fig = style_plotly_chart(fig)
                     fig.update_traces(line=dict(width=3))
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 with col2:
                     fig = px.line(
@@ -1729,7 +1729,7 @@ def show_analytics_page():
                     )
                     fig = style_plotly_chart(fig)
                     fig.update_traces(line=dict(width=3))
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-purple">💡 Trend Insight</p>', unsafe_allow_html=True)
                 avg_revenue = daily_trends['revenue'].mean()
@@ -1763,7 +1763,7 @@ def show_analytics_page():
                     )
                     fig = style_plotly_chart(fig)
                     fig.update_layout(showlegend=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 with col2:
                     fig = px.bar(
@@ -1776,10 +1776,10 @@ def show_analytics_page():
                     )
                     fig = style_plotly_chart(fig)
                     fig.update_layout(showlegend=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-teal">📋 City Performance Table</p>', unsafe_allow_html=True)
-                st.dataframe(city_kpis, use_container_width=True)
+                st.dataframe(city_kpis, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-purple">💡 City Insight</p>', unsafe_allow_html=True)
                 top_city = city_kpis.iloc[0]
@@ -1811,7 +1811,7 @@ def show_analytics_page():
                         hole=0.45
                     )
                     fig = style_plotly_chart(fig)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 with col2:
                     fig = px.bar(
@@ -1824,10 +1824,10 @@ def show_analytics_page():
                     )
                     fig = style_plotly_chart(fig)
                     fig.update_layout(coloraxis_showscale=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-teal">📋 Category Performance Table</p>', unsafe_allow_html=True)
-                st.dataframe(cat_kpis, use_container_width=True)
+                st.dataframe(cat_kpis, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-purple">💡 Category Insight</p>', unsafe_allow_html=True)
                 top_cat = cat_kpis.iloc[0]
@@ -1869,7 +1869,7 @@ def show_analytics_page():
                         color_discrete_sequence=['#8b5cf6']
                     )
                     fig = style_plotly_chart(fig)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 with col2:
                     inventory_copy = inventory_df.copy()
@@ -1898,7 +1898,7 @@ def show_analytics_page():
                         hole=0.45
                     )
                     fig = style_plotly_chart(fig)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 st.markdown('<p class="section-title section-title-purple">💡 Inventory Insight</p>', unsafe_allow_html=True)
                 if stockout['zero_stock'] > 0:
