@@ -604,15 +604,45 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
 def create_feature_card(icon, title, description, color="cyan"):
     """Create a styled feature card with border effect and hover."""
     colors = {
-        "cyan": ("#06b6d4", "#0891b2"),
-        "blue": ("#3b82f6", "#2563eb"),
-        "purple": ("#8b5cf6", "#7c3aed"),
-        "pink": ("#ec4899", "#db2777"),
-        "green": ("#10b981", "#059669"),
-        "orange": ("#f59e0b", "#d97706"),
-        "teal": ("#14b8a6", "#0d9488"),
+        "cyan": "#06b6d4",
+        "blue": "#3b82f6",
+        "purple": "#8b5cf6",
+        "pink": "#ec4899",
+        "green": "#10b981",
+        "orange": "#f59e0b",
+        "teal": "#14b8a6",
     }
-    primary, secondary = colors.get(color, colors["cyan"])
+    primary = colors.get(color, colors["cyan"])
+    
+    return f"""
+    <style>
+        .feature-card-{color} {{
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-left: 4px solid {primary};
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }}
+        .feature-card-{color}:hover {{
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px {primary}44;
+            border-color: {primary};
+        }}
+    </style>
+    <div class="feature-card-{color}">
+        <div style="font-size: 42px; margin-bottom: 12px;">{icon}</div>
+        <div style="color: {primary}; font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">{title}</div>
+        <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.5;">{description}</div>
+    </div>
+    """
     
     return f"""
     <div style="
