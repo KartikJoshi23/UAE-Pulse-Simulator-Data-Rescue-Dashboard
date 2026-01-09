@@ -1371,7 +1371,7 @@ def show_dashboard_page():
     
     with col2:
         view_mode_selection = st.radio(
-            "",
+            "View Mode",
             options=["👔 Executive View", "📋 Manager View"],
             horizontal=True,
             key="view_toggle_radio",
