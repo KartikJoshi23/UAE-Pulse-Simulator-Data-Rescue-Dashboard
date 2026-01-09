@@ -1367,39 +1367,35 @@ def show_dashboard_page():
     st.markdown("---") 
     
 # ===== TOGGLE SWITCH =====
-    st.markdown("""
-    <style>
-    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="stRadio"] > div {
-        display: flex;
-        justify-content: center;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
     
-    view_mode_selection = st.radio(
-        "View Mode",
-        options=["Executive View", "Manager View"],
-        horizontal=True,
-        key="view_toggle_radio",
-        label_visibility="collapsed"
-    )
+    # Initialize view_mode in session state if not exists
+    if 'view_mode' not in st.session_state:
+        st.session_state.view_mode = False
     
-    view_mode = view_mode_selection == "Manager View"
+    with col1:
+        exec_clicked = st.button(
+            "👔 Executive View\n\nFinancial & Strategic",
+            key="exec_btn",
+            type="primary" if not st.session_state.view_mode else "secondary",
+            use_container_width=True
+        )
+        if exec_clicked:
+            st.session_state.view_mode = False
+            st.rerun()
     
-    if view_mode:
-        st.markdown("""
-        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 400px;">
-            <span style="color: #3b82f6; font-weight: 700; font-size: 1.1rem;">📋 Manager View</span>
-            <span style="color: #94a3b8; font-size: 0.85rem;"> — Operational Risk & Execution</span>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 400px;">
-            <span style="color: #06b6d4; font-weight: 700; font-size: 1.1rem;">👔 Executive View</span>
-            <span style="color: #94a3b8; font-size: 0.85rem;"> — Financial & Strategic</span>
-        </div>
-        """, unsafe_allow_html=True)
+    with col2:
+        mgr_clicked = st.button(
+            "📋 Manager View\n\nOperational Risk & Execution",
+            key="mgr_btn",
+            type="primary" if st.session_state.view_mode else "secondary",
+            use_container_width=True
+        )
+        if mgr_clicked:
+            st.session_state.view_mode = True
+            st.rerun()
+    
+    view_mode = st.session_state.view_mode
     
     st.markdown("---")
     
