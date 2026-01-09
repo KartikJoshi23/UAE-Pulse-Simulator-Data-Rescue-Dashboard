@@ -1235,7 +1235,6 @@ def show_dashboard_page():
     }
     </style>
     """, unsafe_allow_html=True)
-    """Display the Dashboard with Executive/Manager toggle and Global Filters."""
     
     st.markdown('<h1 class="page-title page-title-cyan">📊 Dashboard</h1>', unsafe_allow_html=True)
     st.markdown('<p class="page-description">Business performance insights and operational metrics</p>', unsafe_allow_html=True)
