@@ -1367,25 +1367,68 @@ def show_dashboard_page():
     st.markdown("---")
     
     
-    # ===== TOGGLE SWITCH =====
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        view_mode = st.toggle("Switch View", value=False, help="OFF = Executive View | ON = Manager View")
-        
-        if view_mode:
-            st.markdown("""
-            <div style="text-align: center; padding: 10px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 10px 0;">
-                <span style="color: #3b82f6; font-weight: 700; font-size: 1.2rem;">📋 Manager View</span>
-                <span style="color: #94a3b8; font-size: 0.9rem;"> — Operational Risk & Execution</span>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style="text-align: center; padding: 10px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 10px 0;">
-                <span style="color: #06b6d4; font-weight: 700; font-size: 1.2rem;">👔 Executive View</span>
-                <span style="color: #94a3b8; font-size: 0.9rem;"> — Financial & Strategic</span>
-            </div>
-            """, unsafe_allow_html=True)
+   # ===== TOGGLE SWITCH =====
+    st.markdown("""
+    <style>
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding: 15px;
+        margin: 10px 0;
+    }
+    .toggle-label {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .toggle-label-active {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
+        color: #06b6d4;
+    }
+    .toggle-label-inactive {
+        color: #64748b;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    toggle_col1, toggle_col2, toggle_col3 = st.columns([2, 1, 2])
+    
+    with toggle_col1:
+        st.markdown("""
+        <div style="text-align: right;">
+            <span id="exec-label" class="toggle-label">👔 Executive View</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with toggle_col2:
+        view_mode = st.toggle("", value=False, key="view_toggle", label_visibility="collapsed")
+    
+    with toggle_col3:
+        st.markdown("""
+        <div style="text-align: left;">
+            <span id="mgr-label" class="toggle-label">📋 Manager View</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Display active view indicator
+    if view_mode:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 500px;">
+            <span style="color: #3b82f6; font-weight: 700; font-size: 1.2rem;">📋 Manager View</span>
+            <span style="color: #94a3b8; font-size: 0.9rem;"> — Operational Risk & Execution</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 500px;">
+            <span style="color: #06b6d4; font-weight: 700; font-size: 1.2rem;">👔 Executive View</span>
+            <span style="color: #94a3b8; font-size: 0.9rem;"> — Financial & Strategic</span>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
