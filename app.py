@@ -2091,14 +2091,21 @@ def show_data_page():
     # ===== LOAD BUTTON - ONLY LOADS VALID FILES =====
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Show status before button
-        if valid_files:
-            st.success(f"✅ {len(valid_files)} valid file(s) ready to load: {', '.join(valid_files.keys())}")
+       # Show status before button
+        required_files = ['products', 'stores', 'sales', 'inventory']
+        missing_files = [f for f in required_files if f not in valid_files]
         
-        # Disable button if no valid files
-        button_disabled = len(valid_files) == 0
+        if len(valid_files) == 4:
+            st.success(f"✅ All 4 files valid and ready to load!")
+        elif len(valid_files) > 0:
+            st.warning(f"⚠️ {len(valid_files)}/4 files valid. Missing: {', '.join(missing_files)}")
+        else:
+            st.info("📤 Please upload all 4 files: Products, Stores, Sales, Inventory")
         
-        if st.button("📥 Load Valid Files", use_container_width=True, disabled=button_disabled):
+        # Disable button unless ALL 4 files are valid
+        button_disabled = len(valid_files) != 4
+        
+        if st.button("📥 Load All Files", use_container_width=True, disabled=button_disabled):
             if 'products' in valid_files:
                 st.session_state.raw_products = valid_files['products']
             if 'stores' in valid_files:
