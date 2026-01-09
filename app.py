@@ -896,6 +896,56 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+   # ===== DOWNLOAD CLEANED FILES =====
+    if st.session_state.data_loaded and st.session_state.is_cleaned:
+        st.markdown("---")
+        st.markdown('<p style="color: #10b981; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📥 DOWNLOAD CLEANED FILES</p>', unsafe_allow_html=True)
+        
+        download_col1, download_col2, download_col3, download_col4 = st.columns(4)
+        
+        with download_col1:
+            if st.session_state.clean_products is not None:
+                csv = st.session_state.clean_products.to_csv(index=False)
+                st.download_button(
+                    label="📦 Products",
+                    data=csv,
+                    file_name="cleaned_products.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        
+        with download_col2:
+            if st.session_state.clean_stores is not None:
+                csv = st.session_state.clean_stores.to_csv(index=False)
+                st.download_button(
+                    label="🏪 Stores",
+                    data=csv,
+                    file_name="cleaned_stores.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        
+        with download_col3:
+            if st.session_state.clean_sales is not None:
+                csv = st.session_state.clean_sales.to_csv(index=False)
+                st.download_button(
+                    label="💰 Sales",
+                    data=csv,
+                    file_name="cleaned_sales.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        
+        with download_col4:
+            if st.session_state.clean_inventory is not None:
+                csv = st.session_state.clean_inventory.to_csv(index=False)
+                st.download_button(
+                    label="📊 Inventory",
+                    data=csv,
+                    file_name="cleaned_inventory.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
     # Quick Stats
     if st.session_state.data_loaded:
         st.markdown("---")
