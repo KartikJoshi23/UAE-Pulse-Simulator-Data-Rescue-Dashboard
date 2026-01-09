@@ -602,6 +602,27 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
         {delta_html}
     </div>
     """
+    def format_currency(value):
+    """Format large currency values for display.
+    Examples:
+        1,500 → AED 1.5K
+        28,469,655 → AED 28.5M
+        1,200,000,000 → AED 1.2B
+    """
+    if value is None:
+        return "AED 0"
+    
+    abs_value = abs(value)
+    sign = "-" if value < 0 else ""
+    
+    if abs_value >= 1_000_000_000:  # Billions
+        return f"{sign}AED {abs_value / 1_000_000_000:.1f}B"
+    elif abs_value >= 1_000_000:  # Millions
+        return f"{sign}AED {abs_value / 1_000_000:.1f}M"
+    elif abs_value >= 1_000:  # Thousands
+        return f"{sign}AED {abs_value / 1_000:.1f}K"
+    else:
+        return f"{sign}AED {abs_value:,.0f}"
 def create_feature_card(icon, title, description, color="cyan"):
     """Create a styled feature card with border effect and hover."""
     colors = {
