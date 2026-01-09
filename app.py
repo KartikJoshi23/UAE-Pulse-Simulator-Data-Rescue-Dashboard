@@ -1184,7 +1184,7 @@ def show_home_page():
     show_footer()
     
 def show_dashboard_page():
-    """Display the Dashboard with Executive/Manager toggle."""
+    """Display the Dashboard with Executive/Manager toggle and Global Filters."""
     
     st.markdown('<h1 class="page-title page-title-cyan">📊 Dashboard</h1>', unsafe_allow_html=True)
     st.markdown('<p class="page-description">Business performance insights and operational metrics</p>', unsafe_allow_html=True)
@@ -1193,6 +1193,136 @@ def show_dashboard_page():
         st.markdown(create_warning_card("Please load data first. Go to 📂 Data page."), unsafe_allow_html=True)
         show_footer()
         return
+    
+    # Get raw or cleaned data
+    sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
+    stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
+    products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
+    inventory_df = st.session_state.clean_inventory if st.session_state.is_cleaned else st.session_state.raw_inventory
+    
+    if sales_df is None:
+        st.markdown(create_warning_card("No sales data available."), unsafe_allow_html=True)
+        show_footer()
+        return
+    
+    st.markdown("---")
+    
+    # ===== GLOBAL FILTERS SECTION =====
+    st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
+    
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    
+    # Date Range Filter
+    with filter_col1:
+        date_range = None
+        if 'order_time' in sales_df.columns:
+            try:
+                sales_df['order_time'] = pd.to_datetime(sales_df['order_time'], errors='coerce')
+                valid_dates = sales_df['order_time'].dropna()
+                if len(valid_dates) > 0:
+                    min_date = valid_dates.min().date()
+                    max_date = valid_dates.max().date()
+                    date_range = st.date_input(
+                        "📅 Date Range",
+                        value=(min_date, max_date),
+                        min_value=min_date,
+                        max_value=max_date,
+                        key="global_date_filter"
+                    )
+            except:
+                st.caption("Date filter unavailable")
+    
+    # City Filter
+    with filter_col2:
+        selected_cities = []
+        if stores_df is not None and 'city' in stores_df.columns:
+            all_cities = stores_df['city'].dropna().unique().tolist()
+            selected_cities = st.multiselect(
+                "🏙️ City",
+                options=all_cities,
+                default=all_cities,
+                key="global_city_filter"
+            )
+    
+    # Channel Filter
+    with filter_col3:
+        selected_channels = []
+        if stores_df is not None and 'channel' in stores_df.columns:
+            all_channels = stores_df['channel'].dropna().unique().tolist()
+            selected_channels = st.multiselect(
+                "📱 Channel",
+                options=all_channels,
+                default=all_channels,
+                key="global_channel_filter"
+            )
+    
+    # Category Filter
+    with filter_col4:
+        selected_categories = []
+        if products_df is not None and 'category' in products_df.columns:
+            all_categories = products_df['category'].dropna().unique().tolist()
+            selected_categories = st.multiselect(
+                "📦 Category",
+                options=all_categories,
+                default=all_categories,
+                key="global_category_filter"
+            )
+    
+    # ===== APPLY FILTERS =====
+    filtered_sales = sales_df.copy()
+    filtered_stores = stores_df.copy() if stores_df is not None else None
+    filtered_products = products_df.copy() if products_df is not None else None
+    filtered_inventory = inventory_df.copy() if inventory_df is not None else None
+    
+    # Apply date filter
+    if date_range and len(date_range) == 2 and 'order_time' in filtered_sales.columns:
+        start_date, end_date = date_range
+        filtered_sales = filtered_sales[
+            (filtered_sales['order_time'].dt.date >= start_date) &
+            (filtered_sales['order_time'].dt.date <= end_date)
+        ]
+    
+    # Apply city/channel filter via stores
+    if filtered_stores is not None:
+        if selected_cities:
+            filtered_stores = filtered_stores[filtered_stores['city'].isin(selected_cities)]
+        if selected_channels:
+            filtered_stores = filtered_stores[filtered_stores['channel'].isin(selected_channels)]
+        
+        # Filter sales by valid stores
+        if 'store_id' in filtered_sales.columns and 'store_id' in filtered_stores.columns:
+            valid_store_ids = filtered_stores['store_id'].unique()
+            filtered_sales = filtered_sales[filtered_sales['store_id'].isin(valid_store_ids)]
+    
+    # Apply category filter via products
+    if filtered_products is not None and selected_categories:
+        filtered_products = filtered_products[filtered_products['category'].isin(selected_categories)]
+        
+        # Filter sales by valid products
+        if 'sku' in filtered_sales.columns and 'sku' in filtered_products.columns:
+            valid_skus = filtered_products['sku'].unique()
+            filtered_sales = filtered_sales[filtered_sales['sku'].isin(valid_skus)]
+    
+    # Filter inventory by valid stores and products
+    if filtered_inventory is not None:
+        if filtered_stores is not None and 'store_id' in filtered_inventory.columns:
+            valid_store_ids = filtered_stores['store_id'].unique()
+            filtered_inventory = filtered_inventory[filtered_inventory['store_id'].isin(valid_store_ids)]
+        if filtered_products is not None and 'sku' in filtered_inventory.columns:
+            valid_skus = filtered_products['sku'].unique()
+            filtered_inventory = filtered_inventory[filtered_inventory['sku'].isin(valid_skus)]
+    
+    # Show filter results
+    original_count = len(sales_df)
+    filtered_count = len(filtered_sales)
+    filter_pct = (filtered_count / original_count * 100) if original_count > 0 else 0
+    
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); 
+                padding: 10px 20px; border-radius: 10px; margin: 10px 0;">
+        <span style="color: #06b6d4; font-weight: 600;">📊 Showing {filtered_count:,} of {original_count:,} records ({filter_pct:.1f}%)</span>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -1218,31 +1348,21 @@ def show_dashboard_page():
     
     st.markdown("---")
     
-    # Get the appropriate data
-    sales_df = st.session_state.clean_sales if st.session_state.is_cleaned else st.session_state.raw_sales
-    products_df = st.session_state.clean_products if st.session_state.is_cleaned else st.session_state.raw_products
-    stores_df = st.session_state.clean_stores if st.session_state.is_cleaned else st.session_state.raw_stores
-    inventory_df = st.session_state.clean_inventory if st.session_state.is_cleaned else st.session_state.raw_inventory
-    
     # Initialize simulator for KPI calculations
     sim = Simulator()
     
-    # Calculate KPIs
-    kpis = sim.calculate_overall_kpis(sales_df, products_df)
-    city_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'city')
-    channel_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'channel')
-    category_kpis = sim.calculate_kpis_by_dimension(sales_df, stores_df, products_df, 'category')
+    # Calculate KPIs using FILTERED data
+    kpis = sim.calculate_overall_kpis(filtered_sales, filtered_products)
+    city_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'city')
+    channel_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'channel')
+    category_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'category')
     
     if not view_mode:
-        # =====================
         # EXECUTIVE VIEW
-        # =====================
-        show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, products_df, stores_df)
+        show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores)
     else:
-        # =====================
         # MANAGER VIEW
-        # =====================
-        show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, products_df, stores_df, inventory_df)
+        show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores, filtered_inventory)
     
     st.markdown("---")
     
