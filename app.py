@@ -1338,14 +1338,6 @@ def show_dashboard_page():
     filtered_count = len(filtered_sales)
     filter_pct = (filtered_count / original_count * 100) if original_count > 0 else 0
     
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); 
-                padding: 10px 20px; border-radius: 10px; margin: 10px 0;">
-        <span style="color: #06b6d4; font-weight: 600;">📊 Showing {filtered_count:,} of {original_count:,} records ({filter_pct:.1f}%)</span>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("---")
     # Show filter results
     original_count = len(sales_df)
     filtered_count = len(filtered_sales)
