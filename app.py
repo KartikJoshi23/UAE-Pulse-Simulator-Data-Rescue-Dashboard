@@ -1230,6 +1230,7 @@ def show_dashboard_page():
     
     # ===== GLOBAL FILTERS SECTION =====
     st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
+    st.caption("💡 Leave empty to include all")
     
     filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
     
@@ -1259,19 +1260,17 @@ def show_dashboard_page():
         selected_cities = []
         if stores_df is not None and 'city' in stores_df.columns:
             all_cities = sorted(stores_df['city'].dropna().unique().tolist())
-            city_options = ["All"] + all_cities
             
-            selected_city = st.multiselect(
+            selected_cities = st.multiselect(
                 "🏙️ City",
-                options=city_options,
-                default=["All"],
+                options=all_cities,
+                default=[],
+                placeholder="All Cities",
                 key="global_city_filter"
             )
             
-            if "All" in selected_city or len(selected_city) == 0:
+            if len(selected_cities) == 0:
                 selected_cities = all_cities
-            else:
-                selected_cities = selected_city
     
     # Channel Filter
     with filter_col3:
@@ -1279,19 +1278,17 @@ def show_dashboard_page():
         selected_channels = []
         if stores_df is not None and 'channel' in stores_df.columns:
             all_channels = sorted(stores_df['channel'].dropna().unique().tolist())
-            channel_options = ["All"] + all_channels
             
-            selected_channel = st.multiselect(
+            selected_channels = st.multiselect(
                 "📱 Channel",
-                options=channel_options,
-                default=["All"],
+                options=all_channels,
+                default=[],
+                placeholder="All Channels",
                 key="global_channel_filter"
             )
             
-            if "All" in selected_channel or len(selected_channel) == 0:
+            if len(selected_channels) == 0:
                 selected_channels = all_channels
-            else:
-                selected_channels = selected_channel
     
     # Category Filter
     with filter_col4:
@@ -1299,20 +1296,18 @@ def show_dashboard_page():
         selected_categories = []
         if products_df is not None and 'category' in products_df.columns:
             all_categories = sorted(products_df['category'].dropna().unique().tolist())
-            category_options = ["All"] + all_categories
             
-            selected_category = st.multiselect(
+            selected_categories = st.multiselect(
                 "📦 Category",
-                options=category_options,
-                default=["All"],
+                options=all_categories,
+                default=[],
+                placeholder="All Categories",
                 key="global_category_filter"
             )
             
-            if "All" in selected_category or len(selected_category) == 0:
+            if len(selected_categories) == 0:
                 selected_categories = all_categories
-            else:
-                selected_categories = selected_category
-
+    
 # ===== APPLY FILTERS =====
     filtered_sales = sales_df.copy()
     filtered_stores = stores_df.copy() if stores_df is not None else None
