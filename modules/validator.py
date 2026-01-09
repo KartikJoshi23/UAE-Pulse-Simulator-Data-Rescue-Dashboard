@@ -137,29 +137,42 @@ class FileValidator:
                 }
     
     @classmethod
+    @classmethod
     def _detect_file_type(cls, df_columns):
-        """Detect the actual file type based on columns."""
+        """Detect the actual file type based on columns - STRICT matching."""
         scores = {}
+        required_counts = {}
         
         for file_type, schema in cls.SCHEMAS.items():
             score = 0
-            # Check unique identifiers
-            for identifier in schema.get('unique_identifiers', []):
-                if identifier.lower() in df_columns:
-                    score += 2
+            required_matched = 0
+            total_required = len(schema['required'])
             
-            # Check required columns
+            # Check required columns (most important)
             for col_variants in schema['required']:
                 col_variants_lower = [c.lower() for c in col_variants]
                 if any(col in df_columns for col in col_variants_lower):
+                    score += 3  # High weight for required columns
+                    required_matched += 1
+            
+            # Check unique identifiers (secondary)
+            for identifier in schema.get('unique_identifiers', []):
+                if identifier.lower() in df_columns:
                     score += 1
             
             scores[file_type] = score
+            required_counts[file_type] = (required_matched, total_required)
         
-        # Return type with highest score (if significant)
+        # Only return a match if:
+        # 1. At least 60% of required columns are present
+        # 2. Score is significant
         if scores:
             best_match = max(scores, key=scores.get)
-            if scores[best_match] >= 3:  # Minimum threshold
+            matched, total = required_counts[best_match]
+            match_percentage = (matched / total * 100) if total > 0 else 0
+            
+            # STRICT: Must have at least 60% of required columns
+            if match_percentage >= 60 and scores[best_match] >= 6:
                 return best_match
         
         return None
