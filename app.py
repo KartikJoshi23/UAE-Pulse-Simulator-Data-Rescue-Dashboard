@@ -911,6 +911,8 @@ with st.sidebar:
             except:
                 total_revenue = 0
             
+            formatted_revenue = format_currency(total_revenue)
+            
             st.markdown(f"""
             <div style="
                 background: linear-gradient(135deg, #16161f 0%, #1a1a24 100%);
