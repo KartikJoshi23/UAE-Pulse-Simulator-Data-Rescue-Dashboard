@@ -1560,7 +1560,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             )
             fig = style_plotly_chart(fig)
             fig.update_traces(line_color='#06b6d4')
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("Revenue trend requires order_time column")
     
@@ -1592,7 +1592,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             )
             fig = style_plotly_chart(fig)
             fig.update_layout(showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("City data not available")
     
@@ -1638,7 +1638,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 )
             fig = style_plotly_chart(fig)
             fig.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("Category data not available")
     
@@ -1676,7 +1676,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                     color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899']
                 )
             fig = style_plotly_chart(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("Channel data not available")
     
@@ -1791,7 +1791,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             else:
                 st.info("City stockout data not available")
         else:
@@ -1826,7 +1826,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 color_discrete_map={'Critical': '#ef4444', 'High': '#f59e0b', 'Medium': '#3b82f6'}
             )
             fig = style_plotly_chart(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("Stock data not available")
     
@@ -1856,7 +1856,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 color_discrete_sequence=['#06b6d4']
             )
             fig = style_plotly_chart(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("Inventory data not available")
     
@@ -1891,7 +1891,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             else:
                 st.info("No issues logged")
         else:
@@ -1923,7 +1923,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
             )
         
         display_cols = [col for col in ['sku', 'store_id', 'city', 'channel', 'stock_on_hand'] if col in risk_table.columns]
-        st.dataframe(risk_table[display_cols], use_container_width=True)
+        st.dataframe(risk_table[display_cols], width='stretch')
     else:
         st.info("Inventory data not available for risk analysis")
     
@@ -2136,7 +2136,7 @@ def show_data_page():
         # Disable button unless ALL 4 files are valid
         button_disabled = len(valid_files) != 4
         
-        if st.button("📥 Load All Files", use_container_width=True, disabled=button_disabled):
+        if st.button("📥 Load All Files", width='stretch', disabled=button_disabled):
             if 'products' in valid_files:
                 st.session_state.raw_products = valid_files['products']
             if 'stores' in valid_files:
@@ -2163,7 +2163,7 @@ def show_data_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Sample Data", use_container_width=True, key='sample_data_btn'):
+        if st.button("📥 Load Sample Data", width='stretch', key='sample_data_btn'):
             try:
                 st.session_state.raw_products = pd.read_csv('data/products.csv')
                 st.session_state.raw_stores = pd.read_csv('data/stores.csv')
@@ -2195,7 +2195,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
             else:
                 st.info("📦 No products data loaded")
         
@@ -2211,7 +2211,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
             else:
                 st.info("🏪 No stores data loaded")
         
@@ -2227,7 +2227,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
             else:
                 st.info("🛒 No sales data loaded")
         
@@ -2243,7 +2243,7 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), use_container_width=True)
+                st.dataframe(df.head(100), width='stretch')
             else:
                 st.info("📋 No inventory data loaded")
         
@@ -2461,7 +2461,7 @@ def show_cleaner_page():
                 )
                 fig = style_plotly_chart(fig)
                 fig.update_layout(coloraxis_showscale=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 table_counts = issues_df.groupby('table').size().reset_index(name='count')
