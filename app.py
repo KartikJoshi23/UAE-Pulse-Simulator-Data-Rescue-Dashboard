@@ -1424,58 +1424,28 @@ def show_dashboard_page():
     st.markdown("---") 
     
 # ===== TOGGLE SWITCH =====
-    if 'view_mode' not in st.session_state:
-        st.session_state.view_mode = False
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        exec_selected = not st.session_state.view_mode
-        exec_bg = "linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4))" if exec_selected else "rgba(100, 116, 139, 0.1)"
-        exec_border = "#06b6d4" if exec_selected else "#475569"
-        exec_shadow = "0 0 20px rgba(6, 182, 212, 0.3)" if exec_selected else "none"
-        
-        st.markdown(f"""
-        <div style="background: {exec_bg}; border: 2px solid {exec_border}; border-radius: 12px; padding: 25px; text-align: center; box-shadow: {exec_shadow}; cursor: pointer;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">👔 Executive View</div>
-            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Financial & Strategic</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("ㅤ", key="exec_btn", use_container_width=True):
-            st.session_state.view_mode = False
-            st.rerun()
-    
-    with col2:
-        mgr_selected = st.session_state.view_mode
-        mgr_bg = "linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4))" if mgr_selected else "rgba(100, 116, 139, 0.1)"
-        mgr_border = "#3b82f6" if mgr_selected else "#475569"
-        mgr_shadow = "0 0 20px rgba(59, 130, 246, 0.3)" if mgr_selected else "none"
-        
-        st.markdown(f"""
-        <div style="background: {mgr_bg}; border: 2px solid {mgr_border}; border-radius: 12px; padding: 25px; text-align: center; box-shadow: {mgr_shadow}; cursor: pointer;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">📋 Manager View</div>
-            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Operational Risk & Execution</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("ㅤ", key="mgr_btn", use_container_width=True):
-            st.session_state.view_mode = True
-            st.rerun()
-    
-    # Hide the invisible buttons
     st.markdown("""
     <style>
-    div.stButton > button {
-        height: 0px !important;
-        padding: 0 !important;
-        margin-top: -15px !important;
-        opacity: 0 !important;
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 20px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        padding: 20px 40px !important;
+        border-radius: 10px !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3)) !important;
+        border: 2px solid #06b6d4 !important;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    view_mode = st.session_state.view_mode
+    tab_exec, tab_mgr = st.tabs([
+        "👔 Executive View — Financial & Strategic",
+        "📋 Manager View — Operational Risk & Execution"
+    ])
     
     st.markdown("---")
     
@@ -1488,11 +1458,10 @@ def show_dashboard_page():
     channel_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'channel')
     category_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'category')
     
-    if not view_mode:
-        # EXECUTIVE VIEW
+    with tab_exec:
         show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores)
-    else:
-        # MANAGER VIEW
+    
+    with tab_mgr:
         show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores, filtered_inventory)
     
     st.markdown("---")
