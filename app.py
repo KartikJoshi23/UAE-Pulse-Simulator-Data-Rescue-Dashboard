@@ -1367,20 +1367,24 @@ def show_dashboard_page():
     st.markdown("---") 
     
    # ===== TOGGLE SWITCH =====
-    st.markdown("""
-    <div style="display: flex; align-items: center; justify-content: center; gap: 30px; padding: 20px; margin: 10px 0;">
-        <span style="font-size: 1.1rem; font-weight: 600; color: #06b6d4;">👔 Executive View</span>
-        <span style="color: #64748b; font-size: 1.5rem;">⟵</span>
-        <span style="color: #64748b; font-size: 0.9rem;">Toggle</span>
-        <span style="color: #64748b; font-size: 1.5rem;">⟶</span>
-        <span style="font-size: 1.1rem; font-weight: 600; color: #3b82f6;">📋 Manager View</span>
-    </div>
-    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([2, 1, 2])
     
-    # Centered toggle
-    col1, col2, col3 = st.columns([5, 1, 5])
+    with col1:
+        st.markdown("""
+        <div style="text-align: right; padding: 5px 0;">
+            <span style="font-size: 1.1rem; font-weight: 600; color: #06b6d4;">👔 Executive View</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
     with col2:
         view_mode = st.toggle("", value=False, key="view_toggle", label_visibility="collapsed")
+    
+    with col3:
+        st.markdown("""
+        <div style="text-align: left; padding: 5px 0;">
+            <span style="font-size: 1.1rem; font-weight: 600; color: #3b82f6;">📋 Manager View</span>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Display active view indicator
     if view_mode:
