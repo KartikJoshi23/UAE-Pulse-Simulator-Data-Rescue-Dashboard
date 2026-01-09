@@ -1211,16 +1211,20 @@ def show_dashboard_page():
     st.markdown("""
     <style>
     div[data-testid="stButton"] button {
-        font-size: 1.5rem !important;
+        font-size: 1.8rem !important;
         font-weight: 700 !important;
-        padding: 25px 20px !important;
-        min-height: 120px !important;
+        padding: 30px 20px !important;
+        min-height: 140px !important;
         white-space: pre-wrap !important;
         text-align: center !important;
-        line-height: 1.8 !important;
+        line-height: 2.2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     div[data-testid="stButton"] button[kind="primary"] {
-        background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4)) !important;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3)) !important;
         border: 2px solid #06b6d4 !important;
         color: #ffffff !important;
     }
