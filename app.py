@@ -901,51 +901,29 @@ with st.sidebar:
         st.markdown("---")
         st.markdown('<p style="color: #10b981; font-weight: 600; margin-bottom: 15px; letter-spacing: 1.2px; font-size: 0.85rem;">📥 DOWNLOAD CLEANED FILES</p>', unsafe_allow_html=True)
         
-        download_col1, download_col2, download_col3, download_col4 = st.columns(4)
+        import io
+        import zipfile
         
-        with download_col1:
+        # Create ZIP file with all cleaned CSVs
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             if st.session_state.clean_products is not None:
-                csv = st.session_state.clean_products.to_csv(index=False)
-                st.download_button(
-                    label="📦 Products",
-                    data=csv,
-                    file_name="cleaned_products.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
-        
-        with download_col2:
+                zip_file.writestr("cleaned_products.csv", st.session_state.clean_products.to_csv(index=False))
             if st.session_state.clean_stores is not None:
-                csv = st.session_state.clean_stores.to_csv(index=False)
-                st.download_button(
-                    label="🏪 Stores",
-                    data=csv,
-                    file_name="cleaned_stores.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
-        
-        with download_col3:
+                zip_file.writestr("cleaned_stores.csv", st.session_state.clean_stores.to_csv(index=False))
             if st.session_state.clean_sales is not None:
-                csv = st.session_state.clean_sales.to_csv(index=False)
-                st.download_button(
-                    label="💰 Sales",
-                    data=csv,
-                    file_name="cleaned_sales.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
-        
-        with download_col4:
+                zip_file.writestr("cleaned_sales.csv", st.session_state.clean_sales.to_csv(index=False))
             if st.session_state.clean_inventory is not None:
-                csv = st.session_state.clean_inventory.to_csv(index=False)
-                st.download_button(
-                    label="📊 Inventory",
-                    data=csv,
-                    file_name="cleaned_inventory.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
+                zip_file.writestr("cleaned_inventory.csv", st.session_state.clean_inventory.to_csv(index=False))
+        
+        zip_buffer.seek(0)
+        
+        st.download_button(
+            label="📦 Download All Cleaned Files (ZIP)",
+            data=zip_buffer,
+            file_name="cleaned_data.zip",
+            mime="application/zip"
+        )
     # Quick Stats
     if st.session_state.data_loaded:
         st.markdown("---")
@@ -1453,49 +1431,47 @@ def show_dashboard_page():
     
     with col1:
         exec_selected = not st.session_state.view_mode
-        exec_bg = "linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))" if exec_selected else "rgba(100, 116, 139, 0.15)"
+        exec_bg = "linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4))" if exec_selected else "rgba(100, 116, 139, 0.1)"
         exec_border = "#06b6d4" if exec_selected else "#475569"
+        exec_shadow = "0 0 20px rgba(6, 182, 212, 0.3)" if exec_selected else "none"
         
-        if st.button("👔 Executive View\n\nFinancial & Strategic", key="exec_btn", use_container_width=True):
+        st.markdown(f"""
+        <div style="background: {exec_bg}; border: 2px solid {exec_border}; border-radius: 12px; padding: 25px; text-align: center; box-shadow: {exec_shadow}; cursor: pointer;">
+            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">👔 Executive View</div>
+            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Financial & Strategic</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("ㅤ", key="exec_btn", use_container_width=True):
             st.session_state.view_mode = False
             st.rerun()
     
     with col2:
         mgr_selected = st.session_state.view_mode
-        mgr_bg = "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))" if mgr_selected else "rgba(100, 116, 139, 0.15)"
+        mgr_bg = "linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4))" if mgr_selected else "rgba(100, 116, 139, 0.1)"
         mgr_border = "#3b82f6" if mgr_selected else "#475569"
+        mgr_shadow = "0 0 20px rgba(59, 130, 246, 0.3)" if mgr_selected else "none"
         
-        if st.button("📋 Manager View\n\nOperational Risk & Execution", key="mgr_btn", use_container_width=True):
+        st.markdown(f"""
+        <div style="background: {mgr_bg}; border: 2px solid {mgr_border}; border-radius: 12px; padding: 25px; text-align: center; box-shadow: {mgr_shadow}; cursor: pointer;">
+            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">📋 Manager View</div>
+            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Operational Risk & Execution</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("ㅤ", key="mgr_btn", use_container_width=True):
             st.session_state.view_mode = True
             st.rerun()
     
-    # Style the buttons to look like the boxes
-    st.markdown(f"""
+    # Hide the invisible buttons
+    st.markdown("""
     <style>
-    [data-testid="stHorizontalBlock"] [data-testid="column"]:nth-child(1) button {{
-        background: {"linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))" if not st.session_state.view_mode else "rgba(100, 116, 139, 0.15)"} !important;
-        border: 2px solid {"#06b6d4" if not st.session_state.view_mode else "#475569"} !important;
-        border-radius: 12px !important;
-        padding: 25px !important;
-        font-size: 2.5rem !important;
-        font-weight: 700 !important;
-        color: #ffffff !important;
-        white-space: pre-wrap !important;
-        line-height: 1.8 !important;
-        min-height: 120px !important;
-    }}
-    [data-testid="stHorizontalBlock"] [data-testid="column"]:nth-child(2) button {{
-        background: {"linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))" if st.session_state.view_mode else "rgba(100, 116, 139, 0.15)"} !important;
-        border: 2px solid {"#3b82f6" if st.session_state.view_mode else "#475569"} !important;
-        border-radius: 12px !important;
-        padding: 25px !important;
-        font-size: 2.5rem !important;
-        font-weight: 700 !important;
-        color: #ffffff !important;
-        white-space: pre-wrap !important;
-        line-height: 1.8 !important;
-        min-height: 120px !important;
-    }}
+    div.stButton > button {
+        height: 0px !important;
+        padding: 0 !important;
+        margin-top: -15px !important;
+        opacity: 0 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
     
