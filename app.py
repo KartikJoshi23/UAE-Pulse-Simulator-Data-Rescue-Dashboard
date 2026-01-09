@@ -1401,77 +1401,31 @@ def show_dashboard_page():
     if 'view_mode' not in st.session_state:
         st.session_state.view_mode = False
     
+    # Custom CSS for buttons
+    st.markdown("""
+    <style>
+    div.stButton > button {
+        width: 100%;
+        padding: 25px 20px !important;
+        font-size: 1.1rem !important;
+        border-radius: 10px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     col1, col2 = st.columns(2)
     
     with col1:
-        exec_selected = not st.session_state.view_mode
-        exec_bg = "linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))" if exec_selected else "rgba(100, 116, 139, 0.15)"
-        exec_border = "#06b6d4" if exec_selected else "#475569"
-        exec_color = "#ffffff" if exec_selected else "#94a3b8"
-        
-        st.markdown(f"""
-        <div style="
-            background: {exec_bg};
-            border: 2px solid {exec_border};
-            border-radius: 10px;
-            padding: 30px 20px;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        ">
-            <div style="text-align: left;">
-                <div style="font-size: 1.8rem; font-weight: 700; color: {exec_color};">👔 Executive View</div>
-                <div style="font-size: 1.2rem; font-weight: 500; color: {exec_color}; opacity: 0.9;">Financial & Strategic</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("Select Executive", key="exec_btn", use_container_width=True, type="secondary"):
+        exec_type = "primary" if not st.session_state.view_mode else "secondary"
+        if st.button("👔 Executive View\n\nFinancial & Strategic", key="exec_btn", type=exec_type, use_container_width=True):
             st.session_state.view_mode = False
             st.rerun()
     
     with col2:
-        mgr_selected = st.session_state.view_mode
-        mgr_bg = "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))" if mgr_selected else "rgba(100, 116, 139, 0.15)"
-        mgr_border = "#3b82f6" if mgr_selected else "#475569"
-        mgr_color = "#ffffff" if mgr_selected else "#94a3b8"
-        
-        st.markdown(f"""
-        <div style="
-            background: {mgr_bg};
-            border: 2px solid {mgr_border};
-            border-radius: 10px;
-            padding: 30px 20px;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        ">
-            <div style="text-align: left;">
-                <div style="font-size: 1.8rem; font-weight: 700; color: {mgr_color};">📋 Manager View</div>
-                <div style="font-size: 1.2rem; font-weight: 500; color: {mgr_color}; opacity: 0.9;">Operational Risk & Execution</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("Select Manager", key="mgr_btn", use_container_width=True, type="secondary"):
+        mgr_type = "primary" if st.session_state.view_mode else "secondary"
+        if st.button("📋 Manager View\n\nOperational Risk & Execution", key="mgr_btn", type=mgr_type, use_container_width=True):
             st.session_state.view_mode = True
             st.rerun()
-    
-    # Hide the actual buttons with CSS
-    st.markdown("""
-    <style>
-    div[data-testid="stButton"] button {
-        opacity: 0;
-        height: 0;
-        padding: 0 !important;
-        margin-top: -20px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     
     view_mode = st.session_state.view_mode
     
