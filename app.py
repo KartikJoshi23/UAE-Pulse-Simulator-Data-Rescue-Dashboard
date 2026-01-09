@@ -1464,22 +1464,41 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     # ===== CHARTS (Executive - 4 Required) =====
     st.markdown('<p class="section-title section-title-blue">📈 Executive Charts</p>', unsafe_allow_html=True)
     
-    # Chart 1 & 2: Net Revenue Trend + Revenue by City/Channel
+    # ===== CHART 1 & 2 =====
     col1, col2 = st.columns(2)
     
     with col1:
-        # Chart 1: Net Revenue Trend (daily/weekly)
-        if 'order_time' in sales_df.columns:
+        # CHART 1: Net Revenue Trend with Individual Filter
+        st.markdown("**📈 Net Revenue Trend**")
+        
+        # Individual filter for this chart
+        trend_filter_col1, trend_filter_col2 = st.columns([1, 2])
+        with trend_filter_col1:
+            time_group = st.selectbox(
+                "Group by",
+                ["Daily", "Weekly", "Monthly"],
+                key="exec_trend_group"
+            )
+        
+        if sales_df is not None and 'order_time' in sales_df.columns:
             sales_trend = sales_df.copy()
-            sales_trend['date'] = pd.to_datetime(sales_trend['order_time']).dt.date
-            daily_revenue = sales_trend.groupby('date').agg({'selling_price_aed': 'sum'}).reset_index()
+            sales_trend['order_time'] = pd.to_datetime(sales_trend['order_time'], errors='coerce')
+            
+            if time_group == "Daily":
+                sales_trend['period'] = sales_trend['order_time'].dt.date
+            elif time_group == "Weekly":
+                sales_trend['period'] = sales_trend['order_time'].dt.to_period('W').apply(lambda x: x.start_time.date())
+            else:  # Monthly
+                sales_trend['period'] = sales_trend['order_time'].dt.to_period('M').apply(lambda x: x.start_time.date())
+            
+            daily_revenue = sales_trend.groupby('period').agg({'selling_price_aed': 'sum'}).reset_index()
             daily_revenue.columns = ['Date', 'Revenue']
             
             fig = px.line(
                 daily_revenue,
                 x='Date',
                 y='Revenue',
-                title='Net Revenue Trend (Daily)',
+                title=f'Net Revenue Trend ({time_group})',
                 markers=True
             )
             fig = style_plotly_chart(fig)
@@ -1489,10 +1508,25 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             st.info("Revenue trend requires order_time column")
     
     with col2:
-        # Chart 2: Revenue by City/Channel
-        if len(city_kpis) > 0:
+        # CHART 2: Revenue by City with Individual Filter
+        st.markdown("**🏙️ Revenue by City**")
+        
+        # Individual filter for this chart
+        city_filter_col1, city_filter_col2 = st.columns([1, 2])
+        with city_filter_col1:
+            city_sort = st.selectbox(
+                "Sort",
+                ["Descending", "Ascending"],
+                key="exec_city_sort"
+            )
+        
+        if city_kpis is not None and len(city_kpis) > 0:
+            city_data = city_kpis.copy()
+            ascending = city_sort == "Ascending"
+            city_data = city_data.sort_values('revenue', ascending=ascending)
+            
             fig = px.bar(
-                city_kpis,
+                city_data,
                 x='city',
                 y='revenue',
                 title='Revenue by City',
@@ -1502,50 +1536,92 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             fig = style_plotly_chart(fig)
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("City data not available")
     
-    # Chart 3 & 4: Margin by Category + Revenue by Channel
+    # ===== CHART 3 & 4 =====
     col1, col2 = st.columns(2)
     
     with col1:
-        # Chart 3: Margin % by Category
-        if len(category_kpis) > 0 and 'margin_pct' in category_kpis.columns:
-            fig = px.bar(
-                category_kpis.head(8),
-                x='category',
-                y='margin_pct',
-                title='Gross Margin % by Category',
-                color='margin_pct',
-                color_continuous_scale=['#ef4444', '#f59e0b', '#10b981']
+        # CHART 3: Margin % by Category with Individual Filter
+        st.markdown("**📦 Margin by Category**")
+        
+        # Individual filter for this chart
+        cat_filter_col1, cat_filter_col2 = st.columns([1, 2])
+        with cat_filter_col1:
+            top_n_cat = st.selectbox(
+                "Show Top",
+                [5, 10, 15, "All"],
+                key="exec_cat_top"
             )
+        
+        if category_kpis is not None and len(category_kpis) > 0:
+            cat_data = category_kpis.copy()
+            
+            if top_n_cat != "All":
+                cat_data = cat_data.nlargest(top_n_cat, 'revenue')
+            
+            if 'margin_pct' in cat_data.columns:
+                fig = px.bar(
+                    cat_data,
+                    x='category',
+                    y='margin_pct',
+                    title=f'Gross Margin % by Category (Top {top_n_cat})',
+                    color='margin_pct',
+                    color_continuous_scale=['#ef4444', '#f59e0b', '#10b981']
+                )
+            else:
+                fig = px.bar(
+                    cat_data,
+                    x='category',
+                    y='revenue',
+                    title=f'Revenue by Category (Top {top_n_cat})',
+                    color='revenue',
+                    color_continuous_scale=['#06b6d4', '#3b82f6', '#8b5cf6']
+                )
             fig = style_plotly_chart(fig)
             fig.update_layout(coloraxis_showscale=False)
             st.plotly_chart(fig, use_container_width=True)
-        elif len(category_kpis) > 0:
-            fig = px.bar(
-                category_kpis.head(8),
-                x='category',
-                y='revenue',
-                title='Revenue by Category',
-                color='revenue',
-                color_continuous_scale=['#06b6d4', '#3b82f6', '#8b5cf6']
-            )
-            fig = style_plotly_chart(fig)
-            fig.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Category data not available")
     
     with col2:
-        # Chart 4: Revenue by Channel (Pie)
-        if len(channel_kpis) > 0:
-            fig = px.pie(
-                channel_kpis,
-                values='revenue',
-                names='channel',
-                title='Revenue by Channel',
-                color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899'],
-                hole=0.4
+        # CHART 4: Revenue by Channel with Individual Filter
+        st.markdown("**📱 Revenue by Channel**")
+        
+        # Individual filter for this chart
+        chan_filter_col1, chan_filter_col2 = st.columns([1, 2])
+        with chan_filter_col1:
+            chart_type = st.selectbox(
+                "Chart Type",
+                ["Donut", "Pie", "Bar"],
+                key="exec_channel_type"
             )
+        
+        if channel_kpis is not None and len(channel_kpis) > 0:
+            if chart_type in ["Donut", "Pie"]:
+                hole = 0.4 if chart_type == "Donut" else 0
+                fig = px.pie(
+                    channel_kpis,
+                    values='revenue',
+                    names='channel',
+                    title='Revenue by Channel',
+                    color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899'],
+                    hole=hole
+                )
+            else:  # Bar
+                fig = px.bar(
+                    channel_kpis,
+                    x='channel',
+                    y='revenue',
+                    title='Revenue by Channel',
+                    color='channel',
+                    color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899']
+                )
             fig = style_plotly_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Channel data not available")
     
     st.markdown("---")
     
@@ -1568,17 +1644,17 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     return_rate = kpis.get('return_rate_pct', 0)
     
     # Payment failure rate
-    if 'payment_status' in sales_df.columns:
+    if sales_df is not None and 'payment_status' in sales_df.columns:
         total_orders = len(sales_df)
         failed_orders = (sales_df['payment_status'] == 'Failed').sum()
         payment_failure_rate = (failed_orders / total_orders * 100) if total_orders > 0 else 0
     else:
         payment_failure_rate = 0
     
-    # Stockout risk (simplified)
+    # Stockout risk
     stockout_risk = 0
     high_risk_skus = 0
-    if 'stock_on_hand' in inventory_df.columns:
+    if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
         low_stock = (inventory_df['stock_on_hand'] < 10).sum()
         total_inventory = len(inventory_df)
         stockout_risk = (low_stock / total_inventory * 100) if total_inventory > 0 else 0
@@ -1619,32 +1695,67 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     # ===== CHARTS (Manager - 4 Required) =====
     st.markdown('<p class="section-title section-title-teal">📊 Operational Charts</p>', unsafe_allow_html=True)
     
-    # Chart 1 & 2
+    # ===== CHART 1 & 2 =====
     col1, col2 = st.columns(2)
     
     with col1:
-        # Chart 1: Stockout Risk by City/Channel
-        if len(city_kpis) > 0:
-            # Simulate stockout risk by city
-            city_risk = city_kpis.copy()
-            city_risk['stockout_risk'] = np.random.uniform(5, 25, len(city_risk))
-            
-            fig = px.bar(
-                city_risk,
-                x='city',
-                y='stockout_risk',
-                title='Stockout Risk % by City',
-                color='stockout_risk',
-                color_continuous_scale=['#10b981', '#f59e0b', '#ef4444']
+        # CHART 1: Stockout Risk by City with Individual Filter
+        st.markdown("**🏙️ Stockout Risk by City**")
+        
+        # Individual filter for this chart
+        risk_filter_col1, risk_filter_col2 = st.columns([1, 2])
+        with risk_filter_col1:
+            risk_sort = st.selectbox(
+                "Sort",
+                ["Highest First", "Lowest First"],
+                key="mgr_risk_sort"
             )
-            fig = style_plotly_chart(fig)
-            fig.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(fig, use_container_width=True)
+        
+        if inventory_df is not None and stores_df is not None and 'store_id' in inventory_df.columns:
+            # Calculate stockout risk by city
+            inv_with_store = inventory_df.merge(stores_df[['store_id', 'city']], on='store_id', how='left')
+            
+            if 'city' in inv_with_store.columns and 'stock_on_hand' in inv_with_store.columns:
+                city_risk = inv_with_store.groupby('city').apply(
+                    lambda x: (x['stock_on_hand'] < 10).sum() / len(x) * 100 if len(x) > 0 else 0
+                ).reset_index()
+                city_risk.columns = ['city', 'stockout_risk']
+                
+                ascending = risk_sort == "Lowest First"
+                city_risk = city_risk.sort_values('stockout_risk', ascending=ascending)
+                
+                fig = px.bar(
+                    city_risk,
+                    x='city',
+                    y='stockout_risk',
+                    title='Stockout Risk % by City',
+                    color='stockout_risk',
+                    color_continuous_scale=['#10b981', '#f59e0b', '#ef4444']
+                )
+                fig = style_plotly_chart(fig)
+                fig.update_layout(coloraxis_showscale=False)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("City stockout data not available")
+        else:
+            st.info("Inventory or store data not available")
     
     with col2:
-        # Chart 2: Top 10 Risk Product-Store (Table as Chart)
-        if 'stock_on_hand' in inventory_df.columns and 'sku' in inventory_df.columns:
-            risk_df = inventory_df.nsmallest(10, 'stock_on_hand')[['sku', 'store_id', 'stock_on_hand']].copy()
+        # CHART 2: Top Risk Items with Individual Filter
+        st.markdown("**🚨 Top Stockout Risk Items**")
+        
+        # Individual filter for this chart
+        items_filter_col1, items_filter_col2 = st.columns([1, 2])
+        with items_filter_col1:
+            top_n_items = st.selectbox(
+                "Show Top",
+                [5, 10, 15, 20],
+                index=1,
+                key="mgr_items_top"
+            )
+        
+        if inventory_df is not None and 'stock_on_hand' in inventory_df.columns and 'sku' in inventory_df.columns:
+            risk_df = inventory_df.nsmallest(top_n_items, 'stock_on_hand')[['sku', 'store_id', 'stock_on_hand']].copy()
             risk_df['risk_level'] = risk_df['stock_on_hand'].apply(
                 lambda x: 'Critical' if x < 5 else ('High' if x < 10 else 'Medium')
             )
@@ -1653,7 +1764,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 risk_df,
                 x='sku',
                 y='stock_on_hand',
-                title='Top 10 Stockout Risk Items',
+                title=f'Top {top_n_items} Stockout Risk Items',
                 color='risk_level',
                 color_discrete_map={'Critical': '#ef4444', 'High': '#f59e0b', 'Medium': '#3b82f6'}
             )
@@ -1662,37 +1773,63 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
         else:
             st.info("Stock data not available")
     
-    # Chart 3 & 4
+    # ===== CHART 3 & 4 =====
     col1, col2 = st.columns(2)
     
     with col1:
-        # Chart 3: Inventory Distribution
-        if 'stock_on_hand' in inventory_df.columns:
+        # CHART 3: Inventory Distribution with Individual Filter
+        st.markdown("**📦 Inventory Distribution**")
+        
+        # Individual filter for this chart
+        inv_filter_col1, inv_filter_col2 = st.columns([1, 2])
+        with inv_filter_col1:
+            bin_count = st.selectbox(
+                "Bins",
+                [20, 30, 50],
+                index=1,
+                key="mgr_inv_bins"
+            )
+        
+        if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
             fig = px.histogram(
                 inventory_df,
                 x='stock_on_hand',
                 title='Inventory Distribution (Stock on Hand)',
-                nbins=30,
+                nbins=bin_count,
                 color_discrete_sequence=['#06b6d4']
             )
             fig = style_plotly_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Inventory data not available")
     
     with col2:
-        # Chart 4: Pareto of Issues (from issues log)
-        if st.session_state.is_cleaned and hasattr(st.session_state, 'issues_df'):
+        # CHART 4: Issues Pareto with Individual Filter
+        st.markdown("**📋 Issues Pareto**")
+        
+        # Individual filter for this chart
+        issues_filter_col1, issues_filter_col2 = st.columns([1, 2])
+        with issues_filter_col1:
+            top_n_issues = st.selectbox(
+                "Show Top",
+                [5, 10, 15],
+                index=1,
+                key="mgr_issues_top"
+            )
+        
+        if st.session_state.is_cleaned and hasattr(st.session_state, 'issues_df') and st.session_state.issues_df is not None:
             issues_df = st.session_state.issues_df
             if len(issues_df) > 0 and 'issue_type' in issues_df.columns:
-                issue_counts = issues_df['issue_type'].value_counts().head(10).reset_index()
-                issue_counts.columns = ['issue_type', 'count']
+                issue_counts = issues_df['issue_type'].value_counts().head(top_n_issues).reset_index()
+                issue_counts.columns = ['Issue Type', 'Count']
                 
                 fig = px.bar(
                     issue_counts,
-                    x='count',
-                    y='issue_type',
+                    x='Count',
+                    y='Issue Type',
                     orientation='h',
-                    title='Top Issues (Pareto)',
-                    color='count',
+                    title=f'Top {top_n_issues} Issues (Pareto)',
+                    color='Count',
                     color_continuous_scale=['#06b6d4', '#8b5cf6', '#ec4899']
                 )
                 fig = style_plotly_chart(fig)
@@ -1705,14 +1842,23 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     
     st.markdown("---")
     
-    # ===== TOP 10 RISK TABLE =====
-    st.markdown('<p class="section-title section-title-orange">🚨 Top 10 Stockout Risk Items</p>', unsafe_allow_html=True)
+    # ===== TOP RISK TABLE =====
+    st.markdown('<p class="section-title section-title-orange">🚨 Top Stockout Risk Items Table</p>', unsafe_allow_html=True)
     
-    if 'stock_on_hand' in inventory_df.columns and 'sku' in inventory_df.columns:
-        risk_table = inventory_df.nsmallest(10, 'stock_on_hand').copy()
+    # Table filter
+    table_col1, table_col2, table_col3 = st.columns([1, 1, 2])
+    with table_col1:
+        table_top_n = st.selectbox(
+            "Show Top",
+            [10, 20, 50],
+            key="mgr_table_top"
+        )
+    
+    if inventory_df is not None and 'stock_on_hand' in inventory_df.columns and 'sku' in inventory_df.columns:
+        risk_table = inventory_df.nsmallest(table_top_n, 'stock_on_hand').copy()
         
         # Add store city if possible
-        if 'store_id' in risk_table.columns and 'store_id' in stores_df.columns:
+        if stores_df is not None and 'store_id' in risk_table.columns and 'store_id' in stores_df.columns:
             risk_table = risk_table.merge(
                 stores_df[['store_id', 'city', 'channel']],
                 on='store_id',
