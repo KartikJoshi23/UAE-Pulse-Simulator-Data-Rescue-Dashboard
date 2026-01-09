@@ -602,7 +602,7 @@ def create_metric_card(label, value, delta=None, delta_type="positive", color="c
         {delta_html}
     </div>
     """
-    def format_currency(value):
+def format_currency(value):
     """Format large currency values for display.
     Examples:
         1,500 → AED 1.5K
