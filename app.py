@@ -1435,13 +1435,14 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     st.markdown('<p class="section-title section-title-cyan">💰 Financial KPIs</p>', unsafe_allow_html=True)
     
     # Row 1: Revenue metrics
+    # Row 1: Revenue metrics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         gross_revenue = kpis.get('total_revenue', 0)
         st.markdown(create_metric_card(
             "Gross Revenue",
-            f"AED {gross_revenue:,.0f}",
+            format_currency(gross_revenue),
             color="cyan"
         ), unsafe_allow_html=True)
     
@@ -1449,7 +1450,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         refund_amount = kpis.get('refund_amount', 0)
         st.markdown(create_metric_card(
             "Refund Amount",
-            f"AED {refund_amount:,.0f}",
+            format_currency(refund_amount),
             color="pink"
         ), unsafe_allow_html=True)
     
@@ -1457,7 +1458,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         net_revenue = kpis.get('net_revenue', gross_revenue - refund_amount)
         st.markdown(create_metric_card(
             "Net Revenue",
-            f"AED {net_revenue:,.0f}",
+            format_currency(net_revenue),
             color="green"
         ), unsafe_allow_html=True)
     
@@ -1465,7 +1466,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         cogs = kpis.get('total_cogs', 0)
         st.markdown(create_metric_card(
             "COGS",
-            f"AED {cogs:,.0f}",
+            format_currency(cogs),
             color="orange"
         ), unsafe_allow_html=True)
     
@@ -1478,7 +1479,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         gross_margin = kpis.get('total_profit', 0)
         st.markdown(create_metric_card(
             "Gross Margin (AED)",
-            f"AED {gross_margin:,.0f}",
+            format_currency(gross_margin),
             color="teal"
         ), unsafe_allow_html=True)
     
@@ -1502,7 +1503,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         avg_order_value = kpis.get('avg_order_value', 0)
         st.markdown(create_metric_card(
             "Avg Order Value",
-            f"AED {avg_order_value:,.2f}",
+            format_currency(avg_order_value),
             color="cyan"
         ), unsafe_allow_html=True)
     
