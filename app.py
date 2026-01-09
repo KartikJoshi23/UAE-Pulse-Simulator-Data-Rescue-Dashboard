@@ -1456,34 +1456,48 @@ def show_dashboard_page():
         exec_bg = "linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))" if exec_selected else "rgba(100, 116, 139, 0.15)"
         exec_border = "#06b6d4" if exec_selected else "#475569"
         
-        st.markdown(f"""
-        <div style="background: {exec_bg}; border: 2px solid {exec_border}; border-radius: 12px; padding: 25px; text-align: center;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">👔 Executive View</div>
-            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Financial & Strategic</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if not exec_selected:
-            if st.button("Select", key="exec_btn", use_container_width=True):
-                st.session_state.view_mode = False
-                st.rerun()
+        if st.button("👔 Executive View\n\nFinancial & Strategic", key="exec_btn", use_container_width=True):
+            st.session_state.view_mode = False
+            st.rerun()
     
     with col2:
         mgr_selected = st.session_state.view_mode
         mgr_bg = "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))" if mgr_selected else "rgba(100, 116, 139, 0.15)"
         mgr_border = "#3b82f6" if mgr_selected else "#475569"
         
-        st.markdown(f"""
-        <div style="background: {mgr_bg}; border: 2px solid {mgr_border}; border-radius: 12px; padding: 25px; text-align: center;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #ffffff;">📋 Manager View</div>
-            <div style="font-size: 0.95rem; color: #cbd5e1; margin-top: 8px;">Operational Risk & Execution</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if not mgr_selected:
-            if st.button("Select", key="mgr_btn", use_container_width=True):
-                st.session_state.view_mode = True
-                st.rerun()
+        if st.button("📋 Manager View\n\nOperational Risk & Execution", key="mgr_btn", use_container_width=True):
+            st.session_state.view_mode = True
+            st.rerun()
+    
+    # Style the buttons to look like the boxes
+    st.markdown(f"""
+    <style>
+    [data-testid="stHorizontalBlock"] [data-testid="column"]:nth-child(1) button {{
+        background: {"linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))" if not st.session_state.view_mode else "rgba(100, 116, 139, 0.15)"} !important;
+        border: 2px solid {"#06b6d4" if not st.session_state.view_mode else "#475569"} !important;
+        border-radius: 12px !important;
+        padding: 25px !important;
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        white-space: pre-wrap !important;
+        line-height: 1.8 !important;
+        min-height: 120px !important;
+    }}
+    [data-testid="stHorizontalBlock"] [data-testid="column"]:nth-child(2) button {{
+        background: {"linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))" if st.session_state.view_mode else "rgba(100, 116, 139, 0.15)"} !important;
+        border: 2px solid {"#3b82f6" if st.session_state.view_mode else "#475569"} !important;
+        border-radius: 12px !important;
+        padding: 25px !important;
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        white-space: pre-wrap !important;
+        line-height: 1.8 !important;
+        min-height: 120px !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
     
     view_mode = st.session_state.view_mode
     
