@@ -1734,6 +1734,8 @@ def show_data_page():
                         validation_errors.append(f"📦 Products: {validation['message']}")
                         if validation['missing_columns']:
                             validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
+                        if validation.get('uploaded_columns'):
+                            validation_errors.append(f"   Your file has: {', '.join(validation['uploaded_columns'])}")
                         if validation['detected_type']:
                             validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
                 except Exception as e:
