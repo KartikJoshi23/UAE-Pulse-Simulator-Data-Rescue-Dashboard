@@ -1208,6 +1208,7 @@ def show_dashboard_page():
     st.markdown("---")
     
     # ===== GLOBAL FILTERS SECTION =====
+    # ===== GLOBAL FILTERS SECTION =====
     st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
     
     filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
@@ -1232,85 +1233,62 @@ def show_dashboard_page():
             except:
                 st.caption("Date filter unavailable")
     
-    # City Filter
+    # City Filter - with "All" option
     with filter_col2:
-        selected_cities = []
+        all_cities = []
         if stores_df is not None and 'city' in stores_df.columns:
             all_cities = stores_df['city'].dropna().unique().tolist()
-            selected_cities = st.multiselect(
+            city_options = ["All Cities"] + all_cities
+            selected_city_option = st.selectbox(
                 "🏙️ City",
-                options=all_cities,
-                default=all_cities,
+                options=city_options,
                 key="global_city_filter"
             )
+            # If "All Cities" selected, use all cities
+            if selected_city_option == "All Cities":
+                selected_cities = all_cities
+            else:
+                selected_cities = [selected_city_option]
+        else:
+            selected_cities = []
     
-    # Channel Filter
+    # Channel Filter - with "All" option
     with filter_col3:
-        selected_channels = []
+        all_channels = []
         if stores_df is not None and 'channel' in stores_df.columns:
             all_channels = stores_df['channel'].dropna().unique().tolist()
-            selected_channels = st.multiselect(
+            channel_options = ["All Channels"] + all_channels
+            selected_channel_option = st.selectbox(
                 "📱 Channel",
-                options=all_channels,
-                default=all_channels,
+                options=channel_options,
                 key="global_channel_filter"
             )
+            # If "All Channels" selected, use all channels
+            if selected_channel_option == "All Channels":
+                selected_channels = all_channels
+            else:
+                selected_channels = [selected_channel_option]
+        else:
+            selected_channels = []
     
-    # Category Filter
+    # Category Filter - with "All" option
     with filter_col4:
-        selected_categories = []
+        all_categories = []
         if products_df is not None and 'category' in products_df.columns:
             all_categories = products_df['category'].dropna().unique().tolist()
-            selected_categories = st.multiselect(
+            category_options = ["All Categories"] + all_categories
+            selected_category_option = st.selectbox(
                 "📦 Category",
-                options=all_categories,
-                default=all_categories,
+                options=category_options,
                 key="global_category_filter"
             )
-    
-    # ===== APPLY FILTERS =====
-    filtered_sales = sales_df.copy()
-    filtered_stores = stores_df.copy() if stores_df is not None else None
-    filtered_products = products_df.copy() if products_df is not None else None
-    filtered_inventory = inventory_df.copy() if inventory_df is not None else None
-    
-    # Apply date filter
-    if date_range and len(date_range) == 2 and 'order_time' in filtered_sales.columns:
-        start_date, end_date = date_range
-        filtered_sales = filtered_sales[
-            (filtered_sales['order_time'].dt.date >= start_date) &
-            (filtered_sales['order_time'].dt.date <= end_date)
-        ]
-    
-    # Apply city/channel filter via stores
-    if filtered_stores is not None:
-        if selected_cities:
-            filtered_stores = filtered_stores[filtered_stores['city'].isin(selected_cities)]
-        if selected_channels:
-            filtered_stores = filtered_stores[filtered_stores['channel'].isin(selected_channels)]
-        
-        # Filter sales by valid stores
-        if 'store_id' in filtered_sales.columns and 'store_id' in filtered_stores.columns:
-            valid_store_ids = filtered_stores['store_id'].unique()
-            filtered_sales = filtered_sales[filtered_sales['store_id'].isin(valid_store_ids)]
-    
-    # Apply category filter via products
-    if filtered_products is not None and selected_categories:
-        filtered_products = filtered_products[filtered_products['category'].isin(selected_categories)]
-        
-        # Filter sales by valid products
-        if 'sku' in filtered_sales.columns and 'sku' in filtered_products.columns:
-            valid_skus = filtered_products['sku'].unique()
-            filtered_sales = filtered_sales[filtered_sales['sku'].isin(valid_skus)]
-    
-    # Filter inventory by valid stores and products
-    if filtered_inventory is not None:
-        if filtered_stores is not None and 'store_id' in filtered_inventory.columns:
-            valid_store_ids = filtered_stores['store_id'].unique()
-            filtered_inventory = filtered_inventory[filtered_inventory['store_id'].isin(valid_store_ids)]
-        if filtered_products is not None and 'sku' in filtered_inventory.columns:
-            valid_skus = filtered_products['sku'].unique()
-            filtered_inventory = filtered_inventory[filtered_inventory['sku'].isin(valid_skus)]
+            # If "All Categories" selected, use all categories
+            if selected_category_option == "All Categories":
+                selected_categories = all_categories
+            else:
+                selected_categories = [selected_category_option]
+        else:
+            selected_categories = []
     
     # Show filter results
     original_count = len(sales_df)
