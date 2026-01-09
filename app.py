@@ -1366,25 +1366,37 @@ def show_dashboard_page():
     
     st.markdown("---") 
     
-   # ===== TOGGLE SWITCH =====
-    col1, col2, col3 = st.columns([2, 1, 2])
+# ===== TOGGLE SWITCH =====
+    st.markdown("""
+    <div style="display: flex; justify-content: center; align-items: center; gap: 50px; padding: 15px 0;">
+        <span style="font-size: 1.1rem; font-weight: 600; color: #06b6d4; min-width: 150px; text-align: right;">👔 Executive View</span>
+        <span style="font-size: 1.5rem; color: #64748b;">⬤</span>
+        <span style="font-size: 1.1rem; font-weight: 600; color: #3b82f6; min-width: 150px; text-align: left;">📋 Manager View</span>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with col1:
-        st.markdown("""
-        <div style="text-align: right; padding: 5px 0;">
-            <span style="font-size: 1.1rem; font-weight: 600; color: #06b6d4;">👔 Executive View</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
+    # Hidden toggle for functionality
+    col1, col2, col3 = st.columns([4, 1, 4])
     with col2:
-        view_mode = st.toggle("", value=False, key="view_toggle", label_visibility="collapsed")
+        view_mode = st.toggle("toggle", value=False, key="view_toggle", label_visibility="collapsed")
     
-    with col3:
+    # Display active view indicator
+    if view_mode:
         st.markdown("""
-        <div style="text-align: left; padding: 5px 0;">
-            <span style="font-size: 1.1rem; font-weight: 600; color: #3b82f6;">📋 Manager View</span>
+        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 5px auto; max-width: 400px;">
+            <span style="color: #3b82f6; font-weight: 700; font-size: 1.2rem;">📋 Manager View</span>
+            <span style="color: #94a3b8; font-size: 0.9rem;"> — Operational Risk & Execution</span>
         </div>
         """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 5px auto; max-width: 400px;">
+            <span style="color: #06b6d4; font-weight: 700; font-size: 1.2rem;">👔 Executive View</span>
+            <span style="color: #94a3b8; font-size: 0.9rem;"> — Financial & Strategic</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
     
     # Display active view indicator
     if view_mode:
