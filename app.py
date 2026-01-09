@@ -924,7 +924,7 @@ with st.sidebar:
                 </div>
                 <div>
                     <span style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">REVENUE</span><br>
-                    <span style="color: #10b981; font-weight: 700; font-size: 1.2rem;">AED {total_revenue:,.0f}</span>
+                    <span style="color: #10b981; font-weight: 700; font-size: 1.2rem;">{formatted_revenue}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
