@@ -1396,22 +1396,19 @@ def show_dashboard_page():
     st.markdown("---") 
     
 # ===== TOGGLE SWITCH =====
-    # Initialize view_mode in session state if not exists
     if 'view_mode' not in st.session_state:
         st.session_state.view_mode = False
     
-    # Custom CSS for buttons
-# Custom CSS for buttons
     st.markdown("""
     <style>
-    div.stButton > button {
-        width: 100%;
-        padding: 30px 20px !important;
-        font-size: 1.8rem !important;
+    [data-testid="stHorizontalBlock"] button[kind="primary"],
+    [data-testid="stHorizontalBlock"] button[kind="secondary"] {
+        font-size: 2rem !important;
         font-weight: 700 !important;
-        border-radius: 10px !important;
-        line-height: 2 !important;
+        padding: 35px 25px !important;
+        line-height: 2.2 !important;
         white-space: pre-wrap !important;
+        min-height: 150px !important;
     }
     </style>
     """, unsafe_allow_html=True)
