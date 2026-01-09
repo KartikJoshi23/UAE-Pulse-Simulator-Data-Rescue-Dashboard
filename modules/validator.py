@@ -13,12 +13,12 @@ class FileValidator:
     SCHEMAS = {
         'products': {
             'required': [
-                ['sku', 'product_id', 'productid', 'SKU'],  # At least one required
+                ['sku', 'product_id', 'productid', 'SKU'],
                 ['category'],
                 ['base_price_aed', 'base_price', 'price'],
             ],
             'optional': ['unit_cost_aed', 'unit_cost', 'brand', 'launch_flag', 'tax_rate'],
-            'unique_identifiers': ['sku', 'product_id', 'category', 'brand', 'launch_flag']
+            'unique_identifiers': ['sku', 'product_id', 'category', 'brand', 'launch_flag', 'base_price_aed']
         },
         'stores': {
             'required': [
@@ -38,13 +38,13 @@ class FileValidator:
                 ['selling_price_aed', 'selling_price', 'price', 'amount']
             ],
             'optional': ['order_time', 'discount_pct', 'payment_status', 'return_flag'],
-            'unique_identifiers': ['order_id', 'qty', 'selling_price', 'payment_status', 'discount_pct']
+            'unique_identifiers': ['order_id', 'qty', 'selling_price_aed', 'payment_status', 'discount_pct', 'return_flag']
         },
         'inventory': {
             'required': [
                 ['sku', 'product_id', 'productid'],
                 ['store_id', 'storeid'],
-                ['stock_on_hand', 'stock', 'inventory', 'on_hand', 'quantity']
+                ['stock_on_hand', 'stock', 'inventory', 'on_hand']
             ],
             'optional': ['snapshot_date', 'reorder_point', 'lead_time_days'],
             'unique_identifiers': ['stock_on_hand', 'stock', 'reorder_point', 'lead_time_days', 'snapshot_date']
@@ -55,18 +55,6 @@ class FileValidator:
     def validate_file(cls, df, expected_type):
         """
         Validate if uploaded file matches expected type.
-        
-        Args:
-            df: pandas DataFrame of uploaded file
-            expected_type: 'products', 'stores', 'sales', or 'inventory'
-        
-        Returns:
-            dict: {
-                'valid': bool,
-                'message': str,
-                'missing_columns': list,
-                'detected_type': str or None
-            }
         """
         if df is None or df.empty:
             return {
@@ -91,10 +79,13 @@ class FileValidator:
         
         # Check required columns for expected type
         missing_required = []
+        matched_required = 0
         for col_variants in expected_schema['required']:
             col_variants_lower = [c.lower() for c in col_variants]
-            if not any(col in df_columns for col in col_variants_lower):
-                missing_required.append(col_variants[0])  # Show primary column name
+            if any(col in df_columns for col in col_variants_lower):
+                matched_required += 1
+            else:
+                missing_required.append(col_variants[0])
         
         # If all required columns present, file is valid
         if not missing_required:
@@ -116,27 +107,14 @@ class FileValidator:
                 'detected_type': detected_type
             }
         else:
-            # Check if file matches ANY known type
-            any_match = cls._detect_file_type(df_columns)
-            
-            if any_match is None:
-                # Completely unrecognized file
-                return {
-                    'valid': False,
-                    'message': f'❌ Unrecognized file! This doesn\'t match any expected format (Products, Stores, Sales, or Inventory).',
-                    'missing_columns': missing_required,
-                    'detected_type': None,
-                    'uploaded_columns': list(df_columns)[:10]  # Show first 10 columns
-                }
-            else:
-                return {
-                    'valid': False,
-                    'message': f'❌ Invalid {expected_type} file. Missing required columns.',
-                    'missing_columns': missing_required,
-                    'detected_type': None
-                }
+            return {
+                'valid': False,
+                'message': f'❌ Unrecognized file! This doesn\'t look like a valid {expected_type.upper()} file.',
+                'missing_columns': missing_required,
+                'detected_type': None,
+                'uploaded_columns': list(df_columns)[:10]
+            }
     
-    @classmethod
     @classmethod
     def _detect_file_type(cls, df_columns):
         """Detect the actual file type based on columns - STRICT matching."""
@@ -152,7 +130,7 @@ class FileValidator:
             for col_variants in schema['required']:
                 col_variants_lower = [c.lower() for c in col_variants]
                 if any(col in df_columns for col in col_variants_lower):
-                    score += 3  # High weight for required columns
+                    score += 3
                     required_matched += 1
             
             # Check unique identifiers (secondary)
@@ -163,15 +141,12 @@ class FileValidator:
             scores[file_type] = score
             required_counts[file_type] = (required_matched, total_required)
         
-        # Only return a match if:
-        # 1. At least 60% of required columns are present
-        # 2. Score is significant
+        # Only return a match if at least 60% of required columns are present
         if scores:
             best_match = max(scores, key=scores.get)
             matched, total = required_counts[best_match]
             match_percentage = (matched / total * 100) if total > 0 else 0
             
-            # STRICT: Must have at least 60% of required columns
             if match_percentage >= 60 and scores[best_match] >= 6:
                 return best_match
         
@@ -186,20 +161,4 @@ class FileValidator:
         return {
             'required': required,
             'optional': optional
-        }
-    
-    @classmethod
-    def get_validation_summary(cls, df, file_type):
-        """Get detailed validation summary for display."""
-        result = cls.validate_file(df, file_type)
-        
-        expected = cls.get_expected_columns(file_type)
-        df_columns = [col.strip().lower().replace(' ', '_') for col in df.columns] if df is not None else []
-        
-        return {
-            **result,
-            'expected_required': expected['required'],
-            'expected_optional': expected['optional'],
-            'uploaded_columns': list(df.columns) if df is not None else [],
-            'row_count': len(df) if df is not None else 0
         }
