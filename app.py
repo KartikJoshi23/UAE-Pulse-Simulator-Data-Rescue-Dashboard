@@ -1677,6 +1677,32 @@ def show_data_page():
     # Upload section
     st.markdown('<p class="section-title section-title-blue">📤 Upload Data Files</p>', unsafe_allow_html=True)
     
+    # Show expected columns info
+    with st.expander("ℹ️ Expected File Formats (Click to Expand)"):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+            **📦 Products File:**
+            - Required: `sku`, `category`, `base_price_aed`
+            - Optional: `unit_cost_aed`, `brand`, `launch_flag`
+            
+            **🛒 Sales File:**
+            - Required: `order_id`, `sku`, `store_id`, `qty`, `selling_price_aed`
+            - Optional: `order_time`, `discount_pct`, `payment_status`, `return_flag`
+            """)
+        with col2:
+            st.markdown("""
+            **🏪 Stores File:**
+            - Required: `store_id`, `city`, `channel`
+            - Optional: `fulfillment_type`, `store_name`
+            
+            **📋 Inventory File:**
+            - Required: `sku`, `store_id`, `stock_on_hand`
+            - Optional: `snapshot_date`, `reorder_point`, `lead_time_days`
+            """)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -1689,23 +1715,118 @@ def show_data_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Uploaded Files", width='stretch'):
-            try:
-                if products_file:
-                    st.session_state.raw_products = pd.read_csv(products_file)
-                if stores_file:
-                    st.session_state.raw_stores = pd.read_csv(stores_file)
-                if sales_file:
-                    st.session_state.raw_sales = pd.read_csv(sales_file)
-                if inventory_file:
-                    st.session_state.raw_inventory = pd.read_csv(inventory_file)
+        if st.button("📥 Load Uploaded Files", use_container_width=True):
+            
+            # Track validation results
+            validation_errors = []
+            validated_files = {}
+            
+            # ===== VALIDATE PRODUCTS FILE =====
+            if products_file:
+                try:
+                    products_df = pd.read_csv(products_file)
+                    validation = FileValidator.validate_file(products_df, 'products')
+                    
+                    if validation['valid']:
+                        validated_files['products'] = products_df
+                        st.success(f"📦 Products: {validation['message']}")
+                    else:
+                        validation_errors.append(f"📦 Products: {validation['message']}")
+                        if validation['missing_columns']:
+                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
+                        if validation['detected_type']:
+                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
+                except Exception as e:
+                    validation_errors.append(f"📦 Products: ❌ Error reading file - {str(e)}")
+            
+            # ===== VALIDATE STORES FILE =====
+            if stores_file:
+                try:
+                    stores_df = pd.read_csv(stores_file)
+                    validation = FileValidator.validate_file(stores_df, 'stores')
+                    
+                    if validation['valid']:
+                        validated_files['stores'] = stores_df
+                        st.success(f"🏪 Stores: {validation['message']}")
+                    else:
+                        validation_errors.append(f"🏪 Stores: {validation['message']}")
+                        if validation['missing_columns']:
+                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
+                        if validation['detected_type']:
+                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
+                except Exception as e:
+                    validation_errors.append(f"🏪 Stores: ❌ Error reading file - {str(e)}")
+            
+            # ===== VALIDATE SALES FILE =====
+            if sales_file:
+                try:
+                    sales_df = pd.read_csv(sales_file)
+                    validation = FileValidator.validate_file(sales_df, 'sales')
+                    
+                    if validation['valid']:
+                        validated_files['sales'] = sales_df
+                        st.success(f"🛒 Sales: {validation['message']}")
+                    else:
+                        validation_errors.append(f"🛒 Sales: {validation['message']}")
+                        if validation['missing_columns']:
+                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
+                        if validation['detected_type']:
+                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
+                except Exception as e:
+                    validation_errors.append(f"🛒 Sales: ❌ Error reading file - {str(e)}")
+            
+            # ===== VALIDATE INVENTORY FILE =====
+            if inventory_file:
+                try:
+                    inventory_df = pd.read_csv(inventory_file)
+                    validation = FileValidator.validate_file(inventory_df, 'inventory')
+                    
+                    if validation['valid']:
+                        validated_files['inventory'] = inventory_df
+                        st.success(f"📋 Inventory: {validation['message']}")
+                    else:
+                        validation_errors.append(f"📋 Inventory: {validation['message']}")
+                        if validation['missing_columns']:
+                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
+                        if validation['detected_type']:
+                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
+                except Exception as e:
+                    validation_errors.append(f"📋 Inventory: ❌ Error reading file - {str(e)}")
+            
+            # ===== SHOW VALIDATION ERRORS =====
+            if validation_errors:
+                st.markdown("---")
+                st.markdown("### ❌ Validation Errors")
+                for error in validation_errors:
+                    st.error(error)
+                st.warning("⚠️ Please fix the above errors and try again. Only valid files will be loaded.")
+            
+            # ===== STORE ONLY VALIDATED FILES =====
+            if validated_files:
+                if 'products' in validated_files:
+                    st.session_state.raw_products = validated_files['products']
+                if 'stores' in validated_files:
+                    st.session_state.raw_stores = validated_files['stores']
+                if 'sales' in validated_files:
+                    st.session_state.raw_sales = validated_files['sales']
+                if 'inventory' in validated_files:
+                    st.session_state.raw_inventory = validated_files['inventory']
                 
-                st.session_state.data_loaded = True
-                st.session_state.is_cleaned = False
-                st.success("✅ Files uploaded successfully!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+                # Only set data_loaded if at least some valid files
+                if len(validated_files) > 0:
+                    st.session_state.data_loaded = True
+                    st.session_state.is_cleaned = False
+                    
+                    if not validation_errors:
+                        st.success(f"✅ All {len(validated_files)} files validated and loaded successfully!")
+                    else:
+                        st.info(f"ℹ️ {len(validated_files)} valid file(s) loaded. Fix errors above and re-upload remaining files.")
+                    
+                    st.rerun()
+            
+            # No files uploaded at all
+            if not products_file and not stores_file and not sales_file and not inventory_file:
+                st.warning("⚠️ Please upload at least one file.")
     
     st.markdown("---")
     
@@ -1714,7 +1835,7 @@ def show_data_page():
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Sample Data", width='stretch', key='sample_data_btn'):
+        if st.button("📥 Load Sample Data", use_container_width=True, key='sample_data_btn'):
             try:
                 st.session_state.raw_products = pd.read_csv('data/products.csv')
                 st.session_state.raw_stores = pd.read_csv('data/stores.csv')
@@ -1746,7 +1867,9 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), width='stretch')
+                st.dataframe(df.head(100), use_container_width=True)
+            else:
+                st.info("📦 No products data loaded")
         
         with tab2:
             if st.session_state.raw_stores is not None:
@@ -1760,7 +1883,9 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), width='stretch')
+                st.dataframe(df.head(100), use_container_width=True)
+            else:
+                st.info("🏪 No stores data loaded")
         
         with tab3:
             if st.session_state.raw_sales is not None:
@@ -1774,7 +1899,9 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), width='stretch')
+                st.dataframe(df.head(100), use_container_width=True)
+            else:
+                st.info("🛒 No sales data loaded")
         
         with tab4:
             if st.session_state.raw_inventory is not None:
@@ -1788,7 +1915,9 @@ def show_data_page():
                     null_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100) if len(df) > 0 else 0
                     st.markdown(create_metric_card("Null %", f"{null_pct:.1f}%", color="orange"), unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.dataframe(df.head(100), width='stretch')
+                st.dataframe(df.head(100), use_container_width=True)
+            else:
+                st.info("📋 No inventory data loaded")
         
         # Data Quality Insight
         st.markdown("---")
