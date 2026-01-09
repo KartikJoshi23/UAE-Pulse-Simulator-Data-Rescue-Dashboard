@@ -1402,13 +1402,17 @@ def show_dashboard_page():
         st.session_state.view_mode = False
     
     # Custom CSS for buttons
+# Custom CSS for buttons
     st.markdown("""
     <style>
     div.stButton > button {
         width: 100%;
-        padding: 25px 20px !important;
-        font-size: 1.1rem !important;
+        padding: 30px 20px !important;
+        font-size: 1.8rem !important;
+        font-weight: 700 !important;
         border-radius: 10px !important;
+        line-height: 2 !important;
+        white-space: pre-wrap !important;
     }
     </style>
     """, unsafe_allow_html=True)
