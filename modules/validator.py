@@ -116,12 +116,25 @@ class FileValidator:
                 'detected_type': detected_type
             }
         else:
-            return {
-                'valid': False,
-                'message': f'❌ Invalid {expected_type} file. Missing required columns.',
-                'missing_columns': missing_required,
-                'detected_type': None
-            }
+            # Check if file matches ANY known type
+            any_match = cls._detect_file_type(df_columns)
+            
+            if any_match is None:
+                # Completely unrecognized file
+                return {
+                    'valid': False,
+                    'message': f'❌ Unrecognized file! This doesn\'t match any expected format (Products, Stores, Sales, or Inventory).',
+                    'missing_columns': missing_required,
+                    'detected_type': None,
+                    'uploaded_columns': list(df_columns)[:10]  # Show first 10 columns
+                }
+            else:
+                return {
+                    'valid': False,
+                    'message': f'❌ Invalid {expected_type} file. Missing required columns.',
+                    'missing_columns': missing_required,
+                    'detected_type': None
+                }
     
     @classmethod
     def _detect_file_type(cls, df_columns):
