@@ -1767,7 +1767,8 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
             
             if 'city' in inv_with_store.columns and 'stock_on_hand' in inv_with_store.columns:
                 city_risk = inv_with_store.groupby('city').apply(
-                    lambda x: (x['stock_on_hand'] < 10).sum() / len(x) * 100 if len(x) > 0 else 0
+                    lambda x: (x['stock_on_hand'] < 10).sum() / len(x) * 100 if len(x) > 0 else 0,
+                    include_groups=False
                 ).reset_index()
                 city_risk.columns = ['city', 'stockout_risk']
                 
