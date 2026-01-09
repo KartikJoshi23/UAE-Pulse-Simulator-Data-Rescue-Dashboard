@@ -396,7 +396,7 @@ class DataCleaner:
                 if pd.isna(x):
                     return pd.NaT
                 try:
-                    return pd.to_datetime(x)
+                    return pd.to_datetime(x, dayfirst=True)
                 except:
                     return pd.NaT
             
