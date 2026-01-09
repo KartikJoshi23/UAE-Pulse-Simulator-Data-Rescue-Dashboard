@@ -1367,29 +1367,35 @@ def show_dashboard_page():
     st.markdown("---") 
     
 # ===== TOGGLE SWITCH =====
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown("""
+    <style>
+    div[data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="stRadio"] > div {
+        display: flex;
+        justify-content: center;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
-    with col2:
-        view_mode_selection = st.radio(
-            "View Mode",
-            options=["Executive View", "Manager View"],
-            horizontal=True,
-            key="view_toggle_radio",
-            label_visibility="collapsed"
-        )
-        
-        view_mode = view_mode_selection == "Manager View"
+    view_mode_selection = st.radio(
+        "View Mode",
+        options=["Executive View", "Manager View"],
+        horizontal=True,
+        key="view_toggle_radio",
+        label_visibility="collapsed"
+    )
+    
+    view_mode = view_mode_selection == "Manager View"
     
     if view_mode:
         st.markdown("""
-        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 350px;">
+        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 400px;">
             <span style="color: #3b82f6; font-weight: 700; font-size: 1.1rem;">📋 Manager View</span>
             <span style="color: #94a3b8; font-size: 0.85rem;"> — Operational Risk & Execution</span>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 350px;">
+        <div style="text-align: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2)); border-radius: 10px; margin: 10px auto; max-width: 400px;">
             <span style="color: #06b6d4; font-weight: 700; font-size: 1.1rem;">👔 Executive View</span>
             <span style="color: #94a3b8; font-size: 0.85rem;"> — Financial & Strategic</span>
         </div>
