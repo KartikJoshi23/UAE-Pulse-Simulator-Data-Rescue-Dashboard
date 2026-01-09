@@ -1205,6 +1205,27 @@ def show_home_page():
     show_footer()
     
 def show_dashboard_page():
+    # Custom CSS for large tab buttons
+    st.markdown("""
+    <style>
+    div[data-testid="stButton"] button {
+        font-size: 1.3rem !important;
+        font-weight: 600 !important;
+        padding: 20px !important;
+        min-height: 100px !important;
+        white-space: pre-wrap !important;
+    }
+    div[data-testid="stButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6) !important;
+        border: none !important;
+    }
+    div[data-testid="stButton"] button[kind="secondary"] {
+        background: rgba(100, 116, 139, 0.2) !important;
+        border: 1px solid #475569 !important;
+        color: #94a3b8 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     """Display the Dashboard with Executive/Manager toggle and Global Filters."""
     
     st.markdown('<h1 class="page-title page-title-cyan">📊 Dashboard</h1>', unsafe_allow_html=True)
