@@ -1229,7 +1229,6 @@ def show_dashboard_page():
     st.markdown("---")
     
     # ===== GLOBAL FILTERS SECTION =====
-    # ===== GLOBAL FILTERS SECTION =====
     st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
     
     filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
@@ -1254,67 +1253,66 @@ def show_dashboard_page():
             except:
                 st.caption("Date filter unavailable")
     
-    # City Filter - with "Select All" checkbox
+    # City Filter
     with filter_col2:
         all_cities = []
         selected_cities = []
         if stores_df is not None and 'city' in stores_df.columns:
             all_cities = sorted(stores_df['city'].dropna().unique().tolist())
+            city_options = ["All"] + all_cities
             
-            select_all_cities = st.checkbox("Select All Cities", value=True, key="all_cities_cb")
+            selected_city = st.multiselect(
+                "🏙️ City",
+                options=city_options,
+                default=["All"],
+                key="global_city_filter"
+            )
             
-            if select_all_cities:
+            if "All" in selected_city or len(selected_city) == 0:
                 selected_cities = all_cities
-                st.caption(f"✅ All {len(all_cities)} cities selected")
             else:
-                selected_cities = st.multiselect(
-                    "🏙️ City",
-                    options=all_cities,
-                    default=[],
-                    key="global_city_filter"
-                )
+                selected_cities = selected_city
     
-    # Channel Filter - with "Select All" checkbox
+    # Channel Filter
     with filter_col3:
         all_channels = []
         selected_channels = []
         if stores_df is not None and 'channel' in stores_df.columns:
             all_channels = sorted(stores_df['channel'].dropna().unique().tolist())
+            channel_options = ["All"] + all_channels
             
-            select_all_channels = st.checkbox("Select All Channels", value=True, key="all_channels_cb")
+            selected_channel = st.multiselect(
+                "📱 Channel",
+                options=channel_options,
+                default=["All"],
+                key="global_channel_filter"
+            )
             
-            if select_all_channels:
+            if "All" in selected_channel or len(selected_channel) == 0:
                 selected_channels = all_channels
-                st.caption(f"✅ All {len(all_channels)} channels selected")
             else:
-                selected_channels = st.multiselect(
-                    "📱 Channel",
-                    options=all_channels,
-                    default=[],
-                    key="global_channel_filter"
-                )
+                selected_channels = selected_channel
     
-    # Category Filter - with "Select All" checkbox
+    # Category Filter
     with filter_col4:
         all_categories = []
         selected_categories = []
         if products_df is not None and 'category' in products_df.columns:
             all_categories = sorted(products_df['category'].dropna().unique().tolist())
+            category_options = ["All"] + all_categories
             
-            select_all_categories = st.checkbox("Select All Categories", value=True, key="all_categories_cb")
+            selected_category = st.multiselect(
+                "📦 Category",
+                options=category_options,
+                default=["All"],
+                key="global_category_filter"
+            )
             
-            if select_all_categories:
+            if "All" in selected_category or len(selected_category) == 0:
                 selected_categories = all_categories
-                st.caption(f"✅ All {len(all_categories)} categories selected")
             else:
-                selected_categories = st.multiselect(
-                    "📦 Category",
-                    options=all_categories,
-                    default=[],
-                    key="global_category_filter"
-                )
-    
-    # ===== APPLY FILTERS =====
+                selected_categories = selected_category
+
 # ===== APPLY FILTERS =====
     filtered_sales = sales_df.copy()
     filtered_stores = stores_df.copy() if stores_df is not None else None
