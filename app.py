@@ -1703,132 +1703,128 @@ def show_data_page():
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # Track validation status for each file
+    valid_files = {}
+    
     col1, col2 = st.columns(2)
     
+    # ===== PRODUCTS UPLOAD WITH INSTANT VALIDATION =====
     with col1:
         products_file = st.file_uploader("📦 Products CSV", type=['csv'], key='products_upload')
+        if products_file:
+            try:
+                products_df = pd.read_csv(products_file)
+                products_file.seek(0)  # Reset file pointer for later use
+                validation = FileValidator.validate_file(products_df, 'products')
+                
+                if validation['valid']:
+                    st.success(f"✅ Valid products file ({len(products_df):,} rows)")
+                    valid_files['products'] = products_df
+                else:
+                    st.error(f"❌ {validation['message']}")
+                    if validation['missing_columns']:
+                        st.warning(f"Missing: {', '.join(validation['missing_columns'])}")
+                    if validation.get('detected_type'):
+                        st.info(f"💡 This looks like a {validation['detected_type'].upper()} file. Upload it in the correct slot.")
+            except Exception as e:
+                st.error(f"❌ Cannot read file: {str(e)}")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ===== SALES UPLOAD WITH INSTANT VALIDATION =====
         sales_file = st.file_uploader("🛒 Sales CSV", type=['csv'], key='sales_upload')
+        if sales_file:
+            try:
+                sales_df = pd.read_csv(sales_file)
+                sales_file.seek(0)
+                validation = FileValidator.validate_file(sales_df, 'sales')
+                
+                if validation['valid']:
+                    st.success(f"✅ Valid sales file ({len(sales_df):,} rows)")
+                    valid_files['sales'] = sales_df
+                else:
+                    st.error(f"❌ {validation['message']}")
+                    if validation['missing_columns']:
+                        st.warning(f"Missing: {', '.join(validation['missing_columns'])}")
+                    if validation.get('detected_type'):
+                        st.info(f"💡 This looks like a {validation['detected_type'].upper()} file. Upload it in the correct slot.")
+            except Exception as e:
+                st.error(f"❌ Cannot read file: {str(e)}")
     
+    # ===== STORES UPLOAD WITH INSTANT VALIDATION =====
     with col2:
         stores_file = st.file_uploader("🏪 Stores CSV", type=['csv'], key='stores_upload')
+        if stores_file:
+            try:
+                stores_df = pd.read_csv(stores_file)
+                stores_file.seek(0)
+                validation = FileValidator.validate_file(stores_df, 'stores')
+                
+                if validation['valid']:
+                    st.success(f"✅ Valid stores file ({len(stores_df):,} rows)")
+                    valid_files['stores'] = stores_df
+                else:
+                    st.error(f"❌ {validation['message']}")
+                    if validation['missing_columns']:
+                        st.warning(f"Missing: {', '.join(validation['missing_columns'])}")
+                    if validation.get('detected_type'):
+                        st.info(f"💡 This looks like a {validation['detected_type'].upper()} file. Upload it in the correct slot.")
+            except Exception as e:
+                st.error(f"❌ Cannot read file: {str(e)}")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ===== INVENTORY UPLOAD WITH INSTANT VALIDATION =====
         inventory_file = st.file_uploader("📋 Inventory CSV", type=['csv'], key='inventory_upload')
+        if inventory_file:
+            try:
+                inventory_df = pd.read_csv(inventory_file)
+                inventory_file.seek(0)
+                validation = FileValidator.validate_file(inventory_df, 'inventory')
+                
+                if validation['valid']:
+                    st.success(f"✅ Valid inventory file ({len(inventory_df):,} rows)")
+                    valid_files['inventory'] = inventory_df
+                else:
+                    st.error(f"❌ {validation['message']}")
+                    if validation['missing_columns']:
+                        st.warning(f"Missing: {', '.join(validation['missing_columns'])}")
+                    if validation.get('detected_type'):
+                        st.info(f"💡 This looks like a {validation['detected_type'].upper()} file. Upload it in the correct slot.")
+            except Exception as e:
+                st.error(f"❌ Cannot read file: {str(e)}")
     
+    st.markdown("---")
+    
+    # ===== LOAD BUTTON - ONLY LOADS VALID FILES =====
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("📥 Load Uploaded Files", use_container_width=True):
+        # Show status before button
+        if valid_files:
+            st.success(f"✅ {len(valid_files)} valid file(s) ready to load: {', '.join(valid_files.keys())}")
+        
+        # Disable button if no valid files
+        button_disabled = len(valid_files) == 0
+        
+        if st.button("📥 Load Valid Files", use_container_width=True, disabled=button_disabled):
+            if 'products' in valid_files:
+                st.session_state.raw_products = valid_files['products']
+            if 'stores' in valid_files:
+                st.session_state.raw_stores = valid_files['stores']
+            if 'sales' in valid_files:
+                st.session_state.raw_sales = valid_files['sales']
+            if 'inventory' in valid_files:
+                st.session_state.raw_inventory = valid_files['inventory']
             
-            # Track validation results
-            validation_errors = []
-            validated_files = {}
-            
-            # ===== VALIDATE PRODUCTS FILE =====
-            if products_file:
-                try:
-                    products_df = pd.read_csv(products_file)
-                    validation = FileValidator.validate_file(products_df, 'products')
-                    
-                    if validation['valid']:
-                        validated_files['products'] = products_df
-                        st.success(f"📦 Products: {validation['message']}")
-                    else:
-                        validation_errors.append(f"📦 Products: {validation['message']}")
-                        if validation['missing_columns']:
-                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
-                        if validation.get('uploaded_columns'):
-                            validation_errors.append(f"   Your file has: {', '.join(validation['uploaded_columns'])}")
-                        if validation['detected_type']:
-                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
-                except Exception as e:
-                    validation_errors.append(f"📦 Products: ❌ Error reading file - {str(e)}")
-            
-            # ===== VALIDATE STORES FILE =====
-            if stores_file:
-                try:
-                    stores_df = pd.read_csv(stores_file)
-                    validation = FileValidator.validate_file(stores_df, 'stores')
-                    
-                    if validation['valid']:
-                        validated_files['stores'] = stores_df
-                        st.success(f"🏪 Stores: {validation['message']}")
-                    else:
-                        validation_errors.append(f"🏪 Stores: {validation['message']}")
-                        if validation['missing_columns']:
-                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
-                        if validation['detected_type']:
-                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
-                except Exception as e:
-                    validation_errors.append(f"🏪 Stores: ❌ Error reading file - {str(e)}")
-            
-            # ===== VALIDATE SALES FILE =====
-            if sales_file:
-                try:
-                    sales_df = pd.read_csv(sales_file)
-                    validation = FileValidator.validate_file(sales_df, 'sales')
-                    
-                    if validation['valid']:
-                        validated_files['sales'] = sales_df
-                        st.success(f"🛒 Sales: {validation['message']}")
-                    else:
-                        validation_errors.append(f"🛒 Sales: {validation['message']}")
-                        if validation['missing_columns']:
-                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
-                        if validation['detected_type']:
-                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
-                except Exception as e:
-                    validation_errors.append(f"🛒 Sales: ❌ Error reading file - {str(e)}")
-            
-            # ===== VALIDATE INVENTORY FILE =====
-            if inventory_file:
-                try:
-                    inventory_df = pd.read_csv(inventory_file)
-                    validation = FileValidator.validate_file(inventory_df, 'inventory')
-                    
-                    if validation['valid']:
-                        validated_files['inventory'] = inventory_df
-                        st.success(f"📋 Inventory: {validation['message']}")
-                    else:
-                        validation_errors.append(f"📋 Inventory: {validation['message']}")
-                        if validation['missing_columns']:
-                            validation_errors.append(f"   Missing columns: {', '.join(validation['missing_columns'])}")
-                        if validation['detected_type']:
-                            validation_errors.append(f"   💡 Tip: Upload this file in the {validation['detected_type'].upper()} slot instead.")
-                except Exception as e:
-                    validation_errors.append(f"📋 Inventory: ❌ Error reading file - {str(e)}")
-            
-            # ===== SHOW VALIDATION ERRORS =====
-            if validation_errors:
-                st.markdown("---")
-                st.markdown("### ❌ Validation Errors")
-                for error in validation_errors:
-                    st.error(error)
-                st.warning("⚠️ Please fix the above errors and try again. Only valid files will be loaded.")
-            
-            # ===== STORE ONLY VALIDATED FILES =====
-            if validated_files:
-                if 'products' in validated_files:
-                    st.session_state.raw_products = validated_files['products']
-                if 'stores' in validated_files:
-                    st.session_state.raw_stores = validated_files['stores']
-                if 'sales' in validated_files:
-                    st.session_state.raw_sales = validated_files['sales']
-                if 'inventory' in validated_files:
-                    st.session_state.raw_inventory = validated_files['inventory']
-                
-                # Only set data_loaded if at least some valid files
-                if len(validated_files) > 0:
-                    st.session_state.data_loaded = True
-                    st.session_state.is_cleaned = False
-                    
-                    if not validation_errors:
-                        st.success(f"✅ All {len(validated_files)} files validated and loaded successfully!")
-                    else:
-                        st.info(f"ℹ️ {len(validated_files)} valid file(s) loaded. Fix errors above and re-upload remaining files.")
-                    
-                    st.rerun()
-            
-            # No files uploaded at all
-            if not products_file and not stores_file and not sales_file and not inventory_file:
-                st.warning("⚠️ Please upload at least one file.")
+            st.session_state.data_loaded = True
+            st.session_state.is_cleaned = False
+            st.success(f"✅ {len(valid_files)} file(s) loaded successfully!")
+            st.rerun()
+        
+        if button_disabled and (products_file or stores_file or sales_file or inventory_file):
+            st.error("⚠️ Cannot load - no valid files. Please fix the errors above.")
+        elif button_disabled:
+            st.info("📤 Upload files above to get started.")
     
     st.markdown("---")
     
@@ -1942,7 +1938,6 @@ def show_data_page():
             st.markdown(create_insight_card("Excellent Data Quality", "No missing values detected in your datasets! Data looks clean."), unsafe_allow_html=True)
     
     show_footer()
-
 # ============================================================================
 # PAGE: CLEANER (FIXED - BIGGER TITLES)
 # ============================================================================
