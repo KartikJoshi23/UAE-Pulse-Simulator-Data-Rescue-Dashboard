@@ -1427,17 +1427,24 @@ def show_dashboard_page():
     st.markdown("""
     <style>
     .stTabs [data-baseweb="tab-list"] {
-        gap: 20px;
+        gap: 30px;
+        justify-content: center;
     }
     .stTabs [data-baseweb="tab"] {
-        font-size: 1.5rem !important;
+        font-size: 1.8rem !important;
         font-weight: 700 !important;
-        padding: 20px 40px !important;
-        border-radius: 10px !important;
+        padding: 25px 50px !important;
+        border-radius: 12px !important;
+        min-height: 80px !important;
     }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3)) !important;
         border: 2px solid #06b6d4 !important;
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
+    }
+    .stTabs [aria-selected="false"] {
+        background: rgba(100, 116, 139, 0.15) !important;
+        border: 1px solid #475569 !important;
     }
     </style>
     """, unsafe_allow_html=True)
