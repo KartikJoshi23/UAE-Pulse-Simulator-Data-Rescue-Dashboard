@@ -1367,20 +1367,18 @@ def show_dashboard_page():
     st.markdown("---") 
     
 # ===== TOGGLE SWITCH =====
-    col1, col2, col3 = st.columns([3, 1, 3])
-    
-    with col1:
-        st.markdown("""
-        <p style="text-align: right; font-size: 1.1rem; font-weight: 600; color: #06b6d4; margin: 0; padding-top: 5px;">👔 Executive View</p>
-        """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        view_mode = st.toggle("view", value=False, key="view_toggle", label_visibility="collapsed")
-    
-    with col3:
-        st.markdown("""
-        <p style="text-align: left; font-size: 1.1rem; font-weight: 600; color: #3b82f6; margin: 0; padding-top: 5px;">📋 Manager View</p>
-        """, unsafe_allow_html=True)
+        view_mode_selection = st.radio(
+            "",
+            options=["👔 Executive View", "📋 Manager View"],
+            horizontal=True,
+            key="view_toggle_radio",
+            label_visibility="collapsed"
+        )
+        
+        view_mode = view_mode_selection == "📋 Manager View"
     
     if view_mode:
         st.markdown("""
@@ -1396,7 +1394,7 @@ def show_dashboard_page():
             <span style="color: #94a3b8; font-size: 0.9rem;"> — Financial & Strategic</span>
         </div>
         """, unsafe_allow_html=True)
-    
+        
     st.markdown("---")
     
     # Initialize simulator for KPI calculations
