@@ -1229,6 +1229,7 @@ def show_dashboard_page():
     st.markdown("---")
     
     # ===== GLOBAL FILTERS SECTION =====
+    # ===== GLOBAL FILTERS SECTION =====
     st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
     
     filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
@@ -1313,6 +1314,13 @@ def show_dashboard_page():
                     key="global_category_filter"
                 )
     
+    # ===== APPLY FILTERS =====
+# ===== APPLY FILTERS =====
+    filtered_sales = sales_df.copy()
+    filtered_stores = stores_df.copy() if stores_df is not None else None
+    filtered_products = products_df.copy() if products_df is not None else None
+    filtered_inventory = inventory_df.copy() if inventory_df is not None else None
+    
     # Apply date filter
     if date_range and len(date_range) == 2 and 'order_time' in filtered_sales.columns:
         start_date, end_date = date_range
@@ -1356,11 +1364,6 @@ def show_dashboard_page():
     filtered_count = len(filtered_sales)
     filter_pct = (filtered_count / original_count * 100) if original_count > 0 else 0
     
-    # Show filter results
-    original_count = len(sales_df)
-    filtered_count = len(filtered_sales)
-    filter_pct = (filtered_count / original_count * 100) if original_count > 0 else 0
-    
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); 
                 padding: 10px 20px; border-radius: 10px; margin: 10px 0;">
@@ -1369,6 +1372,7 @@ def show_dashboard_page():
     """, unsafe_allow_html=True)
     
     st.markdown("---")
+    
     
     # ===== TOGGLE SWITCH =====
     col1, col2, col3 = st.columns([1, 2, 1])
