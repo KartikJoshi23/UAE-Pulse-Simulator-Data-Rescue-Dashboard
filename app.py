@@ -1289,7 +1289,63 @@ def show_dashboard_page():
                 selected_categories = [selected_category_option]
         else:
             selected_categories = []
+    # ===== APPLY FILTERS =====
+    filtered_sales = sales_df.copy()
+    filtered_stores = stores_df.copy() if stores_df is not None else None
+    filtered_products = products_df.copy() if products_df is not None else None
+    filtered_inventory = inventory_df.copy() if inventory_df is not None else None
     
+    # Apply date filter
+    if date_range and len(date_range) == 2 and 'order_time' in filtered_sales.columns:
+        start_date, end_date = date_range
+        filtered_sales = filtered_sales[
+            (filtered_sales['order_time'].dt.date >= start_date) &
+            (filtered_sales['order_time'].dt.date <= end_date)
+        ]
+    
+    # Apply city/channel filter via stores
+    if filtered_stores is not None:
+        if selected_cities:
+            filtered_stores = filtered_stores[filtered_stores['city'].isin(selected_cities)]
+        if selected_channels:
+            filtered_stores = filtered_stores[filtered_stores['channel'].isin(selected_channels)]
+        
+        # Filter sales by valid stores
+        if 'store_id' in filtered_sales.columns and 'store_id' in filtered_stores.columns:
+            valid_store_ids = filtered_stores['store_id'].unique()
+            filtered_sales = filtered_sales[filtered_sales['store_id'].isin(valid_store_ids)]
+    
+    # Apply category filter via products
+    if filtered_products is not None and selected_categories:
+        filtered_products = filtered_products[filtered_products['category'].isin(selected_categories)]
+        
+        # Filter sales by valid products
+        if 'sku' in filtered_sales.columns and 'sku' in filtered_products.columns:
+            valid_skus = filtered_products['sku'].unique()
+            filtered_sales = filtered_sales[filtered_sales['sku'].isin(valid_skus)]
+    
+    # Filter inventory by valid stores and products
+    if filtered_inventory is not None:
+        if filtered_stores is not None and 'store_id' in filtered_inventory.columns:
+            valid_store_ids = filtered_stores['store_id'].unique()
+            filtered_inventory = filtered_inventory[filtered_inventory['store_id'].isin(valid_store_ids)]
+        if filtered_products is not None and 'sku' in filtered_inventory.columns:
+            valid_skus = filtered_products['sku'].unique()
+            filtered_inventory = filtered_inventory[filtered_inventory['sku'].isin(valid_skus)]
+    
+    # Show filter results
+    original_count = len(sales_df)
+    filtered_count = len(filtered_sales)
+    filter_pct = (filtered_count / original_count * 100) if original_count > 0 else 0
+    
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); 
+                padding: 10px 20px; border-radius: 10px; margin: 10px 0;">
+        <span style="color: #06b6d4; font-weight: 600;">📊 Showing {filtered_count:,} of {original_count:,} records ({filter_pct:.1f}%)</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
     # Show filter results
     original_count = len(sales_df)
     filtered_count = len(filtered_sales)
