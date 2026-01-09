@@ -1431,7 +1431,7 @@ def show_dashboard_page():
         justify-content: center;
     }
     .stTabs [data-baseweb="tab"] {
-        font-size: 1.8rem !important;
+        font-size: 2.2rem !important;
         font-weight: 700 !important;
         padding: 25px 50px !important;
         border-radius: 12px !important;
