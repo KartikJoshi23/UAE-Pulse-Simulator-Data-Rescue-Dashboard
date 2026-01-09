@@ -1205,22 +1205,25 @@ def show_home_page():
     show_footer()
     
 def show_dashboard_page():
-    # Custom CSS for large tab buttons
+# Custom CSS for large tab buttons
     st.markdown("""
     <style>
     div[data-testid="stButton"] button {
-        font-size: 1.3rem !important;
-        font-weight: 600 !important;
-        padding: 20px !important;
-        min-height: 100px !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        padding: 25px 20px !important;
+        min-height: 120px !important;
         white-space: pre-wrap !important;
+        text-align: center !important;
+        line-height: 1.8 !important;
     }
     div[data-testid="stButton"] button[kind="primary"] {
-        background: linear-gradient(135deg, #06b6d4, #3b82f6) !important;
-        border: none !important;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4)) !important;
+        border: 2px solid #06b6d4 !important;
+        color: #ffffff !important;
     }
     div[data-testid="stButton"] button[kind="secondary"] {
-        background: rgba(100, 116, 139, 0.2) !important;
+        background: rgba(100, 116, 139, 0.15) !important;
         border: 1px solid #475569 !important;
         color: #94a3b8 !important;
     }
