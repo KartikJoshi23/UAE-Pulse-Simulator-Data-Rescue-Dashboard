@@ -1615,7 +1615,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     col1, col2 = st.columns(2)
     
     with col1:
-        # CHART 2: Area Chart - Weekly Revenue Trend
+        # CHART 2: Area Chart - Monthly Revenue Trend
         if sales_df is not None and 'order_time' in sales_df.columns:
             sales_trend = sales_df.copy()
             sales_trend['order_time'] = pd.to_datetime(sales_trend['order_time'], errors='coerce')
@@ -1623,8 +1623,8 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             # Drop rows with invalid dates
             sales_trend = sales_trend.dropna(subset=['order_time'])
             
-            # Create week column as string for proper display
-            sales_trend['week'] = sales_trend['order_time'].dt.to_period('W').astype(str)
+            # Create month column with clean format
+            sales_trend['month'] = sales_trend['order_time'].dt.to_period('M').astype(str)
             
             # Calculate correct revenue (qty * price)
             if 'qty' in sales_trend.columns and 'selling_price_aed' in sales_trend.columns:
@@ -1638,42 +1638,42 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             if 'payment_status' in sales_trend.columns:
                 sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
             
-            # Group by week
-            weekly_revenue = sales_trend.groupby('week').agg({'revenue': 'sum'}).reset_index()
-            weekly_revenue.columns = ['Week', 'Revenue']
+            # Group by month
+            monthly_revenue = sales_trend.groupby('month').agg({'revenue': 'sum'}).reset_index()
+            monthly_revenue.columns = ['Month', 'Revenue']
             
-            # Sort by week
-            weekly_revenue = weekly_revenue.sort_values('Week')
+            # Sort by month
+            monthly_revenue = monthly_revenue.sort_values('Month')
             
             fig_area = go.Figure()
             fig_area.add_trace(go.Scatter(
-                x=weekly_revenue['Week'],
-                y=weekly_revenue['Revenue'],
+                x=monthly_revenue['Month'],
+                y=monthly_revenue['Revenue'],
                 fill='tozeroy',
-                mode='lines',
+                mode='lines+markers',
                 line=dict(color='#06b6d4', width=2),
                 fillcolor='rgba(6, 182, 212, 0.3)',
+                marker=dict(size=6),
                 name='Revenue'
             ))
             
             fig_area.update_layout(
-                title="Weekly Revenue Trend",
+                title="Monthly Revenue Trend",
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='#e2e8f0'),
                 height=350,
-                xaxis_title="Week",
+                xaxis_title="Month",
                 yaxis_title="Revenue (AED)"
             )
-            fig_area.update_xaxes(gridcolor='#334155', tickangle=45)
+            fig_area.update_xaxes(gridcolor='#334155')
             fig_area.update_yaxes(gridcolor='#334155')
             
             st.plotly_chart(fig_area, use_container_width=True)
-            st.caption("📌 Weekly revenue pattern to identify seasonality and plan promotions.")
+            st.caption("📌 Monthly revenue pattern to identify seasonality and plan promotions.")
         else:
             st.info("Revenue trend requires order_time column")
-    
-    with col2:
+            
         # CHART 3: Bar Chart - Margin % by Category
         if category_kpis is not None and len(category_kpis) > 0:
             cat_data = category_kpis.copy()
