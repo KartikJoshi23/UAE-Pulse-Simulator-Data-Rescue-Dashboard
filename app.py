@@ -1623,54 +1623,59 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             # Drop rows with invalid dates
             sales_trend = sales_trend.dropna(subset=['order_time'])
             
-            # Create month column with clean format
-            sales_trend['month'] = sales_trend['order_time'].dt.to_period('M').astype(str)
+            # Filter to valid date range (2020-2030)
+            sales_trend = sales_trend[(sales_trend['order_time'].dt.year >= 2020) & (sales_trend['order_time'].dt.year <= 2030)]
             
-            # Calculate correct revenue (qty * price)
-            if 'qty' in sales_trend.columns and 'selling_price_aed' in sales_trend.columns:
-                sales_trend['revenue'] = sales_trend['qty'] * sales_trend['selling_price_aed']
-            elif 'selling_price_aed' in sales_trend.columns:
-                sales_trend['revenue'] = sales_trend['selling_price_aed']
+            if len(sales_trend) > 0:
+                # Create month column with clean format (e.g., "Jan 2025")
+                sales_trend['month'] = sales_trend['order_time'].dt.strftime('%b %Y')
+                sales_trend['month_sort'] = sales_trend['order_time'].dt.to_period('M')
+                
+                # Calculate correct revenue (qty * price)
+                if 'qty' in sales_trend.columns and 'selling_price_aed' in sales_trend.columns:
+                    sales_trend['revenue'] = sales_trend['qty'] * sales_trend['selling_price_aed']
+                elif 'selling_price_aed' in sales_trend.columns:
+                    sales_trend['revenue'] = sales_trend['selling_price_aed']
+                else:
+                    sales_trend['revenue'] = 0
+                
+                # Filter paid only
+                if 'payment_status' in sales_trend.columns:
+                    sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
+                
+                # Group by month
+                monthly_revenue = sales_trend.groupby(['month_sort', 'month']).agg({'revenue': 'sum'}).reset_index()
+                monthly_revenue = monthly_revenue.sort_values('month_sort')
+                
+                fig_area = go.Figure()
+                fig_area.add_trace(go.Scatter(
+                    x=monthly_revenue['month'],
+                    y=monthly_revenue['revenue'],
+                    fill='tozeroy',
+                    mode='lines+markers',
+                    line=dict(color='#06b6d4', width=2),
+                    fillcolor='rgba(6, 182, 212, 0.3)',
+                    marker=dict(size=6),
+                    name='Revenue'
+                ))
+                
+                fig_area.update_layout(
+                    title="Monthly Revenue Trend",
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='#e2e8f0'),
+                    height=350,
+                    xaxis_title="Month",
+                    yaxis_title="Revenue (AED)",
+                    xaxis=dict(type='category')
+                )
+                fig_area.update_xaxes(gridcolor='#334155')
+                fig_area.update_yaxes(gridcolor='#334155')
+                
+                st.plotly_chart(fig_area, use_container_width=True)
+                st.caption("📌 Monthly revenue pattern to identify seasonality and plan promotions.")
             else:
-                sales_trend['revenue'] = 0
-            
-            # Filter paid only
-            if 'payment_status' in sales_trend.columns:
-                sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
-            
-            # Group by month
-            monthly_revenue = sales_trend.groupby('month').agg({'revenue': 'sum'}).reset_index()
-            monthly_revenue.columns = ['Month', 'Revenue']
-            
-            # Sort by month
-            monthly_revenue = monthly_revenue.sort_values('Month')
-            
-            fig_area = go.Figure()
-            fig_area.add_trace(go.Scatter(
-                x=monthly_revenue['Month'],
-                y=monthly_revenue['Revenue'],
-                fill='tozeroy',
-                mode='lines+markers',
-                line=dict(color='#06b6d4', width=2),
-                fillcolor='rgba(6, 182, 212, 0.3)',
-                marker=dict(size=6),
-                name='Revenue'
-            ))
-            
-            fig_area.update_layout(
-                title="Monthly Revenue Trend",
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#e2e8f0'),
-                height=350,
-                xaxis_title="Month",
-                yaxis_title="Revenue (AED)"
-            )
-            fig_area.update_xaxes(gridcolor='#334155')
-            fig_area.update_yaxes(gridcolor='#334155')
-            
-            st.plotly_chart(fig_area, use_container_width=True)
-            st.caption("📌 Monthly revenue pattern to identify seasonality and plan promotions.")
+                st.info("No valid dates in data range (2020-2030)")
         else:
             st.info("Revenue trend requires order_time column")
             
