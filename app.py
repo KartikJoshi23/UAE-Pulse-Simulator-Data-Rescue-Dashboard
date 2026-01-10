@@ -2075,6 +2075,14 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
             inv_with_store = inventory_df.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
             
             if all(col in inv_with_store.columns for col in ['city', 'channel', 'stock_on_hand']):
+                # Local filter
+                top_n_risk = st.selectbox(
+                    "Show Top",
+                    [5, 10, "All"],
+                    index=0,
+                    key="city_channel_risk_top_n"
+                )
+                
                 inv_with_store['city_channel'] = inv_with_store['city'] + ' - ' + inv_with_store['channel']
                 
                 city_channel_risk = inv_with_store.groupby('city_channel').apply(
@@ -2082,6 +2090,13 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                     include_groups=False
                 ).reset_index()
                 city_channel_risk.columns = ['City-Channel', 'Risk %']
+                city_channel_risk = city_channel_risk.sort_values('Risk %', ascending=False)
+                
+                # Apply Top N filter
+                if top_n_risk != "All":
+                    city_channel_risk = city_channel_risk.head(int(top_n_risk))
+                
+                # Sort for display (ascending for horizontal bar)
                 city_channel_risk = city_channel_risk.sort_values('Risk %', ascending=True)
                 
                 colors = ['#10b981' if x < 30 else '#f59e0b' if x < 60 else '#ef4444' for x in city_channel_risk['Risk %']]
