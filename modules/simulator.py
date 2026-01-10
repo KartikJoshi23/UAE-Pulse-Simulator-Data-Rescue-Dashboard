@@ -130,6 +130,27 @@ class Simulator:
                 kpis['return_rate_pct'] = float(returned.mean() * 100)
             else:
                 kpis['return_rate_pct'] = 0
+                # Refund Amount
+            if 'payment_status' in merged.columns:
+                refund_mask = merged['payment_status'].str.lower().str.contains('refund', na=False)
+                kpis['refund_amount'] = float(merged.loc[refund_mask, 'revenue'].sum())
+            else:
+                kpis['refund_amount'] = 0
+            
+            # COGS (Total Cost)
+            merged['cogs'] = merged['_qty'] * merged['_cost']
+            kpis['total_cogs'] = float(merged['cogs'].sum())
+            
+            # Net Revenue
+            kpis['net_revenue'] = kpis['total_revenue'] - kpis['refund_amount']
+            
+            # Total Discount Amount
+            discount_col = self._find_column(sales_df, ['discount_pct', 'discount', 'discount_percent'])
+            if discount_col:
+                discount_pct = pd.to_numeric(merged[discount_col], errors='coerce').fillna(0)
+                kpis['total_discount'] = float((merged['revenue'] * discount_pct / 100).sum())
+            else:
+                kpis['total_discount'] = 0
             
             # Discount
             discount_col = self._find_column(sales_df, ['discount_pct', 'discount', 'discount_percent'])
