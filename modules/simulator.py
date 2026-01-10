@@ -125,8 +125,9 @@ class Simulator:
             kpis['profit_margin_pct'] = (kpis['total_profit'] / kpis['total_revenue'] * 100) if kpis['total_revenue'] > 0 else 0
             
             # Return rate
-            if 'is_returned' in sales_df.columns:
-                returned = pd.to_numeric(sales_df['is_returned'], errors='coerce').fillna(0)
+            return_col = self._find_column(sales_df, ['return_flag', 'is_returned', 'returned', 'is_return'])
+            if return_col:
+                returned = pd.to_numeric(sales_df[return_col], errors='coerce').fillna(0)
                 kpis['return_rate_pct'] = float(returned.mean() * 100)
             else:
                 kpis['return_rate_pct'] = 0
