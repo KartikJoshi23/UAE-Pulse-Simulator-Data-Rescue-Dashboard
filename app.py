@@ -2284,13 +2284,22 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 st.info("Inventory data not available")
     
     with col2:
-        # CHART 4: Horizontal Bar - Top 10 SKU-Store Stockout Risk
+        # CHART 4: Horizontal Bar - Top N SKU-Store Stockout Risk
         if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-            # Get lowest stock items
+            # Get SKU column
             sku_col = 'sku' if 'sku' in inventory_df.columns else 'product_id'
             
             if sku_col in inventory_df.columns:
-                risk_df = inventory_df.nsmallest(10, 'stock_on_hand').copy()
+                # Local filter
+                top_n_sku = st.selectbox(
+                    "Show Top",
+                    [5, 10, 15, 20],
+                    index=1,
+                    key="sku_stockout_top_n"
+                )
+                
+                # Get lowest stock items
+                risk_df = inventory_df.nsmallest(int(top_n_sku), 'stock_on_hand').copy()
                 
                 # Add store info if available
                 if stores_df is not None and 'store_id' in risk_df.columns and 'store_id' in stores_df.columns:
@@ -2316,7 +2325,7 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 ))
                 
                 fig_sku_risk.update_layout(
-                    title="Top 10 Stockout Risk SKU-Store",
+                    title=f"Top {top_n_sku} Stockout Risk SKU-Store",
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#e2e8f0'),
@@ -2350,6 +2359,18 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
             issue_counts = pareto_df.groupby('issue_type')['Count'].sum().reset_index()
             issue_counts.columns = ['Issue Type', 'Count']
             issue_counts = issue_counts.sort_values('Count', ascending=False)
+            
+            # Local filter
+            top_n_pareto = st.selectbox(
+                "Show Top Issue Types",
+                [5, 10, "All"],
+                index=1,
+                key="pareto_top_n"
+            )
+            
+            # Apply Top N filter
+            if top_n_pareto != "All":
+                issue_counts = issue_counts.head(int(top_n_pareto))
             
             # Calculate cumulative percentage
             total_issues = issue_counts['Count'].sum()
