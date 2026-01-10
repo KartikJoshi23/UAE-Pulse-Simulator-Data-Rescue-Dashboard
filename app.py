@@ -2106,13 +2106,93 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                         st.plotly_chart(fig_demand_stock, use_container_width=True)
                         st.caption("📌 Compares historical demand against available stock. Purple bars exceeding cyan = potential stockout.")
                     else:
-                        st.info("Stock by category not available")
+                        # Fallback: Stock Distribution Histogram
+                        if 'stock_on_hand' in inventory_df.columns:
+                            fig_fallback = px.histogram(
+                                inventory_df,
+                                x='stock_on_hand',
+                                title='Stock Distribution (Units on Hand)',
+                                nbins=30,
+                                color_discrete_sequence=['#06b6d4']
+                            )
+                            fig_fallback.update_layout(
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                plot_bgcolor='rgba(0,0,0,0)',
+                                font=dict(color='#e2e8f0'),
+                                height=350,
+                                xaxis_title="Stock on Hand",
+                                yaxis_title="Count"
+                            )
+                            fig_fallback.update_xaxes(gridcolor='#334155')
+                            fig_fallback.update_yaxes(gridcolor='#334155')
+                            st.plotly_chart(fig_fallback, use_container_width=True)
+                            st.caption("📌 Distribution of inventory levels across all SKUs.")
+                        else:
+                            st.info("Stock data not available")
                 else:
-                    st.info("Demand by category not available")
+                    # Fallback: Stock Distribution Histogram
+                    if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
+                        fig_fallback = px.histogram(
+                            inventory_df,
+                            x='stock_on_hand',
+                            title='Stock Distribution (Units on Hand)',
+                            nbins=30,
+                            color_discrete_sequence=['#06b6d4']
+                        )
+                        fig_fallback.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0'),
+                            height=350,
+                            xaxis_title="Stock on Hand",
+                            yaxis_title="Count"
+                        )
+                        fig_fallback.update_xaxes(gridcolor='#334155')
+                        fig_fallback.update_yaxes(gridcolor='#334155')
+                        st.plotly_chart(fig_fallback, use_container_width=True)
+                        st.caption("📌 Distribution of inventory levels across all SKUs.")
+                    else:
+                        st.info("Inventory data not available")
             except Exception as e:
-                st.info("Unable to create demand vs stock chart")
+                # Fallback on exception: Stock Distribution
+                if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
+                    fig_fallback = px.histogram(
+                        inventory_df,
+                        x='stock_on_hand',
+                        title='Stock Distribution (Units on Hand)',
+                        nbins=30,
+                        color_discrete_sequence=['#06b6d4']
+                    )
+                    fig_fallback.update_layout(
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0'),
+                        height=350
+                    )
+                    st.plotly_chart(fig_fallback, use_container_width=True)
+                    st.caption("📌 Distribution of inventory levels across all SKUs.")
+                else:
+                    st.info("Unable to create inventory chart")
         else:
-            st.info("Sales or inventory data not available")
+            # Fallback when main data not available
+            if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
+                fig_fallback = px.histogram(
+                    inventory_df,
+                    x='stock_on_hand',
+                    title='Stock Distribution (Units on Hand)',
+                    nbins=30,
+                    color_discrete_sequence=['#06b6d4']
+                )
+                fig_fallback.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='#e2e8f0'),
+                    height=350
+                )
+                st.plotly_chart(fig_fallback, use_container_width=True)
+                st.caption("📌 Distribution of inventory levels across all SKUs.")
+            else:
+                st.info("Inventory data not available")
     
     with col2:
         # CHART 4: Horizontal Bar - Top 10 SKU-Store Stockout Risk
