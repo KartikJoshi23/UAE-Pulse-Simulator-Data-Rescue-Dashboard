@@ -2275,6 +2275,11 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     
     if st.session_state.is_cleaned and hasattr(st.session_state, 'issues_df') and st.session_state.issues_df is not None:
         issues_df = st.session_state.issues_df
+        
+        # DEBUG - Remove later
+        st.write(f"Total rows in issues_df: {len(issues_df)}")
+        st.write(issues_df.head(20))
+        
         if len(issues_df) > 0 and 'issue_type' in issues_df.columns:
             # Clean issue types - remove any row-specific suffixes
             issues_df['issue_type_clean'] = issues_df['issue_type'].str.replace(r'_row_\d+', '', regex=True)
