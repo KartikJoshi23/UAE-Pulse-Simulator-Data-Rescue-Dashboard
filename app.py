@@ -1914,14 +1914,26 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     else:
         payment_failure_rate = 0
     
-    # Stockout risk
+   # Stockout risk - Smart calculation
     stockout_risk = 0
     high_risk_skus = 0
     if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-        low_stock = (inventory_df['stock_on_hand'] < 10).sum()
         total_inventory = len(inventory_df)
+        
+        # Use reorder_point if available, otherwise use fixed threshold
+        if 'reorder_point' in inventory_df.columns:
+            # Compare stock against reorder point
+            inventory_df['_stock'] = pd.to_numeric(inventory_df['stock_on_hand'], errors='coerce').fillna(0)
+            inventory_df['_reorder'] = pd.to_numeric(inventory_df['reorder_point'], errors='coerce').fillna(10)
+            low_stock = (inventory_df['_stock'] <= inventory_df['_reorder']).sum()
+        else:
+            # Fallback: Use 10% of average stock or minimum 10 units
+            avg_stock = inventory_df['stock_on_hand'].mean()
+            threshold = max(10, avg_stock * 0.1)
+            low_stock = (inventory_df['stock_on_hand'] < threshold).sum()
+        
         stockout_risk = (low_stock / total_inventory * 100) if total_inventory > 0 else 0
-        high_risk_skus = low_stock
+        high_risk_skus = int(low_stock)
     
     col1, col2, col3, col4 = st.columns(4)
     
