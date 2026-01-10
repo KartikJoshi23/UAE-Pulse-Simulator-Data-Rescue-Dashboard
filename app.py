@@ -1736,10 +1736,10 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                     if 'payment_status' in sunburst_df.columns:
                         sunburst_df = sunburst_df[sunburst_df['payment_status'] == 'Paid']
                     
-                    sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
+                     sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
                         'revenue': 'sum'
                     }).reset_index()
-                    sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
+                     sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
                     
                     # Limit to top combinations
                     sunburst_agg = sunburst_agg.nlargest(30, 'Revenue')
