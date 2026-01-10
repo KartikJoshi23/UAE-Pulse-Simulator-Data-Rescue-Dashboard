@@ -1677,6 +1677,8 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         else:
             st.info("Revenue trend requires order_time column")
             
+    with col2:
+            
         # CHART 3: Bar Chart - Margin % by Category
         if category_kpis is not None and len(category_kpis) > 0:
             cat_data = category_kpis.copy()
