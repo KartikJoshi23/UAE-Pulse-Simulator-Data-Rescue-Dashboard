@@ -1848,10 +1848,19 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         # CHART 5: Combo Chart - Discount % vs Profit (Scenario Impact)
         st.markdown("**Discount Impact Analysis**")
         
+        # Local filter for margin floor
+        margin_floor = st.slider(
+            "Margin Floor %",
+            min_value=10,
+            max_value=40,
+            value=20,
+            step=5,
+            key="discount_margin_floor"
+        )
+        
         # Simulate profit at different discount levels
         base_revenue = kpis.get('total_revenue', 0)
         base_cogs = kpis.get('total_cogs', 0)
-        margin_floor = 20  # Default margin floor
         
         discount_levels = [0, 5, 10, 15, 20, 25, 30]
         profits = []
@@ -1869,7 +1878,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         
         fig_combo = go.Figure()
         
-        # Bars for profit
+        # Bars for profit - color based on margin vs margin floor
         bar_colors = ['#10b981' if m >= margin_floor else '#ef4444' for m in margins]
         fig_combo.add_trace(go.Bar(
             x=discount_levels,
