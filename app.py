@@ -1736,10 +1736,10 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                     if 'payment_status' in sunburst_df.columns:
                         sunburst_df = sunburst_df[sunburst_df['payment_status'] == 'Paid']
                     
-                     sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
+                    sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
                         'revenue': 'sum'
                     }).reset_index()
-                     sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
+                    sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
                     
                     # Limit to top combinations
                     sunburst_agg = sunburst_agg.nlargest(30, 'Revenue')
@@ -1762,7 +1762,30 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                     st.plotly_chart(fig_sunburst, use_container_width=True)
                     st.caption("📌 Click to drill down: City → Channel → Category revenue contribution.")
                 else:
-                    st.info("Required columns not available for sunburst chart")
+                    # Fallback: Simple pie chart by channel
+                    if 'channel' in sunburst_df.columns and 'selling_price_aed' in sunburst_df.columns:
+                        if 'qty' in sunburst_df.columns:
+                            sunburst_df['revenue'] = sunburst_df['qty'] * sunburst_df['selling_price_aed']
+                        else:
+                            sunburst_df['revenue'] = sunburst_df['selling_price_aed']
+                        
+                        channel_rev = sunburst_df.groupby('channel')['revenue'].sum().reset_index()
+                        fig_fallback = px.pie(
+                            channel_rev,
+                            values='revenue',
+                            names='channel',
+                            title='Revenue by Channel',
+                            color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899']
+                        )
+                        fig_fallback.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0'),
+                            height=400
+                        )
+                        st.plotly_chart(fig_fallback, use_container_width=True)
+                        st.caption("📌 Revenue distribution by sales channel.")
+                    else:
+                        st.info("Revenue mix data not available")
             except Exception as e:
                 st.info("Unable to create revenue mix chart")
         else:
