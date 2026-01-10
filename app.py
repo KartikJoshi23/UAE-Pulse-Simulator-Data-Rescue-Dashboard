@@ -1614,7 +1614,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     
     col1, col2 = st.columns(2)
     
-   with col1:
+    with col1:
         # CHART 2: Area Chart - Revenue Trend
         if sales_df is not None and 'order_time' in sales_df.columns:
             # Local filter for time grouping
