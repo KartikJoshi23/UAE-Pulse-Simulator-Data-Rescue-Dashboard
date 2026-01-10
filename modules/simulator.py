@@ -145,21 +145,15 @@ class Simulator:
             # Net Revenue
             kpis['net_revenue'] = kpis['total_revenue'] - kpis['refund_amount']
             
-            # Total Discount Amount
-            discount_col = self._find_column(sales_df, ['discount_pct', 'discount', 'discount_percent'])
-            if discount_col:
-                discount_pct = pd.to_numeric(merged[discount_col], errors='coerce').fillna(0)
-                kpis['total_discount'] = float((merged['revenue'] * discount_pct / 100).sum())
-            else:
-                kpis['total_discount'] = 0
-            
-            # Discount
-            discount_col = self._find_column(sales_df, ['discount_pct', 'discount', 'discount_percent'])
-            if discount_col:
-                discount = pd.to_numeric(sales_df[discount_col], errors='coerce').fillna(0)
-                kpis['avg_discount_pct'] = float(discount.mean())
+            # Discount calculations
+            discount_col = self._find_column(merged, ['discount_pct', 'discount', 'discount_percent'])
+            if discount_col and discount_col in merged.columns:
+                merged['_discount_pct'] = pd.to_numeric(merged[discount_col], errors='coerce').fillna(0)
+                kpis['avg_discount_pct'] = float(merged['_discount_pct'].mean())
+                kpis['total_discount'] = float((merged['revenue'] * merged['_discount_pct'] / 100).sum())
             else:
                 kpis['avg_discount_pct'] = 0
+                kpis['total_discount'] = 0
                 
         except Exception as e:
             print(f"Error in calculate_overall_kpis: {e}")
