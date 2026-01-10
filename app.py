@@ -1726,10 +1726,20 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                     sunburst_df = sunburst_df.merge(products_df[['product_id', 'category']], on='product_id', how='left')
                 
                 if all(col in sunburst_df.columns for col in ['city', 'channel', 'category', 'selling_price_aed']):
-                    sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
-                        'selling_price_aed': 'sum'
-                    }).reset_index()
-                    sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
+                    # Calculate correct revenue (qty * price)
+                    if 'qty' in sunburst_df.columns:
+                        sunburst_df['revenue'] = sunburst_df['qty'] * sunburst_df['selling_price_aed']
+                    else:
+                        sunburst_df['revenue'] = sunburst_df['selling_price_aed']
+                    
+                    # Filter paid only
+                    if 'payment_status' in sunburst_df.columns:
+                        sunburst_df = sunburst_df[sunburst_df['payment_status'] == 'Paid']
+            
+            sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
+                'revenue': 'sum'
+            }).reset_index()
+            sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
                     
                     # Limit to top combinations
                     sunburst_agg = sunburst_agg.nlargest(30, 'Revenue')
