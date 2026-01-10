@@ -35,7 +35,7 @@ class Simulator:
     
     def _get_cost_column(self, df):
         """Find cost column."""
-        return self._find_column(df, ['cost_aed', 'cost', 'unit_cost', 'cost_price', 'purchase_price', 'buying_price'])
+        return self._find_column(df, ['unit_cost_aed', 'cost_aed', 'cost', 'unit_cost', 'cost_price', 'purchase_price', 'buying_price'])
     
     def _get_price_column(self, df):
         """Find selling price column."""
