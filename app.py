@@ -1621,7 +1621,17 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             sales_trend['order_time'] = pd.to_datetime(sales_trend['order_time'], errors='coerce')
             sales_trend['week'] = sales_trend['order_time'].dt.to_period('W').apply(lambda x: x.start_time)
             
-            weekly_revenue = sales_trend.groupby('week').agg({'selling_price_aed': 'sum'}).reset_index()
+            # Calculate correct revenue (qty * price)
+            if 'qty' in sales_trend.columns:
+                sales_trend['revenue'] = sales_trend['qty'] * sales_trend['selling_price_aed']
+            else:
+                sales_trend['revenue'] = sales_trend['selling_price_aed']
+            
+            # Filter paid only
+            if 'payment_status' in sales_trend.columns:
+                sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
+            
+            weekly_revenue = sales_trend.groupby('week').agg({'revenue': 'sum'}).reset_index()
             weekly_revenue.columns = ['Week', 'Revenue']
             
             fig_area = go.Figure()
