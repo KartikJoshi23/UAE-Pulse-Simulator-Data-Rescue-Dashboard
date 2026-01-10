@@ -1623,8 +1623,6 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             # Drop rows with invalid dates
             sales_trend = sales_trend.dropna(subset=['order_time'])
             
-            # Filter to valid date range (2020-2030)
-            sales_trend = sales_trend[(sales_trend['order_time'].dt.year >= 2020) & (sales_trend['order_time'].dt.year <= 2030)]
             
             if len(sales_trend) > 0:
                 # Create month column with clean format (e.g., "Jan 2025")
