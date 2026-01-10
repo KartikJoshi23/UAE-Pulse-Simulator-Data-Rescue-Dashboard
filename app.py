@@ -2275,7 +2275,83 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     
     st.markdown("---")
     
-    https://meet.google.com/zmz-wxfw-cud
+    # ===== CHART 5: PARETO - Issues Log (Full Width) =====
+    st.markdown('<p class="section-title section-title-pink">📋 Data Quality Analysis</p>', unsafe_allow_html=True)
+    
+    if st.session_state.is_cleaned and hasattr(st.session_state, 'issues_df') and st.session_state.issues_df is not None:
+        issues_df = st.session_state.issues_df
+        if len(issues_df) > 0 and 'issue_type' in issues_df.columns:
+            # Extract count from record_identifier (e.g., "475 rows" → 475)
+            pareto_df = issues_df.copy()
+            pareto_df['Count'] = pareto_df['record_identifier'].str.extract(r'(\d+)').astype(float).fillna(1)
+            
+            # Group by issue type and sum counts
+            issue_counts = pareto_df.groupby('issue_type')['Count'].sum().reset_index()
+            issue_counts.columns = ['Issue Type', 'Count']
+            issue_counts = issue_counts.sort_values('Count', ascending=False)
+            
+            # Calculate cumulative percentage
+            total_issues = issue_counts['Count'].sum()
+            issue_counts['Cumulative'] = issue_counts['Count'].cumsum()
+            issue_counts['Cumulative %'] = (issue_counts['Cumulative'] / total_issues * 100)
+            
+            # Create Pareto chart
+            fig_pareto = go.Figure()
+            
+            # Bars
+            fig_pareto.add_trace(go.Bar(
+                x=issue_counts['Issue Type'],
+                y=issue_counts['Count'],
+                name='Count',
+                marker_color='#8b5cf6',
+                text=issue_counts['Count'].astype(int),
+                textposition='outside'
+            ))
+            
+            # Cumulative line
+            fig_pareto.add_trace(go.Scatter(
+                x=issue_counts['Issue Type'],
+                y=issue_counts['Cumulative %'],
+                name='Cumulative %',
+                mode='lines+markers',
+                line=dict(color='#f59e0b', width=3),
+                marker=dict(size=8),
+                yaxis='y2'
+            ))
+            
+            # 80% line
+            fig_pareto.add_hline(
+                y=80,
+                line_dash="dash",
+                line_color="#ef4444",
+                yref='y2',
+                annotation_text="80% threshold",
+                annotation_position="right"
+            )
+            
+            fig_pareto.update_layout(
+                title="Data Quality Issues - Pareto Analysis",
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#e2e8f0'),
+                height=400,
+                xaxis_title="Issue Type",
+                yaxis=dict(title='Count', side='left', gridcolor='#334155'),
+                yaxis2=dict(title='Cumulative %', side='right', overlaying='y', range=[0, 105], gridcolor='#334155'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                barmode='group'
+            )
+            fig_pareto.update_xaxes(gridcolor='#334155', tickangle=45)
+            
+            st.plotly_chart(fig_pareto, use_container_width=True)
+            st.caption("📌 Fix issues from left to right until the orange line crosses 80% (red dashed line). These few issue types cause most data problems.")
+        else:
+            st.info("No issues logged")
+    else:
+        st.info("Clean data first to see issues Pareto analysis")
+    
+    st.markdown("---")
+    
     
     # ===== TOP RISK TABLE =====
     st.markdown('<p class="section-title section-title-orange">🚨 Top Stockout Risk Items - Action List</p>', unsafe_allow_html=True)
