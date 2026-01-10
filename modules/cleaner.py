@@ -402,6 +402,7 @@ class DataCleaner:
             
             df['order_time'] = df['order_time'].apply(parse_timestamp)
             
+            # Drop NaT (unparseable timestamps)
             invalid_timestamps = df['order_time'].isna().sum()
             if invalid_timestamps > 0:
                 self._log_issue('sales', f'{invalid_timestamps} rows', 'INVALID_TIMESTAMP',
@@ -409,6 +410,16 @@ class DataCleaner:
                               'Dropped rows')
                 df = df[df['order_time'].notna()].copy()
                 self.stats['invalid_dropped'] += invalid_timestamps
+            
+            # Drop dates outside valid range (2020-2030)
+            if len(df) > 0:
+                out_of_range = ((df['order_time'].dt.year < 2020) | (df['order_time'].dt.year > 2030)).sum()
+                if out_of_range > 0:
+                    self._log_issue('sales', f'{out_of_range} rows', 'OUT_OF_RANGE_DATE',
+                                  f'{out_of_range} orders have dates outside valid range (2020-2030)',
+                                  'Dropped rows')
+                    df = df[(df['order_time'].dt.year >= 2020) & (df['order_time'].dt.year <= 2030)].copy()
+                    self.stats['invalid_dropped'] += out_of_range
         
         # ===== PAYMENT_STATUS VALIDATION - DROP IF INVALID =====
         if 'payment_status' in df.columns:
