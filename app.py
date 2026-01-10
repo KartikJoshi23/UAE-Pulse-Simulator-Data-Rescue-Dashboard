@@ -1614,20 +1614,34 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     
     col1, col2 = st.columns(2)
     
-    with col1:
-        # CHART 2: Area Chart - Monthly Revenue Trend
+   with col1:
+        # CHART 2: Area Chart - Revenue Trend
         if sales_df is not None and 'order_time' in sales_df.columns:
+            # Local filter for time grouping
+            time_group = st.selectbox(
+                "Group by",
+                ["Monthly", "Weekly", "Daily"],
+                index=0,
+                key="revenue_trend_time_group"
+            )
+            
             sales_trend = sales_df.copy()
             sales_trend['order_time'] = pd.to_datetime(sales_trend['order_time'], errors='coerce')
             
             # Drop rows with invalid dates
             sales_trend = sales_trend.dropna(subset=['order_time'])
             
-            
             if len(sales_trend) > 0:
-                # Create month column with clean format (e.g., "Jan 2025")
-                sales_trend['month'] = sales_trend['order_time'].dt.strftime('%b %Y')
-                sales_trend['month_sort'] = sales_trend['order_time'].dt.to_period('M')
+                # Create time column based on selection
+                if time_group == "Daily":
+                    sales_trend['time_period'] = sales_trend['order_time'].dt.strftime('%d %b %Y')
+                    sales_trend['time_sort'] = sales_trend['order_time'].dt.date
+                elif time_group == "Weekly":
+                    sales_trend['time_period'] = sales_trend['order_time'].dt.to_period('W').apply(lambda x: x.start_time.strftime('%d %b %Y'))
+                    sales_trend['time_sort'] = sales_trend['order_time'].dt.to_period('W').apply(lambda x: x.start_time)
+                else:  # Monthly
+                    sales_trend['time_period'] = sales_trend['order_time'].dt.strftime('%b %Y')
+                    sales_trend['time_sort'] = sales_trend['order_time'].dt.to_period('M')
                 
                 # Calculate correct revenue (qty * price)
                 if 'qty' in sales_trend.columns and 'selling_price_aed' in sales_trend.columns:
@@ -1641,14 +1655,14 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 if 'payment_status' in sales_trend.columns:
                     sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
                 
-                # Group by month
-                monthly_revenue = sales_trend.groupby(['month_sort', 'month']).agg({'revenue': 'sum'}).reset_index()
-                monthly_revenue = monthly_revenue.sort_values('month_sort')
+                # Group by time period
+                trend_revenue = sales_trend.groupby(['time_sort', 'time_period']).agg({'revenue': 'sum'}).reset_index()
+                trend_revenue = trend_revenue.sort_values('time_sort')
                 
                 fig_area = go.Figure()
                 fig_area.add_trace(go.Scatter(
-                    x=monthly_revenue['month'],
-                    y=monthly_revenue['revenue'],
+                    x=trend_revenue['time_period'],
+                    y=trend_revenue['revenue'],
                     fill='tozeroy',
                     mode='lines+markers',
                     line=dict(color='#06b6d4', width=2),
@@ -1658,12 +1672,12 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 ))
                 
                 fig_area.update_layout(
-                    title="Monthly Revenue Trend",
+                    title=f"{time_group} Revenue Trend",
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#e2e8f0'),
                     height=350,
-                    xaxis_title="Month",
+                    xaxis_title=time_group,
                     yaxis_title="Revenue (AED)",
                     xaxis=dict(type='category')
                 )
@@ -1671,16 +1685,32 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 fig_area.update_yaxes(gridcolor='#334155')
                 
                 st.plotly_chart(fig_area, use_container_width=True)
-                st.caption("📌 Monthly revenue pattern to identify seasonality and plan promotions.")
+                st.caption(f"📌 {time_group} revenue pattern to identify seasonality and plan promotions.")
             else:
-                st.info("No valid dates in data range (2020-2030)")
+                st.info("No valid dates in data range")
         else:
             st.info("Revenue trend requires order_time column")
             
-    with col2:
-            
+   with col2:
         # CHART 3: Bar Chart - Margin % by Category
         if category_kpis is not None and len(category_kpis) > 0:
+            # Local filters
+            filter_col1, filter_col2 = st.columns(2)
+            with filter_col1:
+                top_n_margin = st.selectbox(
+                    "Show Top",
+                    [5, 8, 10, "All"],
+                    index=1,
+                    key="margin_top_n"
+                )
+            with filter_col2:
+                sort_margin = st.selectbox(
+                    "Sort by",
+                    ["Margin %", "Revenue"],
+                    index=0,
+                    key="margin_sort"
+                )
+            
             cat_data = category_kpis.copy()
             
             # Calculate margin_pct if not present
@@ -1690,8 +1720,15 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 else:
                     cat_data['margin_pct'] = 0
             
-            cat_data = cat_data.nlargest(8, 'revenue')
-            cat_data = cat_data.sort_values('margin_pct', ascending=True)
+            # Apply Top N filter
+            if top_n_margin != "All":
+                cat_data = cat_data.nlargest(int(top_n_margin), 'revenue')
+            
+            # Apply sorting
+            if sort_margin == "Margin %":
+                cat_data = cat_data.sort_values('margin_pct', ascending=True)
+            else:
+                cat_data = cat_data.sort_values('revenue', ascending=True)
             
             colors = ['#ef4444' if x < 20 else '#f59e0b' if x < 30 else '#10b981' for x in cat_data['margin_pct']]
             
