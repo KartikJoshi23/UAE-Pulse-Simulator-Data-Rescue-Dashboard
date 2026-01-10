@@ -1619,20 +1619,31 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         if sales_df is not None and 'order_time' in sales_df.columns:
             sales_trend = sales_df.copy()
             sales_trend['order_time'] = pd.to_datetime(sales_trend['order_time'], errors='coerce')
-            sales_trend['week'] = sales_trend['order_time'].dt.to_period('W').apply(lambda x: x.start_time)
+            
+            # Drop rows with invalid dates
+            sales_trend = sales_trend.dropna(subset=['order_time'])
+            
+            # Create week column as string for proper display
+            sales_trend['week'] = sales_trend['order_time'].dt.to_period('W').astype(str)
             
             # Calculate correct revenue (qty * price)
-            if 'qty' in sales_trend.columns:
+            if 'qty' in sales_trend.columns and 'selling_price_aed' in sales_trend.columns:
                 sales_trend['revenue'] = sales_trend['qty'] * sales_trend['selling_price_aed']
-            else:
+            elif 'selling_price_aed' in sales_trend.columns:
                 sales_trend['revenue'] = sales_trend['selling_price_aed']
+            else:
+                sales_trend['revenue'] = 0
             
             # Filter paid only
             if 'payment_status' in sales_trend.columns:
                 sales_trend = sales_trend[sales_trend['payment_status'] == 'Paid']
             
+            # Group by week
             weekly_revenue = sales_trend.groupby('week').agg({'revenue': 'sum'}).reset_index()
             weekly_revenue.columns = ['Week', 'Revenue']
+            
+            # Sort by week
+            weekly_revenue = weekly_revenue.sort_values('Week')
             
             fig_area = go.Figure()
             fig_area.add_trace(go.Scatter(
@@ -1654,7 +1665,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                 xaxis_title="Week",
                 yaxis_title="Revenue (AED)"
             )
-            fig_area.update_xaxes(gridcolor='#334155')
+            fig_area.update_xaxes(gridcolor='#334155', tickangle=45)
             fig_area.update_yaxes(gridcolor='#334155')
             
             st.plotly_chart(fig_area, use_container_width=True)
@@ -2265,13 +2276,19 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     if st.session_state.is_cleaned and hasattr(st.session_state, 'issues_df') and st.session_state.issues_df is not None:
         issues_df = st.session_state.issues_df
         if len(issues_df) > 0 and 'issue_type' in issues_df.columns:
-            issue_counts = issues_df['issue_type'].value_counts().reset_index()
+            # Clean issue types - remove any row-specific suffixes
+            issues_df['issue_type_clean'] = issues_df['issue_type'].str.replace(r'_row_\d+', '', regex=True)
+            issues_df['issue_type_clean'] = issues_df['issue_type_clean'].str.replace(r'_\d+$', '', regex=True)
+            
+            # Count issues by cleaned type
+            issue_counts = issues_df['issue_type_clean'].value_counts().reset_index()
             issue_counts.columns = ['Issue Type', 'Count']
             issue_counts = issue_counts.sort_values('Count', ascending=False)
             
             # Calculate cumulative percentage
+            total_issues = issue_counts['Count'].sum()
             issue_counts['Cumulative'] = issue_counts['Count'].cumsum()
-            issue_counts['Cumulative %'] = (issue_counts['Cumulative'] / issue_counts['Count'].sum() * 100)
+            issue_counts['Cumulative %'] = (issue_counts['Cumulative'] / total_issues * 100)
             
             # Create Pareto chart
             fig_pareto = go.Figure()
@@ -2319,10 +2336,10 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 barmode='group'
             )
-            fig_pareto.update_xaxes(gridcolor='#334155')
+            fig_pareto.update_xaxes(gridcolor='#334155', tickangle=45)
             
             st.plotly_chart(fig_pareto, use_container_width=True)
-            st.caption("📌 Focus on fixing the few issue types causing 80% of data problems. Issues left of red line account for most problems.")
+            st.caption("📌 Fix issues from left to right until the orange line crosses 80% (red dashed line). These few issue types cause most data problems.")
         else:
             st.info("No issues logged")
     else:
