@@ -1520,7 +1520,7 @@ def show_dashboard_page():
     category_kpis = sim.calculate_kpis_by_dimension(filtered_sales, filtered_stores, filtered_products, 'category')
     
     with tab_exec:
-        show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores)
+        show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores, filtered_inventory)
     
     with tab_mgr:
         show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, filtered_sales, filtered_products, filtered_stores, filtered_inventory)
@@ -1542,7 +1542,7 @@ def show_dashboard_page():
     show_footer()
 
 
-def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, products_df, stores_df):
+def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, products_df, stores_df, filtered_inventory=None):
     """Display Executive View - Financial & Strategic KPIs."""
     
     # ===== KPI CARDS (Executive) =====
