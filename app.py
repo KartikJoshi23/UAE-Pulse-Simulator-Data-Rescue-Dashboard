@@ -712,7 +712,7 @@ def create_feature_card(icon, title, description, color="cyan"):
         ">{description}</div>
     </div>
     """
-    def get_theme_colors():
+def get_theme_colors():
     """Return theme colors for consistent styling."""
     return {
         'chart_bg': 'rgba(0,0,0,0)',
