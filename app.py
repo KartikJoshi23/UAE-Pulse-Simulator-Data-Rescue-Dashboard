@@ -3549,16 +3549,16 @@ def show_analytics_page():
 # ============================================================================
 
 # Scroll to top when page changes
-scroll_to_top = """
-    <script>
-        var body = window.parent.document.querySelector(".main");
-        if (body) {
-            body.scrollTop = 0;
+st.markdown("""
+    <style>
+        section.main {
+            scroll-behavior: smooth;
         }
-        window.parent.document.querySelector('[data-testid="stAppViewContainer"]').scrollTop = 0;
+    </style>
+    <script>
+        window.parent.document.querySelector('section.main').scrollTo(0, 0);
     </script>
-"""
-st.markdown(scroll_to_top, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 if page == "🏠 Home":
     show_home_page()
