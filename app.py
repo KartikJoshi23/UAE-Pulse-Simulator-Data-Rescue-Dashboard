@@ -712,6 +712,35 @@ def create_feature_card(icon, title, description, color="cyan"):
         ">{description}</div>
     </div>
     """
+    def get_theme_colors():
+    """Return theme colors for consistent styling."""
+    return {
+        'chart_bg': 'rgba(0,0,0,0)',
+        'chart_text': '#e2e8f0',
+        'chart_grid': '#334155',
+        'cyan': '#06b6d4',
+        'purple': '#8b5cf6',
+        'pink': '#ec4899',
+        'green': '#10b981',
+        'orange': '#f59e0b',
+        'red': '#ef4444',
+        'blue': '#3b82f6',
+        'teal': '#14b8a6'
+    }
+
+def style_plotly_chart_themed(fig, height=400):
+    """Apply consistent theme styling to Plotly charts."""
+    colors = get_theme_colors()
+    fig.update_layout(
+        paper_bgcolor=colors['chart_bg'],
+        plot_bgcolor=colors['chart_bg'],
+        font=dict(color=colors['chart_text'], family='Inter, sans-serif'),
+        height=height,
+        margin=dict(l=20, r=20, t=60, b=40)
+    )
+    fig.update_xaxes(gridcolor=colors['chart_grid'])
+    fig.update_yaxes(gridcolor=colors['chart_grid'])
+    return fig
 
 def create_info_card(content):
     """Create an info card."""
