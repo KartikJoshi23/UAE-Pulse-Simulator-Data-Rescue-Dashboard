@@ -3157,7 +3157,7 @@ def show_simulator_page():
             with col1:
                 delta = f"{comparison['revenue_change_pct']:+.1f}%"
                 delta_type = "positive" if comparison['revenue_change_pct'] > 0 else "negative"
-                st.markdown(create_metric_card("Expected Revenue", f"AED {outputs['expected_revenue']:,.0f}", delta, delta_type, "cyan"), unsafe_allow_html=True)
+                st.markdown(create_metric_card("Expected Revenue", format_currency(outputs['expected_revenue']), delta, delta_type, "cyan"), unsafe_allow_html=True)
             
             with col2:
                 delta = f"{comparison['order_change_pct']:+.1f}%"
@@ -3167,7 +3167,7 @@ def show_simulator_page():
             with col3:
                 delta = f"{comparison['profit_change_pct']:+.1f}%"
                 delta_type = "positive" if comparison['profit_change_pct'] > 0 else "negative"
-                st.markdown(create_metric_card("Net Profit", f"AED {outputs['expected_net_profit']:,.0f}", delta, delta_type, "green"), unsafe_allow_html=True)
+                st.markdown(create_metric_card("Net Profit", format_currency(outputs['expected_net_profit']), delta, delta_type, "green"), unsafe_allow_html=True)
             
             with col4:
                 color = "green" if outputs['roi_pct'] > 0 else "pink"
@@ -3185,10 +3185,10 @@ def show_simulator_page():
                 st.markdown(create_metric_card("Margin", f"{outputs['expected_margin_pct']:.1f}%", color=color), unsafe_allow_html=True)
             
             with col3:
-                st.markdown(create_metric_card("Promo Cost", f"AED {outputs['promo_cost']:,.0f}", color="orange"), unsafe_allow_html=True)
+                st.markdown(create_metric_card("Promo Cost", format_currency(outputs['promo_cost']), color="orange"), unsafe_allow_html=True)
             
             with col4:
-                st.markdown(create_metric_card("Fulfillment", f"AED {outputs['fulfillment_cost']:,.0f}", color="blue"), unsafe_allow_html=True)
+                st.markdown(create_metric_card("Fulfillment", format_currency(outputs['fulfillment_cost']), color="blue"), unsafe_allow_html=True)
             
             if warnings:
                 st.markdown("---")
