@@ -2365,24 +2365,50 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
 # stock < 20 → 20-50% risk
 # stock >= 20 → 0-20% risk
 
-def calculate_risk(stock):
-    if stock <= 0:
-        return 100
-    elif stock < 5:
-        return 80 + (5 - stock) * 4  # 80-100%
-    elif stock < 10:
-        return 50 + (10 - stock) * 6  # 50-80%
-    elif stock < 20:
-        return 20 + (20 - stock) * 3  # 20-50%
-    elif stock < 50:
-        return max(0, 20 - (stock - 20) * 0.67)  # 0-20%
-    else:
-        return 0
-
-risk_df['risk_score'] = risk_df['stock_on_hand'].apply(calculate_risk)
+# Calculate ABSOLUTE risk score based on stock thresholds
+                # This uses business-meaningful thresholds, not relative to selection
+                def calculate_stockout_risk(stock):
+                    """
+                    Calculate stockout risk based on absolute stock thresholds.
+                    - 0 units: 100% risk (stockout)
+                    - 1-5 units: 70-95% risk (critical)
+                    - 6-15 units: 40-65% risk (high)
+                    - 16-30 units: 15-35% risk (medium)
+                    - 31-50 units: 5-14% risk (low)
+                    - 50+ units: 0-5% risk (safe)
+                    """
+                    if stock <= 0:
+                        return 100.0
+                    elif stock <= 5:
+                        return 95 - (stock - 1) * 6.25  # 95% to 70%
+                    elif stock <= 15:
+                        return 65 - (stock - 6) * 2.5  # 65% to 40%
+                    elif stock <= 30:
+                        return 35 - (stock - 16) * 1.43  # 35% to 15%
+                    elif stock <= 50:
+                        return 14 - (stock - 31) * 0.45  # 14% to 5%
+                    else:
+                        return max(0, 5 - (stock - 51) * 0.05)  # 5% to 0%
+                
+                # Apply risk calculation to ALL inventory first
+                inventory_with_risk = inventory_df.copy()
+                inventory_with_risk['risk_score'] = inventory_with_risk['stock_on_hand'].apply(calculate_stockout_risk)
+                
+                # Get top N HIGHEST RISK items (not lowest stock - though correlated)
+                risk_df = inventory_with_risk.nlargest(int(top_n_sku), 'risk_score').copy()
+                
+                # Add store info if available
+                if stores_df is not None and 'store_id' in risk_df.columns and 'store_id' in stores_df.columns:
+                    risk_df = risk_df.merge(stores_df[['store_id', 'city']], on='store_id', how='left')
+                    risk_df['SKU-Location'] = risk_df[sku_col].astype(str) + ' @ ' + risk_df['city'].fillna('Unknown')
+                else:
+                    risk_df['SKU-Location'] = risk_df[sku_col].astype(str)
+                
+                # Sort for chart display (lowest risk at top, highest at bottom)
                 risk_df = risk_df.sort_values('risk_score', ascending=True)
                 
-                colors = ['#10b981' if x < 50 else '#f59e0b' if x < 80 else '#ef4444' for x in risk_df['risk_score']]
+                # Color based on risk level
+                colors = ['#10b981' if x < 40 else '#f59e0b' if x < 70 else '#ef4444' for x in risk_df['risk_score']]
                 
                 fig_sku_risk = go.Figure(go.Bar(
                     x=risk_df['risk_score'],
