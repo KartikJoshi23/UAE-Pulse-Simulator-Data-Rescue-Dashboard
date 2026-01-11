@@ -3080,12 +3080,31 @@ def show_cleaner_page():
             
             st.markdown('<p class="section-title section-title-purple">💡 Cleaning Insight</p>', unsafe_allow_html=True)
             
-            top_issue = issue_counts.loc[issue_counts['count'].idxmax(), 'issue_type']
-            top_count = issue_counts['count'].max()
-            st.markdown(create_insight_card("Most Common Issue", f"'{top_issue}' was the most frequent issue with {top_count} occurrences. All instances have been automatically fixed."), unsafe_allow_html=True)
+            # Extract ACTUAL counts from record_identifier (e.g., "475 rows" → 475)
+            insight_df = issues_df.copy()
+            insight_df['actual_count'] = insight_df['record_identifier'].str.extract(r'(\d+)').astype(float).fillna(1)
             
-            st.markdown('<p class="section-title section-title-blue">📋 issue_issue_detailed Issues Log</p>', unsafe_allow_html=True)
-            st.dataframe(issues_df, width='stretch')
+            # Group by issue type and sum actual counts
+            issue_summary = insight_df.groupby('issue_type')['actual_count'].sum().reset_index()
+            issue_summary.columns = ['issue_type', 'count']
+            
+            # Filter out NO_ISSUES entries
+            issue_summary = issue_summary[issue_summary['issue_type'] != 'NO_ISSUES']
+            
+            if len(issue_summary) > 0:
+                # Find top issue
+                top_issue = issue_summary.loc[issue_summary['count'].idxmax(), 'issue_type']
+                top_count = int(issue_summary['count'].max())
+                
+                st.markdown(create_insight_card(
+                    "Most Common Issue", 
+                    f"'{top_issue}' was the most frequent issue with {top_count:,} occurrences. All instances have been automatically fixed."
+                ), unsafe_allow_html=True)
+            else:
+                st.markdown(create_success_card("✅ No data quality issues found! Your data was already clean."), unsafe_allow_html=True)
+            
+            st.markdown('<p class="section-title section-title-blue">📋 Detailed Issues Log</p>', unsafe_allow_html=True)
+            st.dataframe(issues_df, use_container_width=True)
             
             csv = issues_df.to_csv(index=False)
             st.download_button(
