@@ -1319,7 +1319,7 @@ def show_dashboard_page():
     st.markdown('<p class="section-title section-title-blue">🎛️ Global Filters</p>', unsafe_allow_html=True)
     st.caption("💡 Leave empty to include all")
     
-    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
     
     # Date Range Filter
     with filter_col1:
@@ -1394,6 +1394,25 @@ def show_dashboard_page():
             
             if len(selected_categories) == 0:
                 selected_categories = all_categories
+                # Brand Filter
+    with filter_col5:
+        all_brands = []
+        selected_brands = []
+        if products_df is not None and 'brand' in products_df.columns:
+            all_brands = sorted(products_df['brand'].dropna().unique().tolist())
+            
+            selected_brands = st.multiselect(
+                "🏷️ Brand",
+                options=all_brands,
+                default=[],
+                placeholder="All Brands",
+                key="global_brand_filter"
+            )
+            
+            if len(selected_brands) == 0:
+                selected_brands = all_brands
+        else:
+            selected_brands = []
     
 # ===== APPLY FILTERS =====
     filtered_sales = sales_df.copy()
@@ -1424,8 +1443,13 @@ def show_dashboard_page():
     # Apply category filter via products
     if filtered_products is not None and selected_categories:
         filtered_products = filtered_products[filtered_products['category'].isin(selected_categories)]
-        
-        # Filter sales by valid products
+    
+    # Apply brand filter via products
+    if filtered_products is not None and selected_brands and 'brand' in filtered_products.columns:
+        filtered_products = filtered_products[filtered_products['brand'].isin(selected_brands)]
+    
+    # Filter sales by valid products (after category AND brand filters)
+    if filtered_products is not None:
         if 'sku' in filtered_sales.columns and 'sku' in filtered_products.columns:
             valid_skus = filtered_products['sku'].unique()
             filtered_sales = filtered_sales[filtered_sales['sku'].isin(valid_skus)]
@@ -1595,6 +1619,146 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
             format_currency(avg_order_value),
             color="cyan"
         ), unsafe_allow_html=True)
+    
+    st.markdown("---")
+    # ===== EXECUTIVE RECOMMENDATION BOX =====
+    st.markdown('<p class="section-title section-title-purple">🎯 Executive Recommendations</p>', unsafe_allow_html=True)
+    
+    # Generate dynamic recommendations based on KPIs
+    recommendations = []
+    
+    # Check Gross Margin %
+    gross_margin_pct = kpis.get('profit_margin_pct', 0)
+    if gross_margin_pct < 20:
+        recommendations.append({
+            'priority': '🔴 Critical',
+            'area': 'Profitability',
+            'insight': f'Gross margin is {gross_margin_pct:.1f}% (below 20% threshold)',
+            'action': 'Review pricing strategy and negotiate better supplier costs immediately'
+        })
+    elif gross_margin_pct < 30:
+        recommendations.append({
+            'priority': '🟠 High',
+            'area': 'Profitability',
+            'insight': f'Gross margin is {gross_margin_pct:.1f}% (below 30% target)',
+            'action': 'Consider reducing discounts or optimizing product mix'
+        })
+    else:
+        recommendations.append({
+            'priority': '🟢 Good',
+            'area': 'Profitability',
+            'insight': f'Gross margin is healthy at {gross_margin_pct:.1f}%',
+            'action': 'Maintain current pricing strategy'
+        })
+    
+    # Check Average Discount
+    avg_discount = kpis.get('avg_discount_pct', 0)
+    if avg_discount > 15:
+        recommendations.append({
+            'priority': '🔴 Critical',
+            'area': 'Discounting',
+            'insight': f'Average discount is {avg_discount:.1f}% (very high)',
+            'action': 'Reduce blanket discounts; implement targeted promotions instead'
+        })
+    elif avg_discount > 10:
+        recommendations.append({
+            'priority': '🟠 High',
+            'area': 'Discounting',
+            'insight': f'Average discount is {avg_discount:.1f}% (above optimal)',
+            'action': 'Review discount approval process and set category-wise caps'
+        })
+    
+    # Check Refund Rate
+    gross_revenue = kpis.get('total_revenue', 0)
+    refund_amount = kpis.get('refund_amount', 0)
+    refund_rate = (refund_amount / gross_revenue * 100) if gross_revenue > 0 else 0
+    if refund_rate > 5:
+        recommendations.append({
+            'priority': '🔴 Critical',
+            'area': 'Returns',
+            'insight': f'Refund rate is {refund_rate:.1f}% (above 5% threshold)',
+            'action': 'Investigate product quality issues and improve product descriptions'
+        })
+    elif refund_rate > 3:
+        recommendations.append({
+            'priority': '🟠 High',
+            'area': 'Returns',
+            'insight': f'Refund rate is {refund_rate:.1f}% (needs attention)',
+            'action': 'Analyze top returned products and address root causes'
+        })
+    
+    # Check Average Order Value
+    avg_order_value = kpis.get('avg_order_value', 0)
+    if avg_order_value < 100:
+        recommendations.append({
+            'priority': '🟠 High',
+            'area': 'Revenue',
+            'insight': f'Average order value is AED {avg_order_value:.0f} (low)',
+            'action': 'Implement cross-selling and bundle offers to increase basket size'
+        })
+    
+    # Check inventory stockout risk if available
+    if filtered_inventory is not None and 'stock_on_hand' in filtered_inventory.columns:
+        zero_stock_count = (filtered_inventory['stock_on_hand'] == 0).sum()
+        total_items = len(filtered_inventory)
+        stockout_pct = (zero_stock_count / total_items * 100) if total_items > 0 else 0
+        
+        if stockout_pct > 10:
+            recommendations.append({
+                'priority': '🔴 Critical',
+                'area': 'Inventory',
+                'insight': f'{stockout_pct:.1f}% of SKU-store combinations have zero stock',
+                'action': 'Urgent replenishment needed; review demand forecasting process'
+            })
+        elif stockout_pct > 5:
+            recommendations.append({
+                'priority': '🟠 High',
+                'area': 'Inventory',
+                'insight': f'{stockout_pct:.1f}% of items at stockout risk',
+                'action': 'Prioritize replenishment for fast-moving SKUs'
+            })
+    
+    # Display recommendations
+    if recommendations:
+        for rec in recommendations:
+            priority_color = {
+                '🔴 Critical': 'rgba(239, 68, 68, 0.15)',
+                '🟠 High': 'rgba(245, 158, 11, 0.15)',
+                '🟢 Good': 'rgba(16, 185, 129, 0.15)'
+            }.get(rec['priority'], 'rgba(100, 100, 100, 0.15)')
+            
+            border_color = {
+                '🔴 Critical': '#ef4444',
+                '🟠 High': '#f59e0b',
+                '🟢 Good': '#10b981'
+            }.get(rec['priority'], '#666')
+            
+            st.markdown(f"""
+            <div style="background: {priority_color}; 
+                        border-left: 4px solid {border_color}; 
+                        padding: 15px 20px; 
+                        border-radius: 8px; 
+                        margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 600; color: #e2e8f0;">{rec['priority']} - {rec['area']}</span>
+                </div>
+                <div style="color: #cbd5e1; margin-bottom: 8px;">
+                    <strong>Insight:</strong> {rec['insight']}
+                </div>
+                <div style="color: #67e8f9;">
+                    <strong>Action:</strong> {rec['action']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="background: rgba(16, 185, 129, 0.15); 
+                    border-left: 4px solid #10b981; 
+                    padding: 15px 20px; 
+                    border-radius: 8px;">
+            <span style="font-weight: 600; color: #10b981;">✅ All metrics within healthy ranges!</span>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
