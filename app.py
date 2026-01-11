@@ -2136,30 +2136,45 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                     key="city_channel_risk_top_n"
                 )
                 
-                inv_with_store['city_channel'] = inv_with_store['city'] + ' - ' + inv_with_store['channel']
-                
-                city_channel_risk = inv_with_store.groupby('city_channel').apply(
-                    lambda x: (x['stock_on_hand'] < 10).sum() / len(x) * 100 if len(x) > 0 else 0,
-                    include_groups=False
+                # FIXED: Use explicit aggregation instead of apply() to prevent misalignment
+                # Step 1: Calculate aggregates per city-channel
+                city_channel_agg = inv_with_store.groupby(['city', 'channel']).agg(
+                    low_stock_count=('stock_on_hand', lambda x: (x < 10).sum()),
+                    total_count=('stock_on_hand', 'count')
                 ).reset_index()
-                city_channel_risk.columns = ['City-Channel', 'Risk %']
-                city_channel_risk = city_channel_risk.sort_values('Risk %', ascending=False)
                 
-                # Apply Top N filter
+                # Step 2: Calculate risk percentage
+                city_channel_agg['Risk %'] = (
+                    city_channel_agg['low_stock_count'] / city_channel_agg['total_count'] * 100
+                ).round(2)
+                
+                # Step 3: Create label AFTER calculations to ensure alignment
+                city_channel_agg['City-Channel'] = city_channel_agg['city'].astype(str) + ' - ' + city_channel_agg['channel'].astype(str)
+                
+                # Step 4: Sort by risk descending first (for top N selection)
+                city_channel_agg = city_channel_agg.sort_values('Risk %', ascending=False)
+                
+                # Step 5: Apply Top N filter
                 if top_n_risk != "All":
-                    city_channel_risk = city_channel_risk.head(int(top_n_risk))
+                    city_channel_agg = city_channel_agg.head(int(top_n_risk))
                 
-                # Sort for display (ascending for horizontal bar)
-                city_channel_risk = city_channel_risk.sort_values('Risk %', ascending=True)
+                # Step 6: Sort ascending for chart display (highest at bottom)
+                city_channel_agg = city_channel_agg.sort_values('Risk %', ascending=True)
                 
-                colors = ['#10b981' if x < 30 else '#f59e0b' if x < 60 else '#ef4444' for x in city_channel_risk['Risk %']]
+                # Step 7: Convert to lists to guarantee alignment in Plotly
+                x_values = city_channel_agg['Risk %'].tolist()
+                y_values = city_channel_agg['City-Channel'].tolist()
                 
+                # Step 8: Create colors based on risk values
+                colors = ['#10b981' if x < 30 else '#f59e0b' if x < 60 else '#ef4444' for x in x_values]
+                
+                # Step 9: Create chart with explicit lists
                 fig_risk_bar = go.Figure(go.Bar(
-                    x=city_channel_risk['Risk %'],
-                    y=city_channel_risk['City-Channel'],
+                    x=x_values,
+                    y=y_values,
                     orientation='h',
                     marker_color=colors,
-                    text=[f"{x:.1f}%" for x in city_channel_risk['Risk %']],
+                    text=[f"{x:.1f}%" for x in x_values],
                     textposition='outside'
                 ))
                 
@@ -2170,7 +2185,8 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                     font=dict(color='#e2e8f0'),
                     height=300,
                     xaxis_title="Risk %",
-                    yaxis_title=""
+                    yaxis_title="",
+                    xaxis=dict(range=[0, max(x_values) * 1.2 if x_values else 100])
                 )
                 fig_risk_bar.update_xaxes(gridcolor='#334155')
                 fig_risk_bar.update_yaxes(gridcolor='#334155')
