@@ -3500,6 +3500,18 @@ def show_analytics_page():
 # MAIN ROUTING
 # ============================================================================
 
+# Scroll to top when page changes
+scroll_to_top = """
+    <script>
+        var body = window.parent.document.querySelector(".main");
+        if (body) {
+            body.scrollTop = 0;
+        }
+        window.parent.document.querySelector('[data-testid="stAppViewContainer"]').scrollTop = 0;
+    </script>
+"""
+st.markdown(scroll_to_top, unsafe_allow_html=True)
+
 if page == "🏠 Home":
     show_home_page()
 elif page == "📂 Data":
