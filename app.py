@@ -1789,7 +1789,7 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
     
     st.markdown("---")
     
-    # ===== CHART 4 & 5: Sunburst + Combo Chart (Side by Side) =====
+    # ===== CHART 4 & 5: Sunburst + Discount Impact (Side by Side) =====
     st.markdown('<p class="section-title section-title-purple">🎯 Revenue Mix & Discount Impact</p>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
@@ -1798,53 +1798,77 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         # CHART 4: Sunburst - Revenue Mix (City → Channel → Category)
         if sales_df is not None and stores_df is not None and products_df is not None:
             try:
-                # Merge data for sunburst
                 sunburst_df = sales_df.copy()
                 
+                # Merge store data
                 if 'store_id' in sunburst_df.columns and 'store_id' in stores_df.columns:
-                    sunburst_df = sunburst_df.merge(stores_df[['store_id', 'city', 'channel']], on='store_id', how='left')
+                    sunburst_df = sunburst_df.merge(
+                        stores_df[['store_id', 'city', 'channel']], 
+                        on='store_id', 
+                        how='left'
+                    )
                 
-                if 'product_id' in sunburst_df.columns and 'product_id' in products_df.columns:
-                    sunburst_df = sunburst_df.merge(products_df[['product_id', 'category']], on='product_id', how='left')
+                # Merge product data
+                if 'sku' in sunburst_df.columns and 'sku' in products_df.columns:
+                    sunburst_df = sunburst_df.merge(
+                        products_df[['sku', 'category']], 
+                        on='sku', 
+                        how='left'
+                    )
+                elif 'product_id' in sunburst_df.columns and 'product_id' in products_df.columns:
+                    sunburst_df = sunburst_df.merge(
+                        products_df[['product_id', 'category']], 
+                        on='product_id', 
+                        how='left'
+                    )
                 
+                # Check if all required columns exist
                 if all(col in sunburst_df.columns for col in ['city', 'channel', 'category', 'selling_price_aed']):
-                    # Calculate correct revenue (qty * price)
+                    # Calculate revenue
                     if 'qty' in sunburst_df.columns:
                         sunburst_df['revenue'] = sunburst_df['qty'] * sunburst_df['selling_price_aed']
                     else:
                         sunburst_df['revenue'] = sunburst_df['selling_price_aed']
                     
-                    # Filter paid only
+                    # Filter paid orders only
                     if 'payment_status' in sunburst_df.columns:
                         sunburst_df = sunburst_df[sunburst_df['payment_status'] == 'Paid']
                     
+                    # Aggregate data
                     sunburst_agg = sunburst_df.groupby(['city', 'channel', 'category']).agg({
                         'revenue': 'sum'
                     }).reset_index()
                     sunburst_agg.columns = ['City', 'Channel', 'Category', 'Revenue']
                     
-                    # Limit to top combinations
+                    # Get top 30 combinations for cleaner visualization
                     sunburst_agg = sunburst_agg.nlargest(30, 'Revenue')
                     
-                    fig_sunburst = px.sunburst(
-                        sunburst_agg,
-                        path=['City', 'Channel', 'Category'],
-                        values='Revenue',
-                        color='Revenue',
-                        color_continuous_scale=['#1e3a5f', '#06b6d4', '#10b981']
-                    )
-                    
-                    fig_sunburst.update_layout(
-                        title="Revenue Mix: City → Channel → Category",
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color='#e2e8f0'),
-                        height=400
-                    )
-                    
-                    st.plotly_chart(fig_sunburst, use_container_width=True)
-                    st.caption("📌 Click to drill down: City → Channel → Category revenue contribution.")
+                    if len(sunburst_agg) > 0:
+                        # Create Sunburst chart
+                        fig_sunburst = px.sunburst(
+                            sunburst_agg,
+                            path=['City', 'Channel', 'Category'],
+                            values='Revenue',
+                            color='Revenue',
+                            color_continuous_scale=['#06b6d4', '#8b5cf6', '#ec4899']
+                        )
+                        
+                        fig_sunburst = style_plotly_chart_themed(fig_sunburst, height=400)
+                        fig_sunburst.update_layout(
+                            title="Revenue Mix: City → Channel → Category",
+                            coloraxis_showscale=False
+                        )
+                        fig_sunburst.update_traces(
+                            textinfo='label+percent parent',
+                            insidetextorientation='radial'
+                        )
+                        
+                        st.plotly_chart(fig_sunburst, use_container_width=True)
+                        st.caption("📌 Click to drill down: City → Channel → Category revenue contribution.")
+                    else:
+                        st.info("No revenue data available for sunburst chart")
                 else:
-                    # Fallback: Simple pie chart by channel
+                    # Fallback: Pie chart by channel
                     if 'channel' in sunburst_df.columns and 'selling_price_aed' in sunburst_df.columns:
                         if 'qty' in sunburst_df.columns:
                             sunburst_df['revenue'] = sunburst_df['qty'] * sunburst_df['selling_price_aed']
@@ -1852,18 +1876,17 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
                             sunburst_df['revenue'] = sunburst_df['selling_price_aed']
                         
                         channel_rev = sunburst_df.groupby('channel')['revenue'].sum().reset_index()
+                        
                         fig_fallback = px.pie(
-                            channel_rev,
-                            values='revenue',
-                            names='channel',
+                            channel_rev, 
+                            values='revenue', 
+                            names='channel', 
                             title='Revenue by Channel',
-                            color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899']
+                            color_discrete_sequence=['#06b6d4', '#8b5cf6', '#ec4899'],
+                            hole=0.4
                         )
-                        fig_fallback.update_layout(
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            font=dict(color='#e2e8f0'),
-                            height=400
-                        )
+                        fig_fallback = style_plotly_chart_themed(fig_fallback, height=400)
+                        
                         st.plotly_chart(fig_fallback, use_container_width=True)
                         st.caption("📌 Revenue distribution by sales channel.")
                     else:
@@ -2166,24 +2189,37 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
     col1, col2 = st.columns(2)
     
     with col1:
-        # CHART 3: Bar Chart - Demand vs Stock by Category
+        # CHART 3: Bar Chart - Demand vs Stock by Category (Dual Y-Axis)
         if sales_df is not None and inventory_df is not None and products_df is not None:
             try:
-                # Calculate demand from sales
                 sales_with_cat = sales_df.copy()
-                if 'product_id' in sales_with_cat.columns and 'product_id' in products_df.columns:
-                    sales_with_cat = sales_with_cat.merge(products_df[['product_id', 'category']], on='product_id', how='left')
+                sku_col = 'sku' if 'sku' in sales_with_cat.columns else 'product_id'
+                
+                # Merge category from products
+                if sku_col in sales_with_cat.columns and sku_col in products_df.columns:
+                    sales_with_cat = sales_with_cat.merge(
+                        products_df[[sku_col, 'category']], 
+                        on=sku_col, 
+                        how='left'
+                    )
                 
                 if 'category' in sales_with_cat.columns and 'qty' in sales_with_cat.columns:
+                    # Calculate demand by category
+                    sales_with_cat['qty'] = pd.to_numeric(sales_with_cat['qty'], errors='coerce').fillna(0)
                     demand_by_cat = sales_with_cat.groupby('category')['qty'].sum().reset_index()
                     demand_by_cat.columns = ['Category', 'Demand']
                     
                     # Calculate stock by category
                     inv_with_cat = inventory_df.copy()
-                    if 'product_id' in inv_with_cat.columns and 'product_id' in products_df.columns:
-                        inv_with_cat = inv_with_cat.merge(products_df[['product_id', 'category']], on='product_id', how='left')
+                    if sku_col in inv_with_cat.columns and sku_col in products_df.columns:
+                        inv_with_cat = inv_with_cat.merge(
+                            products_df[[sku_col, 'category']], 
+                            on=sku_col, 
+                            how='left'
+                        )
                     
                     if 'category' in inv_with_cat.columns and 'stock_on_hand' in inv_with_cat.columns:
+                        inv_with_cat['stock_on_hand'] = pd.to_numeric(inv_with_cat['stock_on_hand'], errors='coerce').fillna(0)
                         stock_by_cat = inv_with_cat.groupby('category')['stock_on_hand'].sum().reset_index()
                         stock_by_cat.columns = ['Category', 'Stock']
                         
@@ -2191,126 +2227,108 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                         demand_stock = demand_by_cat.merge(stock_by_cat, on='Category', how='outer').fillna(0)
                         demand_stock = demand_stock.nlargest(8, 'Demand')
                         
-                        fig_demand_stock = go.Figure()
+                        # Calculate stock coverage ratio
+                        demand_stock['Coverage'] = np.where(
+                            demand_stock['Demand'] > 0,
+                            demand_stock['Stock'] / demand_stock['Demand'],
+                            0
+                        )
                         
-                        fig_demand_stock.add_trace(go.Bar(
-                            name='Demand',
-                            x=demand_stock['Category'],
-                            y=demand_stock['Demand'],
-                            marker_color='#8b5cf6'
-                        ))
+                        # Create figure with dual y-axis
+                        fig_demand_stock = make_subplots(specs=[[{"secondary_y": True}]])
                         
-                        fig_demand_stock.add_trace(go.Bar(
-                            name='Stock',
-                            x=demand_stock['Category'],
-                            y=demand_stock['Stock'],
-                            marker_color='#06b6d4'
-                        ))
+                        # Add Demand bars (LEFT y-axis)
+                        fig_demand_stock.add_trace(
+                            go.Bar(
+                                name='Demand (Units Sold)',
+                                x=demand_stock['Category'],
+                                y=demand_stock['Demand'],
+                                marker_color='#8b5cf6',
+                                text=[f"{int(v):,}" for v in demand_stock['Demand']],
+                                textposition='outside',
+                                offsetgroup=0
+                            ),
+                            secondary_y=False
+                        )
                         
+                        # Add Stock bars (RIGHT y-axis)
+                        fig_demand_stock.add_trace(
+                            go.Bar(
+                                name='Stock (On Hand)',
+                                x=demand_stock['Category'],
+                                y=demand_stock['Stock'],
+                                marker_color='#06b6d4',
+                                text=[f"{int(v):,}" for v in demand_stock['Stock']],
+                                textposition='outside',
+                                offsetgroup=1
+                            ),
+                            secondary_y=True
+                        )
+                        
+                        # Get theme colors
+                        colors = get_theme_colors()
+                        
+                        # Update layout
                         fig_demand_stock.update_layout(
                             title="Demand vs Stock by Category",
                             barmode='group',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font=dict(color='#e2e8f0'),
-                            height=350,
-                            xaxis_title="Category",
-                            yaxis_title="Units",
-                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                            paper_bgcolor=colors['chart_bg'],
+                            plot_bgcolor=colors['chart_bg'],
+                            font=dict(color=colors['chart_text'], family='Inter, sans-serif'),
+                            legend=dict(
+                                orientation="h",
+                                yanchor="bottom",
+                                y=1.02,
+                                xanchor="right",
+                                x=1,
+                                bgcolor='rgba(0,0,0,0)',
+                                font=dict(color=colors['chart_text'])
+                            ),
+                            height=380,
+                            margin=dict(l=20, r=20, t=80, b=60)
                         )
-                        fig_demand_stock.update_xaxes(gridcolor='#334155')
-                        fig_demand_stock.update_yaxes(gridcolor='#334155')
+                        
+                        # Update LEFT y-axis (Demand - Purple)
+                        fig_demand_stock.update_yaxes(
+                            title_text="Demand (Units Sold)",
+                            secondary_y=False,
+                            gridcolor=colors['chart_grid'],
+                            tickfont=dict(color='#8b5cf6'),
+                            title_font=dict(color='#8b5cf6')
+                        )
+                        
+                        # Update RIGHT y-axis (Stock - Cyan)
+                        fig_demand_stock.update_yaxes(
+                            title_text="Stock (On Hand)",
+                            secondary_y=True,
+                            gridcolor=colors['chart_grid'],
+                            tickfont=dict(color='#06b6d4'),
+                            title_font=dict(color='#06b6d4')
+                        )
+                        
+                        # Update x-axis
+                        fig_demand_stock.update_xaxes(
+                            tickfont=dict(color=colors['chart_text']),
+                            tickangle=45,
+                            gridcolor=colors['chart_grid']
+                        )
                         
                         st.plotly_chart(fig_demand_stock, use_container_width=True)
-                        st.caption("📌 Compares historical demand against available stock. Purple bars exceeding cyan = potential stockout.")
-                    else:
-                        # Fallback: Stock Distribution Histogram
-                        if 'stock_on_hand' in inventory_df.columns:
-                            fig_fallback = px.histogram(
-                                inventory_df,
-                                x='stock_on_hand',
-                                title='Stock Distribution (Units on Hand)',
-                                nbins=30,
-                                color_discrete_sequence=['#06b6d4']
-                            )
-                            fig_fallback.update_layout(
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                plot_bgcolor='rgba(0,0,0,0)',
-                                font=dict(color='#e2e8f0'),
-                                height=350,
-                                xaxis_title="Stock on Hand",
-                                yaxis_title="Count"
-                            )
-                            fig_fallback.update_xaxes(gridcolor='#334155')
-                            fig_fallback.update_yaxes(gridcolor='#334155')
-                            st.plotly_chart(fig_fallback, use_container_width=True)
-                            st.caption("📌 Distribution of inventory levels across all SKUs.")
+                        
+                        # Show warning for low coverage categories
+                        low_coverage = demand_stock[demand_stock['Coverage'] < 10]
+                        if len(low_coverage) > 0:
+                            st.warning(f"⚠️ **{len(low_coverage)} categories** have less than 10x stock coverage: {', '.join(low_coverage['Category'].tolist())}")
                         else:
-                            st.info("Stock data not available")
-                else:
-                    # Fallback: Stock Distribution Histogram
-                    if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-                        fig_fallback = px.histogram(
-                            inventory_df,
-                            x='stock_on_hand',
-                            title='Stock Distribution (Units on Hand)',
-                            nbins=30,
-                            color_discrete_sequence=['#06b6d4']
-                        )
-                        fig_fallback.update_layout(
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font=dict(color='#e2e8f0'),
-                            height=350,
-                            xaxis_title="Stock on Hand",
-                            yaxis_title="Count"
-                        )
-                        fig_fallback.update_xaxes(gridcolor='#334155')
-                        fig_fallback.update_yaxes(gridcolor='#334155')
-                        st.plotly_chart(fig_fallback, use_container_width=True)
-                        st.caption("📌 Distribution of inventory levels across all SKUs.")
+                            st.caption("📌 Purple = Demand (left axis), Cyan = Stock (right axis). Scales differ for better visibility.")
                     else:
-                        st.info("Inventory data not available")
-            except Exception as e:
-                # Fallback on exception: Stock Distribution
-                if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-                    fig_fallback = px.histogram(
-                        inventory_df,
-                        x='stock_on_hand',
-                        title='Stock Distribution (Units on Hand)',
-                        nbins=30,
-                        color_discrete_sequence=['#06b6d4']
-                    )
-                    fig_fallback.update_layout(
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color='#e2e8f0'),
-                        height=350
-                    )
-                    st.plotly_chart(fig_fallback, use_container_width=True)
-                    st.caption("📌 Distribution of inventory levels across all SKUs.")
+                        st.info("Stock by category not available")
                 else:
-                    st.info("Unable to create inventory chart")
+                    st.info("Category demand data not available")
+            except Exception as e:
+                st.info(f"Unable to create demand vs stock chart")
         else:
-            # Fallback when main data not available
-            if inventory_df is not None and 'stock_on_hand' in inventory_df.columns:
-                fig_fallback = px.histogram(
-                    inventory_df,
-                    x='stock_on_hand',
-                    title='Stock Distribution (Units on Hand)',
-                    nbins=30,
-                    color_discrete_sequence=['#06b6d4']
-                )
-                fig_fallback.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#e2e8f0'),
-                    height=350
-                )
-                st.plotly_chart(fig_fallback, use_container_width=True)
-                st.caption("📌 Distribution of inventory levels across all SKUs.")
-            else:
-                st.info("Inventory data not available")
+            st.info("Required data not available")
     
     with col2:
         # CHART 4: Horizontal Bar - Top N SKU-Store Stockout Risk
