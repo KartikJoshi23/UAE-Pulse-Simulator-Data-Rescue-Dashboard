@@ -2357,8 +2357,29 @@ def show_manager_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, pr
                     risk_df['SKU-Location'] = risk_df[sku_col].astype(str)
                 
                 # Calculate risk score (inverse of stock)
-                max_stock = risk_df['stock_on_hand'].max() + 1
-                risk_df['risk_score'] = ((max_stock - risk_df['stock_on_hand']) / max_stock * 100).clip(0, 100)
+               # NEW (correct - threshold based):
+# Risk based on absolute thresholds:
+# stock = 0 → 100% risk
+# stock < 5 → 80-100% risk  
+# stock < 10 → 50-80% risk
+# stock < 20 → 20-50% risk
+# stock >= 20 → 0-20% risk
+
+def calculate_risk(stock):
+    if stock <= 0:
+        return 100
+    elif stock < 5:
+        return 80 + (5 - stock) * 4  # 80-100%
+    elif stock < 10:
+        return 50 + (10 - stock) * 6  # 50-80%
+    elif stock < 20:
+        return 20 + (20 - stock) * 3  # 20-50%
+    elif stock < 50:
+        return max(0, 20 - (stock - 20) * 0.67)  # 0-20%
+    else:
+        return 0
+
+risk_df['risk_score'] = risk_df['stock_on_hand'].apply(calculate_risk)
                 risk_df = risk_df.sort_values('risk_score', ascending=True)
                 
                 colors = ['#10b981' if x < 50 else '#f59e0b' if x < 80 else '#ef4444' for x in risk_df['risk_score']]
