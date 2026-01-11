@@ -728,6 +728,7 @@ def create_feature_card(icon, title, description, color="cyan"):
         'teal': '#14b8a6'
     }
 
+
 def style_plotly_chart_themed(fig, height=400):
     """Apply consistent theme styling to Plotly charts."""
     colors = get_theme_colors()
