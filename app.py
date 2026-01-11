@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os
 from modules.validator import FileValidator
+import streamlit.components.v1 as components
 
 # Import custom modules
 from modules.cleaner import DataCleaner
@@ -3548,17 +3549,28 @@ def show_analytics_page():
 # MAIN ROUTING
 # ============================================================================
 
+# Track page changes for scroll reset
+if 'previous_page' not in st.session_state:
+    st.session_state.previous_page = None
+
 # Scroll to top when page changes
-st.markdown("""
-    <style>
-        section.main {
-            scroll-behavior: smooth;
-        }
-    </style>
-    <script>
-        window.parent.document.querySelector('section.main').scrollTo(0, 0);
-    </script>
-""", unsafe_allow_html=True)
+if st.session_state.previous_page != page:
+    st.session_state.previous_page = page
+    components.html(
+        """
+        <script>
+            var mainSection = window.parent.document.querySelector('section.main');
+            if (mainSection) {
+                mainSection.scrollTop = 0;
+            }
+            var appContainer = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+            if (appContainer) {
+                appContainer.scrollTop = 0;
+            }
+        </script>
+        """,
+        height=0
+    )
 
 if page == "🏠 Home":
     show_home_page()
