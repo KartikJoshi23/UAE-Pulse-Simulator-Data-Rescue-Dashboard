@@ -636,81 +636,96 @@ class DataCleaner:
         return df
     
     def _validate_foreign_keys_sales(self, sales_df, products_df, stores_df):
-        """Validate and drop sales with invalid foreign keys."""
-        original_count = len(sales_df)
-        
-        # Check SKU exists in products
-        if 'sku' in sales_df.columns and 'sku' in products_df.columns:
-            valid_skus = set(products_df['sku'].unique())
-            invalid_sku_mask = ~sales_df['sku'].isin(valid_skus)
-            invalid_sku_count = invalid_sku_mask.sum()
-            
-            if invalid_sku_count > 0:
-                self._log_issue('sales', f'{invalid_sku_count} rows', 'INVALID_SKU_FK',
-                              f'{invalid_sku_count} sales reference non-existent SKUs',
-                              'Dropped rows')
-                sales_df = sales_df[~invalid_sku_mask].copy()
-                self.stats['invalid_dropped'] += invalid_sku_count
-        
-        # Check store_id exists in stores
-        if 'store_id' in sales_df.columns and 'store_id' in stores_df.columns:
-            valid_stores = set(stores_df['store_id'].unique())
-            invalid_store_mask = ~sales_df['store_id'].isin(valid_stores)
-            invalid_store_count = invalid_store_mask.sum()
-            
-            if invalid_store_count > 0:
-                self._log_issue('sales', f'{invalid_store_count} rows', 'INVALID_STORE_FK',
-                              f'{invalid_store_count} sales reference non-existent stores',
-                              'Dropped rows')
-                sales_df = sales_df[~invalid_store_mask].copy()
-                self.stats['invalid_dropped'] += invalid_store_count
-        
-        # Update report
-        self.cleaning_report['sales']['final_rows'] = len(sales_df)
-        self.cleaning_report['sales']['dropped_rows'] = original_count - len(sales_df) + self.cleaning_report['sales'].get('dropped_rows', 0)
-        
-        self.cleaning_report['foreign_key_issues'] = {
-            'invalid_skus': invalid_sku_count if 'invalid_sku_count' in dir() else 0,
-            'invalid_stores': invalid_store_count if 'invalid_store_count' in dir() else 0
-        }
-        
-        return sales_df
+    """Validate and drop sales with invalid foreign keys."""
+    original_count = len(sales_df)
+    invalid_sku_count = 0
+    invalid_store_count = 0
     
-    def _validate_foreign_keys_inventory(self, inventory_df, products_df, stores_df):
-        """Validate and drop inventory with invalid foreign keys."""
-        original_count = len(inventory_df)
+    # Check SKU exists in products
+    if 'sku' in sales_df.columns and 'sku' in products_df.columns:
+        valid_skus = set(products_df['sku'].unique())
+        invalid_sku_mask = ~sales_df['sku'].isin(valid_skus)
+        invalid_sku_count = invalid_sku_mask.sum()
         
-        # Check SKU exists in products
-        if 'sku' in inventory_df.columns and 'sku' in products_df.columns:
-            valid_skus = set(products_df['sku'].unique())
-            invalid_sku_mask = ~inventory_df['sku'].isin(valid_skus)
-            invalid_sku_count = invalid_sku_mask.sum()
-            
-            if invalid_sku_count > 0:
-                self._log_issue('inventory', f'{invalid_sku_count} rows', 'INVALID_SKU_FK',
-                              f'{invalid_sku_count} inventory records reference non-existent SKUs',
-                              'Dropped rows')
-                inventory_df = inventory_df[~invalid_sku_mask].copy()
-                self.stats['invalid_dropped'] += invalid_sku_count
+        if invalid_sku_count > 0:
+            self._log_issue('sales', f'{invalid_sku_count} rows', 'INVALID_SKU_FK',
+                          f'{invalid_sku_count} sales reference non-existent SKUs',
+                          'Dropped rows')
+            sales_df = sales_df[~invalid_sku_mask].copy()
+            self.stats['invalid_dropped'] += invalid_sku_count
+    
+    # Check store_id exists in stores
+    if 'store_id' in sales_df.columns and 'store_id' in stores_df.columns:
+        valid_stores = set(stores_df['store_id'].unique())
+        invalid_store_mask = ~sales_df['store_id'].isin(valid_stores)
+        invalid_store_count = invalid_store_mask.sum()
         
-        # Check store_id exists in stores
-        if 'store_id' in inventory_df.columns and 'store_id' in stores_df.columns:
-            valid_stores = set(stores_df['store_id'].unique())
-            invalid_store_mask = ~inventory_df['store_id'].isin(valid_stores)
-            invalid_store_count = invalid_store_mask.sum()
-            
-            if invalid_store_count > 0:
-                self._log_issue('inventory', f'{invalid_store_count} rows', 'INVALID_STORE_FK',
-                              f'{invalid_store_count} inventory records reference non-existent stores',
-                              'Dropped rows')
-                inventory_df = inventory_df[~invalid_store_mask].copy()
-                self.stats['invalid_dropped'] += invalid_store_count
+        if invalid_store_count > 0:
+            self._log_issue('sales', f'{invalid_store_count} rows', 'INVALID_STORE_FK',
+                          f'{invalid_store_count} sales reference non-existent stores',
+                          'Dropped rows')
+            sales_df = sales_df[~invalid_store_mask].copy()
+            self.stats['invalid_dropped'] += invalid_store_count
+    
+    # Update report
+    if 'sales' in self.cleaning_report:
+        dropped_before = self.cleaning_report['sales'].get('dropped_rows', 0)
+        self.cleaning_report['sales']['final_rows'] = len(sales_df)
+        self.cleaning_report['sales']['dropped_rows'] = original_count - len(sales_df) + dropped_before
+    
+    self.cleaning_report['foreign_key_issues'] = {
+        'invalid_skus': invalid_sku_count,
+        'invalid_stores': invalid_store_count
+    }
+    
+    return sales_df
+
+def _validate_foreign_keys_inventory(self, inventory_df, products_df, stores_df):
+    """Validate and drop inventory with invalid foreign keys."""
+    original_count = len(inventory_df)
+    invalid_sku_count = 0
+    invalid_store_count = 0
+    
+    # Check SKU exists in products
+    if 'sku' in inventory_df.columns and 'sku' in products_df.columns:
+        valid_skus = set(products_df['sku'].unique())
+        invalid_sku_mask = ~inventory_df['sku'].isin(valid_skus)
+        invalid_sku_count = invalid_sku_mask.sum()
         
-        # Update report
+        if invalid_sku_count > 0:
+            self._log_issue('inventory', f'{invalid_sku_count} rows', 'INVALID_SKU_FK',
+                          f'{invalid_sku_count} inventory records reference non-existent SKUs',
+                          'Dropped rows')
+            inventory_df = inventory_df[~invalid_sku_mask].copy()
+            self.stats['invalid_dropped'] += invalid_sku_count
+    
+    # Check store_id exists in stores
+    if 'store_id' in inventory_df.columns and 'store_id' in stores_df.columns:
+        valid_stores = set(stores_df['store_id'].unique())
+        invalid_store_mask = ~inventory_df['store_id'].isin(valid_stores)
+        invalid_store_count = invalid_store_mask.sum()
+        
+        if invalid_store_count > 0:
+            self._log_issue('inventory', f'{invalid_store_count} rows', 'INVALID_STORE_FK',
+                          f'{invalid_store_count} inventory records reference non-existent stores',
+                          'Dropped rows')
+            inventory_df = inventory_df[~invalid_store_mask].copy()
+            self.stats['invalid_dropped'] += invalid_store_count
+    
+    # Update report
+    if 'inventory' in self.cleaning_report:
+        dropped_before = self.cleaning_report['inventory'].get('dropped_rows', 0)
         self.cleaning_report['inventory']['final_rows'] = len(inventory_df)
-        self.cleaning_report['inventory']['dropped_rows'] = original_count - len(inventory_df) + self.cleaning_report['inventory'].get('dropped_rows', 0)
-        
-        return inventory_df
+        self.cleaning_report['inventory']['dropped_rows'] = original_count - len(inventory_df) + dropped_before
+    
+    # Update foreign key issues (add to existing)
+    if 'foreign_key_issues' not in self.cleaning_report:
+        self.cleaning_report['foreign_key_issues'] = {}
+    
+    self.cleaning_report['foreign_key_issues']['invalid_skus_inventory'] = invalid_sku_count
+    self.cleaning_report['foreign_key_issues']['invalid_stores_inventory'] = invalid_store_count
+    
+    return inventory_df
     
     def get_issues_df(self):
         """Return issues as a DataFrame in required format."""
