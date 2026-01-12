@@ -418,15 +418,28 @@ class DataCleaner:
                 df = df[df['order_time'].notna()].copy()
                 self.stats['invalid_dropped'] += invalid_timestamps
             
-            # Drop dates outside valid range (2020-2030)
+            # Drop dates outside valid range (2020 to current date)
             if len(df) > 0:
-                out_of_range = ((df['order_time'].dt.year < 2020) | (df['order_time'].dt.year > 2030)).sum()
-                if out_of_range > 0:
-                    self._log_issue('sales', f'{out_of_range} rows', 'OUT_OF_RANGE_DATE',
-                                  f'{out_of_range} orders have dates outside valid range (2020-2030)',
+                current_date = pd.Timestamp.now()
+                current_year = current_date.year
+                
+                # Future dates (beyond current date) are outliers
+                future_dates = (df['order_time'] > current_date).sum()
+                if future_dates > 0:
+                    self._log_issue('sales', f'{future_dates} rows', 'FUTURE_DATE_OUTLIER',
+                                  f'{future_dates} orders have future dates (beyond {current_date.strftime("%Y-%m-%d")})',
                                   'Dropped rows')
-                    df = df[(df['order_time'].dt.year >= 2020) & (df['order_time'].dt.year <= 2030)].copy()
-                    self.stats['invalid_dropped'] += out_of_range
+                    df = df[df['order_time'] <= current_date].copy()
+                    self.stats['invalid_dropped'] += future_dates
+                
+                # Very old dates (before 2020) are also outliers
+                old_dates = (df['order_time'].dt.year < 2020).sum()
+                if old_dates > 0:
+                    self._log_issue('sales', f'{old_dates} rows', 'OLD_DATE_OUTLIER',
+                                  f'{old_dates} orders have dates before 2020',
+                                  'Dropped rows')
+                    df = df[df['order_time'].dt.year >= 2020].copy()
+                    self.stats['invalid_dropped'] += old_dates
         
         # ===== PAYMENT_STATUS VALIDATION - DROP IF INVALID =====
         if 'payment_status' in df.columns:
