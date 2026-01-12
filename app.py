@@ -2969,23 +2969,78 @@ def show_data_page():
     
     st.markdown("---")
     
-    # Or load sample data
-    st.markdown('<p class="section-title section-title-purple">📦 Or Use Sample Data</p>', unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("📥 Load Sample Data", width='stretch', key='sample_data_btn'):
-            try:
-                st.session_state.raw_products = pd.read_csv('data/products.csv')
-                st.session_state.raw_stores = pd.read_csv('data/stores.csv')
-                st.session_state.raw_sales = pd.read_csv('data/sales_raw.csv')
-                st.session_state.raw_inventory = pd.read_csv('data/inventory_snapshot.csv')
-                st.session_state.data_loaded = True
-                st.session_state.is_cleaned = False
-                st.success("✅ Sample data loaded!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+   if st.button("🎲 Generate Random Sample Data", width='stretch', key='sample_data_btn'):
+    try:
+        import random
+        from datetime import datetime, timedelta
+        
+        # Random counts
+        num_products = random.randint(50, 150)
+        num_stores = random.randint(10, 30)
+        num_sales = random.randint(500, 2000)
+        num_inventory = num_products * num_stores
+        
+        # Random categories and cities
+        all_categories = ['Electronics', 'Fashion', 'Grocery', 'Beauty', 'Home', 'Sports', 'Toys', 'Books']
+        all_cities = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah']
+        all_channels = ['Online', 'Retail', 'Wholesale']
+        
+        categories = random.sample(all_categories, random.randint(4, 6))
+        cities = random.sample(all_cities, random.randint(3, 5))
+        
+        # Generate Products
+        products_data = {
+            'sku': [f'SKU{str(i).zfill(4)}' for i in range(1, num_products + 1)],
+            'product_name': [f'Product {i}' for i in range(1, num_products + 1)],
+            'category': np.random.choice(categories, num_products),
+            'brand': np.random.choice(['BrandA', 'BrandB', 'BrandC', 'BrandD'], num_products),
+            'unit_cost_aed': np.random.uniform(10, 500, num_products).round(2),
+            'base_price_aed': np.random.uniform(50, 1000, num_products).round(2),
+        }
+        st.session_state.raw_products = pd.DataFrame(products_data)
+        
+        # Generate Stores
+        stores_data = {
+            'store_id': [f'STR{str(i).zfill(3)}' for i in range(1, num_stores + 1)],
+            'store_name': [f'Store {i}' for i in range(1, num_stores + 1)],
+            'city': np.random.choice(cities, num_stores),
+            'channel': np.random.choice(all_channels, num_stores),
+        }
+        st.session_state.raw_stores = pd.DataFrame(stores_data)
+        
+        # Generate Sales
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=random.randint(30, 90))
+        
+        sales_data = {
+            'order_id': [f'ORD{str(i).zfill(6)}' for i in range(1, num_sales + 1)],
+            'order_time': [start_date + timedelta(days=random.randint(0, (end_date-start_date).days)) for _ in range(num_sales)],
+            'sku': np.random.choice(products_data['sku'], num_sales),
+            'store_id': np.random.choice(stores_data['store_id'], num_sales),
+            'qty': np.random.randint(1, 10, num_sales),
+            'selling_price_aed': np.random.uniform(50, 800, num_sales).round(2),
+            'discount_pct': np.random.choice([0, 5, 10, 15, 20], num_sales),
+            'payment_status': np.random.choice(['Paid', 'Paid', 'Paid', 'Failed', 'Refunded'], num_sales),
+            'return_flag': np.random.choice([0, 0, 0, 0, 1], num_sales),
+        }
+        st.session_state.raw_sales = pd.DataFrame(sales_data)
+        
+        # Generate Inventory
+        inventory_data = {
+            'sku': np.repeat(products_data['sku'], num_stores),
+            'store_id': np.tile(stores_data['store_id'], num_products),
+            'stock_on_hand': np.random.randint(0, 200, num_inventory),
+            'reorder_point': np.random.randint(5, 30, num_inventory),
+        }
+        st.session_state.raw_inventory = pd.DataFrame(inventory_data)
+        
+        st.session_state.data_loaded = True
+        st.session_state.is_cleaned = False
+        st.success(f"✅ Random data generated! {num_products} products, {num_stores} stores, {num_sales} sales")
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
     
     # Preview data
     if st.session_state.data_loaded:
