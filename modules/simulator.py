@@ -36,6 +36,8 @@ class Simulator:
     def _get_cost_column(self, df):
         """Find cost column."""
         return self._find_column(df, ['unit_cost_aed', 'cost_aed', 'cost', 'unit_cost', 'cost_price', 'purchase_price', 'buying_price'])
+    
+    def _get_price_column(self, df):
         """Find selling price column."""
         return self._find_column(df, ['selling_price_aed', 'selling_price', 'price', 'unit_price', 'sale_price'])
     
@@ -129,7 +131,8 @@ class Simulator:
                 kpis['return_rate_pct'] = float(returned.mean() * 100)
             else:
                 kpis['return_rate_pct'] = 0
-                # Refund Amount
+            
+            # Refund Amount
             if 'payment_status' in merged.columns:
                 refund_mask = merged['payment_status'].str.lower().str.contains('refund', na=False)
                 kpis['refund_amount'] = float(merged.loc[refund_mask, 'revenue'].sum())
@@ -497,8 +500,8 @@ class Simulator:
             discounted_price = avg_price * (1 - discount_pct / 100)
             expected_revenue = expected_units * discounted_price
             
-            promo_cost = min(promo_budget, expected_revenue * 0.03)  # 3% instead of 10%
-            fulfillment_cost = expected_units * 0.5  # 0.5 AED instead of 2 AED
+            promo_cost = min(promo_budget, expected_revenue * 0.03)
+            fulfillment_cost = expected_units * 0.5
             cogs = expected_units * avg_cost
             
             expected_gross_profit = expected_revenue - cogs
