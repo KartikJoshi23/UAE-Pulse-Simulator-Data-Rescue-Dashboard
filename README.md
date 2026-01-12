@@ -445,7 +445,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Streamlit](https://streamlit.io) — Amazing framework for data apps
 - [Plotly](https://plotly.com) — Beautiful interactive visualizations
-- [Google Sheets API](https://developers.google.com/sheets/api) — Seamless data connectivity
 - Course instructors — For the challenge prompt
 
 ---
