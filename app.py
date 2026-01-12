@@ -2969,7 +2969,7 @@ def show_data_page():
     
     st.markdown("---")
     
-   col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🎲 Generate Random Sample Data", width='stretch', key='sample_data_btn'):
             try:
