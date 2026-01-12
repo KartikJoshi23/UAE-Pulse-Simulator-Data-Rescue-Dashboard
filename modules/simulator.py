@@ -508,13 +508,19 @@ class Simulator:
             expected_net_profit = expected_gross_profit - promo_cost - fulfillment_cost
             expected_margin_pct = (expected_net_profit / expected_revenue * 100) if expected_revenue > 0 else 0
             
-            total_investment = promo_cost + fulfillment_cost
-            incremental_profit = expected_net_profit - baseline_profit
-            roi_pct = (incremental_profit / total_investment * 100) if total_investment > 0 else 0
+            # Calculate incremental metrics
+            incremental_revenue = expected_revenue - baseline_revenue
+            incremental_units = expected_units - baseline_units
             
-            # Ensure ROI reflects campaign value - if profit increased, ROI should be positive
-            if expected_net_profit > baseline_profit and roi_pct < 0:
-                roi_pct = abs(roi_pct)
+            # ROI = (Extra Revenue Generated - Promo Cost) / Promo Cost
+            # This measures: for every AED spent, how much extra revenue?
+            if promo_cost > 0:
+                roi_pct = ((incremental_revenue - promo_cost) / promo_cost) * 100
+            else:
+                roi_pct = 0
+            
+            # Ensure minimum ROI of -100% (can't lose more than invested)
+            roi_pct = max(roi_pct, -100)
             
             warnings = []
             if expected_margin_pct < margin_floor:
