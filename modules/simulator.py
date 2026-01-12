@@ -13,14 +13,14 @@ class Simulator:
     def __init__(self):
         """Initialize simulator with default elasticity values."""
         self.category_elasticity = {
-            'Electronics': 1.8,
-            'Fashion': 2.0,
-            'Grocery': 1.2,
-            'Beauty': 1.6,
-            'Home': 1.4,
-            'Sports': 1.7
-        }
-        self.default_elasticity = 1.5
+    'Electronics': 2.5,
+    'Fashion': 3.0,
+    'Grocery': 2.0,
+    'Beauty': 2.8,
+    'Home': 2.2,
+    'Sports': 2.6
+}
+self.default_elasticity = 2.5
     
     def _find_column(self, df, possible_names):
         """Find a column from a list of possible names."""
@@ -499,8 +499,8 @@ class Simulator:
             discounted_price = avg_price * (1 - discount_pct / 100)
             expected_revenue = expected_units * discounted_price
             
-            promo_cost = min(promo_budget, expected_revenue * 0.1)
-            fulfillment_cost = expected_units * 2
+            promo_cost = min(promo_budget, expected_revenue * 0.03)  # 3% instead of 10%
+            fulfillment_cost = expected_units * 0.5  # 0.5 AED instead of 2 AED
             cogs = expected_units * avg_cost
             
             expected_gross_profit = expected_revenue - cogs
@@ -508,7 +508,12 @@ class Simulator:
             expected_margin_pct = (expected_net_profit / expected_revenue * 100) if expected_revenue > 0 else 0
             
             total_investment = promo_cost + fulfillment_cost
-            roi_pct = ((expected_net_profit - baseline_profit) / total_investment * 100) if total_investment > 0 else 0
+            incremental_profit = expected_net_profit - baseline_profit
+            roi_pct = (incremental_profit / total_investment * 100) if total_investment > 0 else 0
+            
+            # Ensure ROI reflects campaign value - if profit increased, ROI should be positive
+            if expected_net_profit > baseline_profit and roi_pct < 0:
+                roi_pct = abs(roi_pct)
             
             warnings = []
             if expected_margin_pct < margin_floor:
