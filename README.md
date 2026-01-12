@@ -18,12 +18,11 @@
 
 ---
 
-**[Explore Demo](https://uae-pulse-simulator-data-rescue-dashboard.streamlit.app/)** · 
+**[Explore Demo](https://uae-pulse-simulator-data-rescue-dashboard.streamlit.app/)**
 
 ---
 
 </div>
-
 ## 📸 Dashboard Preview
 
 <div align="center">
@@ -33,6 +32,7 @@
 
 ### 🧹 Data Rescue View
 ![Data Rescue](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Data+Rescue+View)
+
 *Detect and fix 15+ types of data quality issues*
 
 </td>
@@ -40,6 +40,7 @@
 
 ### 📊 Manager Analytics
 ![Manager View](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Manager+Analytics)
+
 *Pareto analysis & budget utilization*
 
 </td>
@@ -49,6 +50,7 @@
 
 ### 🎯 Campaign Simulator
 ![Campaign Simulator](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Campaign+Simulator)
+
 *What-if scenarios for promotions*
 
 </td>
@@ -56,13 +58,13 @@
 
 ### 📈 Performance KPIs
 ![KPIs](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=KPI+Dashboard)
+
 *Real-time business metrics*
 
 </td>
 </tr>
 </table>
 </div>
-
 ---
 
 ## 📋 Table of Contents
@@ -85,7 +87,6 @@
 </details>
 
 ---
-
 ## ✨ Features
 
 <table>
@@ -132,12 +133,11 @@
 </table>
 
 ---
-
 ## 🚀 Quick Start
 
 ### Option 1: Use Live Demo (Recommended)
 
-👉 **[Launch Dashboard](https://uae-pulse-simulator.streamlit.app)** — No installation required!
+👉 **[Launch Dashboard](https://uae-pulse-simulator-data-rescue-dashboard.streamlit.app/)** — No installation required!
 
 ### Option 2: Run Locally
 
@@ -156,29 +156,35 @@ pip install -r requirements.txt
 # 4. Run the dashboard
 streamlit run app.py
 
-### Option 3: Docker
 docker build -t uae-pulse-dashboard .
 docker run -p 8501:8501 uae-pulse-dashboard
 
-🛠️ Tech Stack
+---
+
+## Snippet 6: Tech Stack Section (THIS WAS BROKEN)
+
+```markdown
+## 🛠️ Tech Stack
+
 <div align="center">
 
-Category	Technologies
-Frontend	Streamlit
-Backend	PythonPandasNumPy
-Visualization	Plotly
-Data Source	Google SheetsCSV
-Deployment	Streamlit Cloud
+| Category | Technologies |
+|:--------:|:------------:|
+| **Frontend** | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white) |
+| **Backend** | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white) ![NumPy](https://img.shields.io/badge/NumPy-013243?style=flat&logo=numpy&logoColor=white) |
+| **Visualization** | ![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white) |
+| **Data Source** | ![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=flat&logo=googlesheets&logoColor=white) ![CSV](https://img.shields.io/badge/CSV-217346?style=flat&logoColor=white) |
+| **Deployment** | ![Streamlit Cloud](https://img.shields.io/badge/Streamlit_Cloud-FF4B4B?style=flat&logo=streamlit&logoColor=white) |
+
 </div>
-📂 Project Structure
-python
-Run Code
-Copy code
+
+---
+## 📂 Project Structure
 UAE-Pulse-Simulator-Data-Rescue-Dashboard/
 │
 ├── 📄 app.py                 # Main Streamlit application
 ├── 📄 requirements.txt       # Python dependencies
-├── 📄 README.md             # Documentation
+├── 📄 README.md              # Documentation
 │
 ├── 📁 data/                  # Sample datasets
 │   ├── products.csv
@@ -186,165 +192,253 @@ UAE-Pulse-Simulator-Data-Rescue-Dashboard/
 │   ├── sales_raw.csv
 │   └── inventory_snapshot.csv
 │
-├── 📁 assets/               # Images and static files
+├── 📁 assets/                # Images and static files
 │   └── logo.png
 │
-└── 📁 .streamlit/           # Streamlit configuration
-    └── config.toml
-🧹 Data Cleaning Rules
-The dashboard detects and fixes 15+ types of data quality issues:
+└── 📁 .streamlit/            # Streamlit configuration
+└── config.toml
+---
+## 🧹 Data Cleaning Rules
 
-<details> <summary><b>Click to see all issue types</b></summary>
-#	Issue Type	Description	Auto-Fix Action
-1	MISSING_VALUES	NULL/NaN in required fields	Flag or fill with default
-2	NULL_REPRESENTATIONS	Strings like 'N/A', 'null', '-'	Convert to NULL
-3	DUPLICATE_ORDER_ID	Duplicate transaction records	Remove duplicates
-4	INVALID_TIMESTAMP	Unparseable date formats	Flag for review
-5	FUTURE_DATE_OUTLIER	Dates in the future	Cap to current date
-6	WHITESPACE	Leading/trailing spaces	Trim whitespace
-7	MIXED_CASE	Inconsistent capitalization	Standardize case
-8	INVALID_SKU_FK	SKU not in products table	Flag violation
-9	INVALID_STORE_FK	Store ID not in stores table	Flag violation
-10	OUTLIER_PRICE	Prices beyond 3 std deviations	Cap to threshold
-11	OUTLIER_QTY	Quantities beyond normal range	Cap to threshold
-12	NEGATIVE_PRICE	Negative price values	Convert to zero
-13	NEGATIVE_QTY	Negative quantities	Convert to zero
-14	COST_EXCEEDS_PRICE	Unit cost > selling price	Flag for review
-15	BOOLEAN_STRINGS	'Yes'/'No' instead of True/False	Convert to boolean
+The dashboard detects and fixes **15+ types** of data quality issues:
+
+<details>
+<summary><b>Click to see all issue types</b></summary>
+
+| # | Issue Type | Description | Auto-Fix Action |
+|:-:|:-----------|:------------|:----------------|
+| 1 | `MISSING_VALUES` | NULL/NaN in required fields | Flag or fill with default |
+| 2 | `NULL_REPRESENTATIONS` | Strings like 'N/A', 'null', '-' | Convert to NULL |
+| 3 | `DUPLICATE_ORDER_ID` | Duplicate transaction records | Remove duplicates |
+| 4 | `INVALID_TIMESTAMP` | Unparseable date formats | Flag for review |
+| 5 | `FUTURE_DATE_OUTLIER` | Dates in the future | Cap to current date |
+| 6 | `WHITESPACE` | Leading/trailing spaces | Trim whitespace |
+| 7 | `MIXED_CASE` | Inconsistent capitalization | Standardize case |
+| 8 | `INVALID_SKU_FK` | SKU not in products table | Flag violation |
+| 9 | `INVALID_STORE_FK` | Store ID not in stores table | Flag violation |
+| 10 | `OUTLIER_PRICE` | Prices beyond 3 std deviations | Cap to threshold |
+| 11 | `OUTLIER_QTY` | Quantities beyond normal range | Cap to threshold |
+| 12 | `NEGATIVE_PRICE` | Negative price values | Convert to zero |
+| 13 | `NEGATIVE_QTY` | Negative quantities | Convert to zero |
+| 14 | `COST_EXCEEDS_PRICE` | Unit cost > selling price | Flag for review |
+| 15 | `BOOLEAN_STRINGS` | 'Yes'/'No' instead of True/False | Convert to boolean |
+
 </details>
-🎯 Campaign Simulator
-How It Works
-css
-Copy code
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+
+---
+## 🎯 Campaign Simulator
+
+### How It Works
+─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   INPUT         │    │   CALCULATION   │    │   OUTPUT        │
 │                 │    │                 │    │                 │
 │ • Discount %    │───▶│ • Demand Lift   │───▶│ • Expected Rev  │
 │ • Category      │    │ • Elasticity    │    │ • Profit/Loss   │
-│ • Channel       │    │ • Cannibalization│   │ • ROI %         │
+│ • Channel       │    │ • Cannibtic.    │    │ • ROI %         │
 │ • Duration      │    │                 │    │ • Warnings      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-Key Formulas
-Metric	Formula
-Demand Lift	Base Sales × Uplift Multiplier × Channel Efficiency
-Cannibalization	Lifted Sales × 0.20 (20% would buy anyway)
-Net Incremental	Lifted Sales - Cannibalized Sales
-ROI	(Incremental Profit - Promo Cost) / Promo Cost × 100%
-🧠 Critical Thinking
-<details> <summary><b>Q1: Which cleaning rules could change business decisions the most?</b></summary>
-Top 3 High-Impact Cleaning Rules
-1. Payment Status Filtering (Highest Impact)
+### Key Formulas
 
-Keeping only "Paid" orders vs including "Pending"
-Could swing revenue calculations by 10-30%
-Risk: CEO approves expansion based on inflated numbers
-2. Negative/Zero Price Handling
+| Metric | Formula |
+|:-------|:--------|
+| **Demand Lift** | `Base Sales × Uplift Multiplier × Channel Efficiency` |
+| **Cannibalization** | `Lifted Sales × 0.20` (20% would buy anyway) |
+| **Net Incremental** | `Lifted Sales - Cannibalized Sales` |
+| **ROI** | `(Incremental Profit - Promo Cost) / Promo Cost × 100%` |
 
-Negatives often represent returns or adjustments
-Zeroing them out inflates margins artificially
-Risk: Pricing manager sees false profitability
-3. Duplicate Order Handling
+---
+## 🧠 Critical Thinking
 
-System glitches create duplicate records
-Inflates demand signals for inventory planning
-Risk: Ordering 2x inventory needed
-Our Decision: Conservative approach — filter to Paid only, cap negatives at zero. Understating revenue is safer for cash flow planning.
+<details>
+<summary><b>Q1: Which cleaning rules could change business decisions the most?</b></summary>
 
-</details> <details> <summary><b>Q2: What uplift assumptions did you choose, and how could they be wrong?</b></summary>
-Our Assumptions
-Parameter	Value	Rationale
-Baseline Conversion	2%	Industry average
-Small Discount Uplift (<20%)	1.5x	Conservative
-Deep Discount Uplift (>40%)	2.5x	Aggressive
-Cannibalization Rate	20%	Standard assumption
-Margin Floor	15%	Below = unprofitable
-How They Could Be Wrong
-Assumption	Reality	Impact
-Uniform 1.5-2.5x uplift	Fashion: 3-4x, Grocery: 1.2x	Over/undervalue promos
-Flat 20% cannibalization	Timing-dependent (20-40%)	Misstate incremental value
-Ignore halo effects	Accessories bought with discounted TV	Undervalue promos by 20-30%
-Past = Future	Novelty effect fades with repetition	Overestimate repeat promos
-If we had more time: Segment by category, seasonality, and promo frequency.
+### Top 3 High-Impact Cleaning Rules
 
-</details> <details> <summary><b>Q3: Fixed budget — margin floor vs stockout risk?</b></summary>
-Our Tiered Strategy
+**1. Payment Status Filtering (Highest Impact)**
+- Keeping only "Paid" orders vs including "Pending"
+- Could swing revenue calculations by 10-30%
+- *Risk: CEO approves expansion based on inflated numbers*
+
+**2. Negative/Zero Price Handling**
+- Negatives often represent returns or adjustments
+- Zeroing them out inflates margins artificially
+- *Risk: Pricing manager sees false profitability*
+
+**3. Duplicate Order Handling**
+- System glitches create duplicate records
+- Inflates demand signals for inventory planning
+- *Risk: Ordering 2x inventory needed*
+
+> **Our Decision:** Conservative approach — filter to Paid only, cap negatives at zero. Understating revenue is safer for cash flow planning.
+
+</details>
+<details>
+<summary><b>Q2: What uplift assumptions did you choose, and how could they be wrong?</b></summary>
+
+### Our Assumptions
+
+| Parameter | Value | Rationale |
+|:----------|:------|:----------|
+| Baseline Conversion | 2% | Industry average |
+| Small Discount Uplift (<20%) | 1.5x | Conservative |
+| Deep Discount Uplift (>40%) | 2.5x | Aggressive |
+| Cannibalization Rate | 20% | Standard assumption |
+| Margin Floor | 15% | Below = unprofitable |
+
+### How They Could Be Wrong
+
+| Assumption | Reality | Impact |
+|:-----------|:--------|:-------|
+| Uniform 1.5-2.5x uplift | Fashion: 3-4x, Grocery: 1.2x | Over/undervalue promos |
+| Flat 20% cannibalization | Timing-dependent (20-40%) | Misstate incremental value |
+| Ignore halo effects | Accessories bought with discounted TV | Undervalue promos by 20-30% |
+| Past = Future | Novelty effect fades with repetition | Overestimate repeat promos |
+
+> **If we had more time:** Segment by category, seasonality, and promo frequency.
+
+</details>
+<details>
+<summary><b>Q3: Fixed budget — margin floor vs stockout risk?</b></summary>
+
+### Our Tiered Strategy
 Budget Allocation:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Top 20% Products (Revenue Drivers)
-  └── 60% budget → Prevent Stockouts
-      Why? Lost sale = lost basket + lost customer
+└── 60% budget → Prevent Stockouts
+Why? Lost sale = lost basket + lost customer
 
-Mid-tier Products  
-  └── 30% budget → Protect Margins
-      Why? Don't need traffic, need profit
+Mid-tier Products
+
+└── 30% budget → Protect Margins
+Why? Don't need traffic, need profit
 
 Long-tail Products
-  └── 10% budget → Minimal investment
-      Why? Low volume, low impact either way
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Math Example
-Scenario	Calculation	Cost
-Stockout (3 days)	30 sales × $25 profit × 1.3 (customer loss)	$975
-Unnecessary 10% discount	30 units × $5 discount	$150
-Conclusion: For high-velocity items, stockout prevention wins.
+└── 10% budget → Minimal investment
+Why? Low volume, low impact either way
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### Math Example
 
-</details> <details> <summary><b>Q4: What did you exclude for scope control (2-hour limit)?</b></summary>
-❌ Excluded Features
-Feature	Time Required	Why Excluded
-User Authentication	2+ hours	Not critical for demo
-Write-back to Sheets	1.5 hours	Read-only sufficient
-ML Forecasting	4+ hours	Complex pipeline
-Email Alerts	2+ hours	Infrastructure needed
-Multi-currency	1 hour	AED only for UAE focus
-PDF Export	1.5 hours	Interactive view enough
-Mobile Optimization	2+ hours	Desktop analysts
-⚡ Technical Shortcuts
-Hardcoded sheet names
-No caching layer
-Generic error messages
-Manual testing only
-Sequential data loading
-🎯 If We Had 2 More Hours
-Addition	Time	Value
-Data caching	30 min	Performance
-CSV export buttons	30 min	User convenience
-Global date filter	45 min	Better UX
-Error logging	15 min	Debugging
+| Scenario | Calculation | Cost |
+|:---------|:------------|:-----|
+| Stockout (3 days) | 30 sales × $25 profit × 1.3 (customer loss) | **$975** |
+| Unnecessary 10% discount | 30 units × $5 discount | **$150** |
+
+> **Conclusion:** For high-velocity items, stockout prevention wins.
+
 </details>
-⚠️ Limitations
-Limitation	Impact	Workaround
-Batch refresh only	No real-time updates	Manual refresh
-Google Sheets source	Size limits	Use CSV for large data
-No access control	Single user	Deploy privately
-Performance >100K rows	Charts slow down	Filter data first
-🗺️ Roadmap
- Core dashboard functionality
- 15+ data cleaning rules
- Campaign simulator
- Manager analytics view
- BigQuery connector
- Redis caching
- Anomaly detection (ML)
- Mobile responsive
- Slack/Teams alerts
- Multi-language support
-👥 Team
-<div align="center"> <table> <tr> <td align="center"> <img src="https://via.placeholder.com/100/6c5ce7/ffffff?text=GS" width="100px;" alt=""/><br /> <sub><b>Gagandeep Singh</b></sub><br /> <sub>Data Engineering</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/00b894/ffffff?text=KJ" width="100px;" alt=""/><br /> <sub><b>Kartik Joshi</b></sub><br /> <sub>Analytics</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/0984e3/ffffff?text=SA" width="100px;" alt=""/><br /> <sub><b>Samuel Alex</b></sub><br /> <sub>Visualization</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/e17055/ffffff?text=PK" width="100px;" alt=""/><br /> <sub><b>Prem Kukreja</b></sub><br /> <sub>Business Logic</sub> </td> </tr> </table>
-Course: MAIB | Date: January 2025 | Development Time: ~2 hours
+<details>
+<summary><b>Q4: What did you exclude for scope control (2-hour limit)?</b></summary>
+
+### ❌ Excluded Features
+
+| Feature | Time Required | Why Excluded |
+|:--------|:--------------|:-------------|
+| User Authentication | 2+ hours | Not critical for demo |
+| Write-back to Sheets | 1.5 hours | Read-only sufficient |
+| ML Forecasting | 4+ hours | Complex pipeline |
+| Email Alerts | 2+ hours | Infrastructure needed |
+| Multi-currency | 1 hour | AED only for UAE focus |
+| PDF Export | 1.5 hours | Interactive view enough |
+| Mobile Optimization | 2+ hours | Desktop analysts |
+
+### ⚡ Technical Shortcuts
+- Hardcoded sheet names
+- No caching layer
+- Generic error messages
+- Manual testing only
+- Sequential data loading
+
+### 🎯 If We Had 2 More Hours
+
+| Addition | Time | Value |
+|:---------|:-----|:------|
+| Data caching | 30 min | Performance |
+| CSV export buttons | 30 min | User convenience |
+| Global date filter | 45 min | Better UX |
+| Error logging | 15 min | Debugging |
+
+</details>
+
+---
+## ⚠️ Limitations
+
+| Limitation | Impact | Workaround |
+|:-----------|:-------|:-----------|
+| Batch refresh only | No real-time updates | Manual refresh |
+| Google Sheets source | Size limits | Use CSV for large data |
+| No access control | Single user | Deploy privately |
+| Performance >100K rows | Charts slow down | Filter data first |
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Core dashboard functionality
+- [x] 15+ data cleaning rules
+- [x] Campaign simulator
+- [x] Manager analytics view
+- [ ] BigQuery connector
+- [ ] Redis caching
+- [ ] Anomaly detection (ML)
+- [ ] Mobile responsive
+- [ ] Slack/Teams alerts
+- [ ] Multi-language support
+
+---
+## 👥 Team
+
+<div align="center">
+<table>
+<tr>
+<td align="center">
+<img src="https://via.placeholder.com/100/6c5ce7/ffffff?text=GS" width="100px;" alt=""/><br />
+<sub><b>Gagandeep Singh</b></sub><br />
+<sub>Data Engineering</sub>
+</td>
+<td align="center">
+<img src="https://via.placeholder.com/100/00b894/ffffff?text=KJ" width="100px;" alt=""/><br />
+<sub><b>Kartik Joshi</b></sub><br />
+<sub>Analytics</sub>
+</td>
+<td align="center">
+<img src="https://via.placeholder.com/100/0984e3/ffffff?text=SA" width="100px;" alt=""/><br />
+<sub><b>Samuel Alex</b></sub><br />
+<sub>Visualization</sub>
+</td>
+<td align="center">
+<img src="https://via.placeholder.com/100/e17055/ffffff?text=PK" width="100px;" alt=""/><br />
+<sub><b>Prem Kukreja</b></sub><br />
+<sub>Business Logic</sub>
+</td>
+</tr>
+</table>
+
+**Course:** MAIB | **Date:** January 2025 | **Development Time:** ~2 hours
 
 </div>
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
-🙏 Acknowledgments
-Streamlit — Amazing framework for data apps
-Plotly — Beautiful interactive visualizations
-Google Sheets API — Seamless data connectivity
-Course instructors — For the challenge prompt
+---
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Streamlit](https://streamlit.io) — Amazing framework for data apps
+- [Plotly](https://plotly.com) — Beautiful interactive visualizations
+- [Google Sheets API](https://developers.google.com/sheets/api) — Seamless data connectivity
+- Course instructors — For the challenge prompt
+
+---
+
 <div align="center">
-⭐ Star this repo if you found it helpful!
-GitHub stars
 
-Made with ❤️ in UAE
+### ⭐ Star this repo if you found it helpful!
 
-</div> ```
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard?style=social)](https://github.com/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard)
+
+**Made with ❤️ in UAE**
+
+</div>
