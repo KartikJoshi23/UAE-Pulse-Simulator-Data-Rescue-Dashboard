@@ -31,7 +31,7 @@
 <td width="50%">
 
 ### 🧹 Data Rescue View
-![Data Rescue](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Data+Rescue+View)
+![Data Rescue]
 
 *Detect and fix 15+ types of data quality issues*
 
@@ -39,7 +39,7 @@
 <td width="50%">
 
 ### 📊 Manager Analytics
-![Manager View](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Manager+Analytics)
+![Manager View]
 
 *Pareto analysis & budget utilization*
 
@@ -49,7 +49,7 @@
 <td width="50%">
 
 ### 🎯 Campaign Simulator
-![Campaign Simulator](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Campaign+Simulator)
+![Campaign Simulator]
 
 *What-if scenarios for promotions*
 
@@ -57,7 +57,7 @@
 <td width="50%">
 
 ### 📈 Performance KPIs
-![KPIs](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=KPI+Dashboard)
+![KPIs]
 
 *Real-time business metrics*
 
