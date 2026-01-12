@@ -13,14 +13,14 @@ class Simulator:
     def __init__(self):
         """Initialize simulator with default elasticity values."""
         self.category_elasticity = {
-    'Electronics': 2.5,
-    'Fashion': 3.0,
-    'Grocery': 2.0,
-    'Beauty': 2.8,
-    'Home': 2.2,
-    'Sports': 2.6
-}
-self.default_elasticity = 2.5
+            'Electronics': 2.5,
+            'Fashion': 3.0,
+            'Grocery': 2.0,
+            'Beauty': 2.8,
+            'Home': 2.2,
+            'Sports': 2.6
+        }
+        self.default_elasticity = 2.5
     
     def _find_column(self, df, possible_names):
         """Find a column from a list of possible names."""
@@ -36,8 +36,6 @@ self.default_elasticity = 2.5
     def _get_cost_column(self, df):
         """Find cost column."""
         return self._find_column(df, ['unit_cost_aed', 'cost_aed', 'cost', 'unit_cost', 'cost_price', 'purchase_price', 'buying_price'])
-    
-    def _get_price_column(self, df):
         """Find selling price column."""
         return self._find_column(df, ['selling_price_aed', 'selling_price', 'price', 'unit_price', 'sale_price'])
     
