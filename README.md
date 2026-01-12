@@ -1,3 +1,4 @@
+~~~
 <div align="center">
 
 # 🇦🇪 UAE Pulse Simulator + Data Rescue Dashboard
@@ -23,6 +24,7 @@
 ---
 
 </div>
+
 ## 📸 Dashboard Preview
 
 <div align="center">
@@ -31,15 +33,17 @@
 <td width="50%">
 
 ### 🧹 Data Rescue View
+![Data Rescue](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Data+Rescue+View)
 
 *Detect and fix 15+ types of data quality issues*
 
 </td>
 <td width="50%">
 
-### 📊 Executive & Manager Analytics
+### 📊 Manager Analytics
+![Manager View](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Manager+Analytics)
 
-*Financial, Strategic, Operations & Execution*
+*Pareto analysis & budget utilization*
 
 </td>
 </tr>
@@ -47,6 +51,7 @@
 <td width="50%">
 
 ### 🎯 Campaign Simulator
+![Campaign Simulator](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Campaign+Simulator)
 
 *What-if scenarios for promotions*
 
@@ -54,6 +59,7 @@
 <td width="50%">
 
 ### 📈 Performance KPIs
+![KPIs](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=KPI+Dashboard)
 
 *Real-time business metrics*
 
@@ -61,6 +67,7 @@
 </tr>
 </table>
 </div>
+
 ---
 
 ## 📋 Table of Contents
@@ -83,6 +90,7 @@
 </details>
 
 ---
+
 ## ✨ Features
 
 <table>
@@ -129,6 +137,7 @@
 </table>
 
 ---
+
 ## 🚀 Quick Start
 
 ### Option 1: Use Live Demo (Recommended)
@@ -137,63 +146,74 @@
 
 ### Option 2: Run Locally
 
+**Step 1: Clone the repository**
 ```bash
-# 1. Clone the repository
 git clone https://github.com/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard.git
 cd UAE-Pulse-Simulator-Data-Rescue-Dashboard
+```
 
-# 2. Create virtual environment
+**Step 2: Create virtual environment**
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
+```
+> On Windows use: `venv\Scripts\activate`
 
-# 3. Install dependencies
+**Step 3: Install dependencies**
+```bash
 pip install -r requirements.txt
+```
 
-# 4. Run the dashboard
+**Step 4: Run the dashboard**
+```bash
 streamlit run app.py
+```
 
+### Option 3: Docker
+
+```bash
 docker build -t uae-pulse-dashboard .
 docker run -p 8501:8501 uae-pulse-dashboard
+```
 
 ---
 
-## Snippet 6: Tech Stack Section (THIS WAS BROKEN)
-
-```markdown
 ## 🛠️ Tech Stack
 
-<div align="center">
-
 | Category | Technologies |
-|:--------:|:------------:|
-| **Frontend** | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white) |
-| **Backend** | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white) ![NumPy](https://img.shields.io/badge/NumPy-013243?style=flat&logo=numpy&logoColor=white) |
-| **Visualization** | ![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white) |
-| **Data Source** | ![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=flat&logo=googlesheets&logoColor=white) ![CSV](https://img.shields.io/badge/CSV-217346?style=flat&logoColor=white) |
-| **Deployment** | ![Streamlit Cloud](https://img.shields.io/badge/Streamlit_Cloud-FF4B4B?style=flat&logo=streamlit&logoColor=white) |
-
-</div>
+|:--------:|:-------------|
+| **Frontend** | Streamlit |
+| **Backend** | Python, Pandas, NumPy |
+| **Visualization** | Plotly |
+| **Data Source** | Google Sheets, CSV |
+| **Deployment** | Streamlit Cloud |
 
 ---
+
 ## 📂 Project Structure
+
+```
 UAE-Pulse-Simulator-Data-Rescue-Dashboard/
 │
-├── 📄 app.py                 # Main Streamlit application
-├── 📄 requirements.txt       # Python dependencies
-├── 📄 README.md              # Documentation
+├── app.py                    # Main Streamlit application
+├── requirements.txt          # Python dependencies
+├── README.md                 # Documentation
 │
-├── 📁 data/                  # Sample datasets
+├── data/                     # Sample datasets
 │   ├── products.csv
 │   ├── stores.csv
 │   ├── sales_raw.csv
 │   └── inventory_snapshot.csv
 │
-├── 📁 assets/                # Images and static files
+├── assets/                   # Images and static files
 │   └── logo.png
 │
-└── 📁 .streamlit/            # Streamlit configuration
-└── config.toml
+└── .streamlit/               # Streamlit configuration
+    └── config.toml
+```
+
 ---
+
 ## 🧹 Data Cleaning Rules
 
 The dashboard detects and fixes **15+ types** of data quality issues:
@@ -203,29 +223,32 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 
 | # | Issue Type | Description | Auto-Fix Action |
 |:-:|:-----------|:------------|:----------------|
-| 1 | `MISSING_VALUES` | NULL/NaN in required fields | Flag or fill with default |
-| 2 | `NULL_REPRESENTATIONS` | Strings like 'N/A', 'null', '-' | Convert to NULL |
-| 3 | `DUPLICATE_ORDER_ID` | Duplicate transaction records | Remove duplicates |
-| 4 | `INVALID_TIMESTAMP` | Unparseable date formats | Flag for review |
-| 5 | `FUTURE_DATE_OUTLIER` | Dates in the future | Cap to current date |
-| 6 | `WHITESPACE` | Leading/trailing spaces | Trim whitespace |
-| 7 | `MIXED_CASE` | Inconsistent capitalization | Standardize case |
-| 8 | `INVALID_SKU_FK` | SKU not in products table | Flag violation |
-| 9 | `INVALID_STORE_FK` | Store ID not in stores table | Flag violation |
-| 10 | `OUTLIER_PRICE` | Prices beyond 3 std deviations | Cap to threshold |
-| 11 | `OUTLIER_QTY` | Quantities beyond normal range | Cap to threshold |
-| 12 | `NEGATIVE_PRICE` | Negative price values | Convert to zero |
-| 13 | `NEGATIVE_QTY` | Negative quantities | Convert to zero |
-| 14 | `COST_EXCEEDS_PRICE` | Unit cost > selling price | Flag for review |
-| 15 | `BOOLEAN_STRINGS` | 'Yes'/'No' instead of True/False | Convert to boolean |
+| 1 | MISSING_VALUES | NULL/NaN in required fields | Flag or fill with default |
+| 2 | NULL_REPRESENTATIONS | Strings like 'N/A', 'null', '-' | Convert to NULL |
+| 3 | DUPLICATE_ORDER_ID | Duplicate transaction records | Remove duplicates |
+| 4 | INVALID_TIMESTAMP | Unparseable date formats | Flag for review |
+| 5 | FUTURE_DATE_OUTLIER | Dates in the future | Cap to current date |
+| 6 | WHITESPACE | Leading/trailing spaces | Trim whitespace |
+| 7 | MIXED_CASE | Inconsistent capitalization | Standardize case |
+| 8 | INVALID_SKU_FK | SKU not in products table | Flag violation |
+| 9 | INVALID_STORE_FK | Store ID not in stores table | Flag violation |
+| 10 | OUTLIER_PRICE | Prices beyond 3 std deviations | Cap to threshold |
+| 11 | OUTLIER_QTY | Quantities beyond normal range | Cap to threshold |
+| 12 | NEGATIVE_PRICE | Negative price values | Convert to zero |
+| 13 | NEGATIVE_QTY | Negative quantities | Convert to zero |
+| 14 | COST_EXCEEDS_PRICE | Unit cost > selling price | Flag for review |
+| 15 | BOOLEAN_STRINGS | 'Yes'/'No' instead of True/False | Convert to boolean |
 
 </details>
 
 ---
+
 ## 🎯 Campaign Simulator
 
 ### How It Works
-─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   INPUT         │    │   CALCULATION   │    │   OUTPUT        │
 │                 │    │                 │    │                 │
 │ • Discount %    │───▶│ • Demand Lift   │───▶│ • Expected Rev  │
@@ -233,16 +256,19 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 │ • Channel       │    │ • Cannibtic.    │    │ • ROI %         │
 │ • Duration      │    │                 │    │ • Warnings      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
 ### Key Formulas
 
 | Metric | Formula |
 |:-------|:--------|
-| **Demand Lift** | `Base Sales × Uplift Multiplier × Channel Efficiency` |
-| **Cannibalization** | `Lifted Sales × 0.20` (20% would buy anyway) |
-| **Net Incremental** | `Lifted Sales - Cannibalized Sales` |
-| **ROI** | `(Incremental Profit - Promo Cost) / Promo Cost × 100%` |
+| **Demand Lift** | Base Sales × Uplift Multiplier × Channel Efficiency |
+| **Cannibalization** | Lifted Sales × 0.20 (20% would buy anyway) |
+| **Net Incremental** | Lifted Sales - Cannibalized Sales |
+| **ROI** | (Incremental Profit - Promo Cost) / Promo Cost × 100% |
 
 ---
+
 ## 🧠 Critical Thinking
 
 <details>
@@ -253,21 +279,22 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 **1. Payment Status Filtering (Highest Impact)**
 - Keeping only "Paid" orders vs including "Pending"
 - Could swing revenue calculations by 10-30%
-- *Risk: CEO approves expansion based on inflated numbers*
+- Risk: CEO approves expansion based on inflated numbers
 
 **2. Negative/Zero Price Handling**
 - Negatives often represent returns or adjustments
 - Zeroing them out inflates margins artificially
-- *Risk: Pricing manager sees false profitability*
+- Risk: Pricing manager sees false profitability
 
 **3. Duplicate Order Handling**
 - System glitches create duplicate records
 - Inflates demand signals for inventory planning
-- *Risk: Ordering 2x inventory needed*
+- Risk: Ordering 2x inventory needed
 
-> **Our Decision:** Conservative approach — filter to Paid only, cap negatives at zero. Understating revenue is safer for cash flow planning.
+**Our Decision:** Conservative approach — filter to Paid only, cap negatives at zero. Understating revenue is safer for cash flow planning.
 
 </details>
+
 <details>
 <summary><b>Q2: What uplift assumptions did you choose, and how could they be wrong?</b></summary>
 
@@ -290,38 +317,34 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 | Ignore halo effects | Accessories bought with discounted TV | Undervalue promos by 20-30% |
 | Past = Future | Novelty effect fades with repetition | Overestimate repeat promos |
 
-> **If we had more time:** Segment by category, seasonality, and promo frequency.
+**If we had more time:** Segment by category, seasonality, and promo frequency.
 
 </details>
+
 <details>
 <summary><b>Q3: Fixed budget — margin floor vs stockout risk?</b></summary>
 
 ### Our Tiered Strategy
-Budget Allocation:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Top 20% Products (Revenue Drivers)
-└── 60% budget → Prevent Stockouts
-Why? Lost sale = lost basket + lost customer
 
-Mid-tier Products
+**Budget Allocation:**
+- **Top 20% Products (Revenue Drivers):** 60% budget → Prevent Stockouts
+  - Why? Lost sale = lost basket + lost customer
+- **Mid-tier Products:** 30% budget → Protect Margins
+  - Why? Don't need traffic, need profit
+- **Long-tail Products:** 10% budget → Minimal investment
+  - Why? Low volume, low impact either way
 
-└── 30% budget → Protect Margins
-Why? Don't need traffic, need profit
-
-Long-tail Products
-└── 10% budget → Minimal investment
-Why? Low volume, low impact either way
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### Math Example
 
 | Scenario | Calculation | Cost |
 |:---------|:------------|:-----|
-| Stockout (3 days) | 30 sales × $25 profit × 1.3 (customer loss) | **$975** |
-| Unnecessary 10% discount | 30 units × $5 discount | **$150** |
+| Stockout (3 days) | 30 sales × \$25 profit × 1.3 (customer loss) | **\$975** |
+| Unnecessary 10% discount | 30 units × \$5 discount | **\$150** |
 
-> **Conclusion:** For high-velocity items, stockout prevention wins.
+**Conclusion:** For high-velocity items, stockout prevention wins.
 
 </details>
+
 <details>
 <summary><b>Q4: What did you exclude for scope control (2-hour limit)?</b></summary>
 
@@ -356,6 +379,7 @@ Why? Low volume, low impact either way
 </details>
 
 ---
+
 ## ⚠️ Limitations
 
 | Limitation | Impact | Workaround |
@@ -381,6 +405,7 @@ Why? Low volume, low impact either way
 - [ ] Multi-language support
 
 ---
+
 ## 👥 Team
 
 <div align="center">
@@ -414,6 +439,7 @@ Why? Low volume, low impact either way
 </div>
 
 ---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -433,8 +459,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### ⭐ Star this repo if you found it helpful!
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard?style=social)](https://github.com/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard)
-
 **Made with ❤️ in UAE**
 
 </div>
+~~~
