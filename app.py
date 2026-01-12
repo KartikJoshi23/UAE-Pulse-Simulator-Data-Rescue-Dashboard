@@ -1613,11 +1613,15 @@ def show_executive_view(kpis, city_kpis, channel_kpis, category_kpis, sales_df, 
         ), unsafe_allow_html=True)
     
     with col4:
-        avg_order_value = kpis.get('avg_order_value', 0)
+        # Calculate Budget Utilization
+        total_discount_amount = kpis.get('total_discount', gross_revenue * avg_discount / 100)
+        assumed_budget = gross_revenue * 0.15  # Assume 15% of revenue as promo budget
+        budget_utilization = (total_discount_amount / assumed_budget * 100) if assumed_budget > 0 else 0
+        
         st.markdown(create_metric_card(
-            "Avg Order Value",
-            format_currency(avg_order_value),
-            color="cyan"
+            "Budget Utilization",
+            f"{budget_utilization:.1f}%",
+            color="orange"
         ), unsafe_allow_html=True)
     
     st.markdown("---")
