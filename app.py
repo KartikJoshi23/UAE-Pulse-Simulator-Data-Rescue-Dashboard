@@ -182,7 +182,6 @@ st.markdown("""
         color: white;
         font-size: 0.95rem;
         font-weight: 600;
-        margin-right: 12px;
         margin-bottom: 20px;
         animation: pulse 2s infinite;
     }
@@ -1113,15 +1112,6 @@ def show_home_page():
                 font-weight: 600;
                 margin-right: 12px;
             ">✨ UAE E-Commerce Analytics</span>
-            <span style="
-                display: inline-block;
-                padding: 10px 24px;
-                background: linear-gradient(135deg, #8b5cf6, #ec4899);
-                border-radius: 50px;
-                color: white;
-                font-size: 0.95rem;
-                font-weight: 600;
-            ">🚀 v2.0</span>
         </div>
         <div style="
             font-size: 64px;
