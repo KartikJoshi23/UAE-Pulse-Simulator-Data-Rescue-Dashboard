@@ -1,4 +1,3 @@
-~~~
 <div align="center">
 
 # 🇦🇪 UAE Pulse Simulator + Data Rescue Dashboard
@@ -462,4 +461,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Made with ❤️ in UAE**
 
 </div>
-~~~
