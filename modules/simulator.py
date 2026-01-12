@@ -497,36 +497,65 @@ class Simulator:
             avg_price = merged['_price'].mean()
             avg_cost = merged['_cost'].mean()
             
-            discounted_price = avg_price * (1 - discount_pct / 100)
+            # Calculate margin without discount first
+            base_margin_pct = ((avg_price - avg_cost) / avg_price * 100) if avg_price > 0 else 0
+            
+            # Adjust discount if it would breach margin floor
+            effective_discount = discount_pct
+            discounted_price = avg_price * (1 - effective_discount / 100)
+            expected_margin_check = ((discounted_price - avg_cost) / discounted_price * 100) if discounted_price > 0 else 0
+            
+            # If margin breaches floor, cap the discount
+            margin_capped = False
+            if expected_margin_check < margin_floor and base_margin_pct > margin_floor:
+                # Calculate max discount that maintains margin floor
+                # margin_floor = (discounted_price - avg_cost) / discounted_price * 100
+                # Solving for discounted_price: discounted_price = avg_cost / (1 - margin_floor/100)
+                min_price = avg_cost / (1 - margin_floor / 100) if margin_floor < 100 else avg_cost
+                max_discount = ((avg_price - min_price) / avg_price * 100) if avg_price > 0 else 0
+                effective_discount = min(discount_pct, max(0, max_discount))
+                margin_capped = True
+                
+                # Recalculate demand lift with effective discount
+                demand_lift_pct = effective_discount * elasticity
+                expected_units = baseline_units * (1 + demand_lift_pct / 100)
+            
+            discounted_price = avg_price * (1 - effective_discount / 100)
             expected_revenue = expected_units * discounted_price
             
-            promo_cost = min(promo_budget, expected_revenue * 0.03)
-            fulfillment_cost = expected_units * 0.5
+            # Costs - use actual promo budget
+            promo_cost = min(promo_budget, expected_revenue * 0.05)  # Cap at 5% of revenue or budget
+            fulfillment_cost = (expected_units - baseline_units) * 1.5  # Only extra units have fulfillment cost
+            fulfillment_cost = max(0, fulfillment_cost)  # Can't be negative
+            
             cogs = expected_units * avg_cost
             
             expected_gross_profit = expected_revenue - cogs
             expected_net_profit = expected_gross_profit - promo_cost - fulfillment_cost
-            expected_margin_pct = (expected_net_profit / expected_revenue * 100) if expected_revenue > 0 else 0
+            expected_margin_pct = ((discounted_price - avg_cost) / discounted_price * 100) if discounted_price > 0 else 0
             
-            # Calculate incremental metrics
-            incremental_revenue = expected_revenue - baseline_revenue
-            incremental_units = expected_units - baseline_units
+            # ROI calculation - realistic formula
+            # ROI = (Incremental Profit / Total Investment) * 100
+            total_investment = promo_cost + fulfillment_cost
+            incremental_profit = expected_net_profit - baseline_profit
             
-            # ROI = (Extra Revenue Generated - Promo Cost) / Promo Cost
-            # This measures: for every AED spent, how much extra revenue?
-            if promo_cost > 0:
-                roi_pct = ((incremental_revenue - promo_cost) / promo_cost) * 100
+            if total_investment > 0:
+                roi_pct = (incremental_profit / total_investment) * 100
             else:
-                roi_pct = 0
+                roi_pct = 0 if incremental_profit <= 0 else 100
             
-            # Ensure minimum ROI of -100% (can't lose more than invested)
-            roi_pct = max(roi_pct, -100)
+            # Cap ROI to realistic range (-100% to 500%)
+            roi_pct = max(-100, min(500, roi_pct))
             
             warnings = []
+            if margin_capped:
+                warnings.append(f"Discount capped to {effective_discount:.1f}% to maintain {margin_floor}% margin floor")
             if expected_margin_pct < margin_floor:
-                warnings.append(f"Margin ({expected_margin_pct:.1f}%) below floor ({margin_floor}%)")
+                warnings.append(f"Margin ({expected_margin_pct:.1f}%) below floor ({margin_floor}%) - campaign not recommended")
             if roi_pct < 0:
-                warnings.append(f"Negative ROI ({roi_pct:.1f}%)")
+                warnings.append(f"Negative ROI ({roi_pct:.1f}%) - campaign will lose money")
+            if roi_pct < 50 and roi_pct >= 0:
+                warnings.append(f"Low ROI ({roi_pct:.1f}%) - consider reducing discount or budget")
             if discount_pct > 30:
                 warnings.append("High discount may erode brand value")
             
