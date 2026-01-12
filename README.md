@@ -1,166 +1,350 @@
-# 🛒 UAE Pulse Simulator + Data Rescue Dashboard
+<div align="center">
 
-A comprehensive Streamlit dashboard for UAE e-commerce data analysis, cleaning, and campaign simulation.
+# 🇦🇪 UAE Pulse Simulator + Data Rescue Dashboard
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+### Transform Messy E-Commerce Data into Actionable Insights
+
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Click_Here-brightgreen?style=for-the-badge)](https://uae-pulse-simulator-data-rescue-dashboard.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Data_Issues_Detected-15+-purple?style=flat-square" alt="Issues">
+  <img src="https://img.shields.io/badge/Campaign_Simulator-✓-blue?style=flat-square" alt="Simulator">
+  <img src="https://img.shields.io/badge/Real--time_Analytics-✓-green?style=flat-square" alt="Analytics">
+  <img src="https://img.shields.io/badge/UAE_Focused-🇦🇪-red?style=flat-square" alt="UAE">
+</p>
 
 ---
 
-## 📋 Overview
+**[Explore Demo](https://uae-pulse-simulator-data-rescue-dashboard.streamlit.app/)** · 
 
-This dashboard provides:
+---
 
-- **📂 Data Management**: Upload and preview e-commerce data files
-- **🧹 Data Rescue**: Detect and fix 15+ types of dirty data issues
-- **🎯 Campaign Simulator**: Run what-if scenarios for promotional campaigns
-- **📊 Analytics**: Visualize KPIs, trends, and performance metrics
+</div>
+
+## 📸 Dashboard Preview
+
+<div align="center">
+<table>
+<tr>
+<td width="50%">
+
+### 🧹 Data Rescue View
+![Data Rescue](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Data+Rescue+View)
+*Detect and fix 15+ types of data quality issues*
+
+</td>
+<td width="50%">
+
+### 📊 Manager Analytics
+![Manager View](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Manager+Analytics)
+*Pareto analysis & budget utilization*
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🎯 Campaign Simulator
+![Campaign Simulator](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=Campaign+Simulator)
+*What-if scenarios for promotions*
+
+</td>
+<td width="50%">
+
+### 📈 Performance KPIs
+![KPIs](https://via.placeholder.com/400x250/1a1a2e/ffffff?text=KPI+Dashboard)
+*Real-time business metrics*
+
+</td>
+</tr>
+</table>
+</div>
+
+---
+
+## 📋 Table of Contents
+
+<details>
+<summary>Click to expand</summary>
+
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📂 Project Structure](#-project-structure)
+- [🧹 Data Cleaning Rules](#-data-cleaning-rules)
+- [🎯 Campaign Simulator](#-campaign-simulator)
+- [🧠 Critical Thinking](#-critical-thinking)
+- [⚠️ Limitations](#️-limitations)
+- [🗺️ Roadmap](#️-roadmap)
+- [👥 Team](#-team)
+- [📄 License](#-license)
+
+</details>
 
 ---
 
 ## ✨ Features
 
-### Data Cleaning (15+ Issue Types)
-| Issue Type | Description |
-|------------|-------------|
-| Missing Values | NULL/NaN in required fields |
-| Null Representations | Strings like 'N/A', 'null', '-' |
-| Duplicates | Duplicate order_ids, product_ids |
-| Invalid Timestamps | Corrupted/unparseable dates |
-| Mixed Date Formats | Inconsistent date formats |
-| Whitespace | Leading/trailing spaces |
-| Mixed Case | Inconsistent capitalization |
-| Invalid Values | Values not in valid list |
-| Outliers | Extreme quantities/prices |
-| Negative Values | Negative stock/quantities |
-| FK Violations | Invalid foreign key references |
-| Boolean Strings | 'Yes'/'No' instead of True/False |
+<table>
+<tr>
+<td>
 
-### Campaign Simulator
-- **Demand Lift Calculation**: Based on discount %, category elasticity, channel efficiency
-- **ROI Forecasting**: Expected revenue, profit, and margin
-- **What-If Scenarios**: Test different campaign parameters
-- **Warning System**: Alerts for low margin, negative ROI
+### 📂 Data Management
+- Upload CSV/Excel files
+- Generate random sample data
+- Preview & validate datasets
+- Export cleaned data
 
-### Analytics Dashboard
-- Revenue trends over time
-- Performance by city, channel, category
-- Inventory health and stockout risk
-- KPI cards with key metrics
+</td>
+<td>
+
+### 🧹 Data Rescue
+- Detect 15+ issue types
+- One-click auto-fix
+- Before/after comparison
+- Detailed issue reports
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🎯 Campaign Simulator
+- Demand lift modeling
+- ROI forecasting
+- What-if scenarios
+- Risk warnings
+
+</td>
+<td>
+
+### 📊 Analytics
+- Revenue trends
+- City/Channel breakdown
+- Inventory health
+- Pareto analysis
+
+</td>
+</tr>
+</table>
 
 ---
 
-🧠 Critical Thinking Responses
+## 🚀 Quick Start
 
-**Question 1: Which cleaning rules could change business decisions the most, and why?**
+### Option 1: Use Live Demo (Recommended)
 
-The three cleaning rules that have the biggest impact on business decisions are:
+👉 **[Launch Dashboard](https://uae-pulse-simulator.streamlit.app)** — No installation required!
 
-First, filtering by payment status (keeping only "Paid" orders). This rule has the highest business impact. If we include orders that are still pending or have been refunded in our revenue calculations, we would overstate how much money we actually have. This could be off by 10-30%. Imagine a CEO approving a big expansion budget based on inflated revenue numbers, only to run into cash flow problems later when those pending orders never convert to actual payments. On the flip side, being too strict and excluding legitimate pending orders that will eventually convert means we understate our expected revenue.
+### Option 2: Run Locally
 
-Second, handling negative or zero prices. Negative prices usually represent returns, adjustments, or simple data entry mistakes. When we set these to zero or convert them to positive numbers, it fundamentally changes our margin calculations. A pricing manager might see artificially high profit margins if we zero out returns instead of subtracting them properly. This could lead to aggressive pricing decisions that actually hurt profitability. For example, if there's a bulk return worth -50,000 AED and we treat it as 0 instead of -50,000, it could make a category look profitable when it's actually losing money.
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard.git
+cd UAE-Pulse-Simulator-Data-Rescue-Dashboard
 
-Third, handling duplicate orders. Sometimes system glitches or data integration problems create duplicate records in our data. If we keep all duplicates, we inflate our revenue numbers. But if we remove too aggressively, we might delete legitimate repeat purchases from the same customer. This matters a lot for inventory planning because if our demand signal is doubled due to duplicates, we'll order twice as much inventory as we need, wasting money on overstock.
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-For this project, we chose conservative cleaning rules. We filter to only Paid orders and cap negative values at zero. We believe understating revenue is safer than overstating it when it comes to cash flow planning. A company that is focused on aggressive growth might choose to be more liberal with including pending orders.
+# 3. Install dependencies
+pip install -r requirements.txt
 
-**Question 2: What uplift assumptions did you choose, and how could they be wrong?**
+# 4. Run the dashboard
+streamlit run app.py
 
-For calculating promotion effectiveness, we made these assumptions:
+### Option 3: Docker
+docker build -t uae-pulse-dashboard .
+docker run -p 8501:8501 uae-pulse-dashboard
 
-We assumed a baseline conversion rate of 2% of visitors, which is a typical industry average for retail. For the promotion uplift multiplier, we used 1.5x for small discounts under 20%, going up to 2.5x for deep discounts over 40%. We assumed a cannibalization rate of 20%, meaning 20% of people who bought during the promo would have bought anyway at full price. We also set a margin preservation threshold of 15%, meaning any promo that drops margin below 15% is considered unprofitable.
+🛠️ Tech Stack
+<div align="center">
 
-Here's how these assumptions could be wrong:
+Category	Technologies
+Frontend	Streamlit
+Backend	PythonPandasNumPy
+Visualization	Plotly
+Data Source	Google SheetsCSV
+Deployment	Streamlit Cloud
+</div>
+📂 Project Structure
+python
+Run Code
+Copy code
+UAE-Pulse-Simulator-Data-Rescue-Dashboard/
+│
+├── 📄 app.py                 # Main Streamlit application
+├── 📄 requirements.txt       # Python dependencies
+├── 📄 README.md             # Documentation
+│
+├── 📁 data/                  # Sample datasets
+│   ├── products.csv
+│   ├── stores.csv
+│   ├── sales_raw.csv
+│   └── inventory_snapshot.csv
+│
+├── 📁 assets/               # Images and static files
+│   └── logo.png
+│
+└── 📁 .streamlit/           # Streamlit configuration
+    └── config.toml
+🧹 Data Cleaning Rules
+The dashboard detects and fixes 15+ types of data quality issues:
 
-The uplift multiplier is not the same for every product category. Elastic categories like fashion and electronics might see 3-4x uplift from a good discount because customers are very price sensitive. Inelastic categories like groceries and everyday essentials might only see 1.2x uplift because people buy them regardless of price. Our assumption of a uniform 1.5-2.5x multiplier ignores this difference, which could mean we are overvaluing grocery promotions and undervaluing fashion promotions.
+<details> <summary><b>Click to see all issue types</b></summary>
+#	Issue Type	Description	Auto-Fix Action
+1	MISSING_VALUES	NULL/NaN in required fields	Flag or fill with default
+2	NULL_REPRESENTATIONS	Strings like 'N/A', 'null', '-'	Convert to NULL
+3	DUPLICATE_ORDER_ID	Duplicate transaction records	Remove duplicates
+4	INVALID_TIMESTAMP	Unparseable date formats	Flag for review
+5	FUTURE_DATE_OUTLIER	Dates in the future	Cap to current date
+6	WHITESPACE	Leading/trailing spaces	Trim whitespace
+7	MIXED_CASE	Inconsistent capitalization	Standardize case
+8	INVALID_SKU_FK	SKU not in products table	Flag violation
+9	INVALID_STORE_FK	Store ID not in stores table	Flag violation
+10	OUTLIER_PRICE	Prices beyond 3 std deviations	Cap to threshold
+11	OUTLIER_QTY	Quantities beyond normal range	Cap to threshold
+12	NEGATIVE_PRICE	Negative price values	Convert to zero
+13	NEGATIVE_QTY	Negative quantities	Convert to zero
+14	COST_EXCEEDS_PRICE	Unit cost > selling price	Flag for review
+15	BOOLEAN_STRINGS	'Yes'/'No' instead of True/False	Convert to boolean
+</details>
+🎯 Campaign Simulator
+How It Works
+css
+Copy code
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   INPUT         │    │   CALCULATION   │    │   OUTPUT        │
+│                 │    │                 │    │                 │
+│ • Discount %    │───▶│ • Demand Lift   │───▶│ • Expected Rev  │
+│ • Category      │    │ • Elasticity    │    │ • Profit/Loss   │
+│ • Channel       │    │ • Cannibalization│   │ • ROI %         │
+│ • Duration      │    │                 │    │ • Warnings      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+Key Formulas
+Metric	Formula
+Demand Lift	Base Sales × Uplift Multiplier × Channel Efficiency
+Cannibalization	Lifted Sales × 0.20 (20% would buy anyway)
+Net Incremental	Lifted Sales - Cannibalized Sales
+ROI	(Incremental Profit - Promo Cost) / Promo Cost × 100%
+🧠 Critical Thinking
+<details> <summary><b>Q1: Which cleaning rules could change business decisions the most?</b></summary>
+Top 3 High-Impact Cleaning Rules
+1. Payment Status Filtering (Highest Impact)
 
-The cannibalization rate changes based on when you run the promotion. If you run a promo at the end of the month when people have just been paid, cannibalization is lower because customers weren't planning to buy yet. If you run a random mid-week promo, cannibalization is higher because people who were already planning to buy just get a discount they didn't need. Our flat 20% assumption could actually be 40% for poorly timed promotions.
+Keeping only "Paid" orders vs including "Pending"
+Could swing revenue calculations by 10-30%
+Risk: CEO approves expansion based on inflated numbers
+2. Negative/Zero Price Handling
 
-We also didn't consider halo effects. When you offer 50% off on a TV, you might drive traffic into the store that ends up buying full-price accessories like cables and mounts. Our ROI calculation completely ignores this additional revenue, which means we are probably understating the true value of promotions by 20-30%.
+Negatives often represent returns or adjustments
+Zeroing them out inflates margins artificially
+Risk: Pricing manager sees false profitability
+3. Duplicate Order Handling
 
-Finally, we assumed that past promotion performance predicts future performance. But first-time promotions have a novelty effect and tend to perform better. When you repeat the same promotion over and over, customers learn to wait for it, which reduces uplift over time.
+System glitches create duplicate records
+Inflates demand signals for inventory planning
+Risk: Ordering 2x inventory needed
+Our Decision: Conservative approach — filter to Paid only, cap negatives at zero. Understating revenue is safer for cash flow planning.
 
-If we had more time, we would segment our uplift calculations by category, time of year, and how frequently we've run similar promotions before.
+</details> <details> <summary><b>Q2: What uplift assumptions did you choose, and how could they be wrong?</b></summary>
+Our Assumptions
+Parameter	Value	Rationale
+Baseline Conversion	2%	Industry average
+Small Discount Uplift (<20%)	1.5x	Conservative
+Deep Discount Uplift (>40%)	2.5x	Aggressive
+Cannibalization Rate	20%	Standard assumption
+Margin Floor	15%	Below = unprofitable
+How They Could Be Wrong
+Assumption	Reality	Impact
+Uniform 1.5-2.5x uplift	Fashion: 3-4x, Grocery: 1.2x	Over/undervalue promos
+Flat 20% cannibalization	Timing-dependent (20-40%)	Misstate incremental value
+Ignore halo effects	Accessories bought with discounted TV	Undervalue promos by 20-30%
+Past = Future	Novelty effect fades with repetition	Overestimate repeat promos
+If we had more time: Segment by category, seasonality, and promo frequency.
 
-**Question 3: If budget is fixed, how do you choose between margin floor vs stockout risk?**
+</details> <details> <summary><b>Q3: Fixed budget — margin floor vs stockout risk?</b></summary>
+Our Tiered Strategy
+Budget Allocation:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Top 20% Products (Revenue Drivers)
+  └── 60% budget → Prevent Stockouts
+      Why? Lost sale = lost basket + lost customer
 
-This is a classic trade-off where you can't have everything. Here's how we think about it:
+Mid-tier Products  
+  └── 30% budget → Protect Margins
+      Why? Don't need traffic, need profit
 
-Protecting margin floor means you refuse to discount below a certain level to preserve profitability. Preventing stockouts means you invest in keeping products in stock even if it costs more.
+Long-tail Products
+  └── 10% budget → Minimal investment
+      Why? Low volume, low impact either way
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Math Example
+Scenario	Calculation	Cost
+Stockout (3 days)	30 sales × $25 profit × 1.3 (customer loss)	$975
+Unnecessary 10% discount	30 units × $5 discount	$150
+Conclusion: For high-velocity items, stockout prevention wins.
 
-Our approach is a tiered strategy:
+</details> <details> <summary><b>Q4: What did you exclude for scope control (2-hour limit)?</b></summary>
+❌ Excluded Features
+Feature	Time Required	Why Excluded
+User Authentication	2+ hours	Not critical for demo
+Write-back to Sheets	1.5 hours	Read-only sufficient
+ML Forecasting	4+ hours	Complex pipeline
+Email Alerts	2+ hours	Infrastructure needed
+Multi-currency	1 hour	AED only for UAE focus
+PDF Export	1.5 hours	Interactive view enough
+Mobile Optimization	2+ hours	Desktop analysts
+⚡ Technical Shortcuts
+Hardcoded sheet names
+No caching layer
+Generic error messages
+Manual testing only
+Sequential data loading
+🎯 If We Had 2 More Hours
+Addition	Time	Value
+Data caching	30 min	Performance
+CSV export buttons	30 min	User convenience
+Global date filter	45 min	Better UX
+Error logging	15 min	Debugging
+</details>
+⚠️ Limitations
+Limitation	Impact	Workaround
+Batch refresh only	No real-time updates	Manual refresh
+Google Sheets source	Size limits	Use CSV for large data
+No access control	Single user	Deploy privately
+Performance >100K rows	Charts slow down	Filter data first
+🗺️ Roadmap
+ Core dashboard functionality
+ 15+ data cleaning rules
+ Campaign simulator
+ Manager analytics view
+ BigQuery connector
+ Redis caching
+ Anomaly detection (ML)
+ Mobile responsive
+ Slack/Teams alerts
+ Multi-language support
+👥 Team
+<div align="center"> <table> <tr> <td align="center"> <img src="https://via.placeholder.com/100/6c5ce7/ffffff?text=GS" width="100px;" alt=""/><br /> <sub><b>Gagandeep Singh</b></sub><br /> <sub>Data Engineering</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/00b894/ffffff?text=KJ" width="100px;" alt=""/><br /> <sub><b>Kartik Joshi</b></sub><br /> <sub>Analytics</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/0984e3/ffffff?text=SA" width="100px;" alt=""/><br /> <sub><b>Samuel Alex</b></sub><br /> <sub>Visualization</sub> </td> <td align="center"> <img src="https://via.placeholder.com/100/e17055/ffffff?text=PK" width="100px;" alt=""/><br /> <sub><b>Prem Kukreja</b></sub><br /> <sub>Business Logic</sub> </td> </tr> </table>
+Course: MAIB | Date: January 2025 | Development Time: ~2 hours
 
-For the top 20% of products by revenue, we would spend 60% of the budget preventing stockouts. These products drive traffic to the store and have the highest opportunity cost when they're unavailable. If a customer comes looking for a hero product and it's out of stock, they might leave without buying anything else. You lose the entire basket, not just that one item.
-
-For medium-performing products, we would spend 30% of the budget maintaining the margin floor. These products contribute to profits but don't drive traffic on their own. If you discount them too much, you're just giving away money without attracting new customers.
-
-For the long tail of slow-moving products, we would only spend 10% of the budget. These items have low volume anyway, so neither stockouts nor margin erosion matters as much. You can use them for clearance when needed.
-
-Here's a simple example to show why stockout prevention usually wins for high-velocity items:
-
-Consider a product that costs $50, has a 50% margin ($25 profit), and sells 10 units per day. If you're out of stock for 3 days, you lose 30 potential sales. That's $750 in lost profit. But it's actually worse because some of those customers will go to a competitor and might not come back. If you add a 30% customer loss factor, you're really losing about $975.
-
-Now compare that to giving an unnecessary 10% discount on 30 units. You lose $5 per unit, which is only $150 total.
-
-The stockout costs way more. This is why for most retail situations, especially for popular fast-selling items, preventing stockouts should be the priority over protecting margins.
-
-**Question 4: What did you exclude to finish in 2 hours (scope control)?**
-
-To complete this project in 2 hours, we had to make some tough decisions about what to leave out.
-
-Features we excluded:
-
-We did not build user authentication because it wasn't critical for a demo and would have taken at least 2 more hours. We skipped the ability to write data back to Google Sheets since read-only functionality was enough for an analytics dashboard. Predictive forecasting would have required setting up a machine learning pipeline which would take 4+ hours. An email alert system needs additional infrastructure that was out of scope. We assumed a single currency (AED) instead of building multi-currency support. We used automatic date detection instead of building a custom date range picker. We focused on interactive viewing instead of PDF report export. We didn't include industry benchmark comparisons because we had no benchmark data available. A/B test analysis wasn't possible without experimental data in the right structure. Supplier lead time integration was out of scope for a sales-focused dashboard.
-
-Technical shortcuts we accepted:
-
-We hardcoded the Google Sheet names instead of making them configurable. There's no caching layer, so data reloads every time you interact with the dashboard. Error messages are generic like "data not available" instead of specific helpful messages. We didn't write any unit tests and relied on manual testing. Data loading happens one sheet at a time instead of loading multiple sheets in parallel.
-
-Other scope decisions:
-
-We chose Plotly instead of building custom D3.js visualizations because it's faster to develop and looks good enough. We used Streamlit's built-in layout system instead of custom CSS grids. We focused on desktop users and skipped mobile optimization since analysts typically use laptops. The dark mode setting resets when you refresh the page because saving it would require cookies or session storage.
-
-If we had 2 more hours, we would add:
-
-Data caching with automatic refresh every few minutes, which would take about 30 minutes. Download buttons to export each chart as CSV would take another 30 minutes. A global date range filter that affects all tabs would take about 45 minutes. Better error logging for debugging in production would take about 15 minutes.
-
-**⚠️ Limitations & Future Work**
-Current Limitations
-No real-time streaming (batch refresh only)
-Limited to Google Sheets data source
-No user-level access control
-Charts may slow with >100K rows
-
-Planned Improvements
- Add BigQuery connector for large datasets
- Implement Redis caching layer
- Build automated anomaly detection
- Create mobile-responsive views
- Add Slack/Teams alert integration
-
- 
-👤 Author
-Gagandeep Singh 
-Kartik Joshi 
-Samuel Alex 
-Prem Kukreja
-
-Course: [MAIB]
-Date: January 2026
-Time Spent: ~2 hours (core development)
+</div>
 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 🙏 Acknowledgments
-Streamlit team for the amazing framework
-Plotly for interactive visualizations
-Google Sheets API for data connectivity
-Course instructors for the challenge prompt
+Streamlit — Amazing framework for data apps
+Plotly — Beautiful interactive visualizations
+Google Sheets API — Seamless data connectivity
+Course instructors — For the challenge prompt
+<div align="center">
+⭐ Star this repo if you found it helpful!
+GitHub stars
 
-## 🚀 Quick Start
+Made with ❤️ in UAE
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/UAE-Pulse-Simulator-Data-Rescue-Dashboard.git
-cd UAE-Pulse-Simulator-Data-Rescue-Dashboard
+</div> ```
