@@ -391,7 +391,7 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 - [x] Core dashboard functionality
 - [x] 15+ data cleaning rules
 - [x] Campaign simulator
-- [x] Manager analytics view
+- [x] Executive & Manager analytics view
 - [ ] BigQuery connector
 - [ ] Redis caching
 - [ ] Anomaly detection (ML)
@@ -408,23 +408,19 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 <tr>
 <td align="center">
 <img src="https://via.placeholder.com/100/6c5ce7/ffffff?text=GS" width="100px;" alt=""/><br />
-<sub><b>Gagandeep Singh</b></sub><br />
-<sub>Data Engineering</sub>
+<sub><b>Kartik Joshi</b></sub><br />
 </td>
 <td align="center">
 <img src="https://via.placeholder.com/100/00b894/ffffff?text=KJ" width="100px;" alt=""/><br />
-<sub><b>Kartik Joshi</b></sub><br />
-<sub>Analytics</sub>
+<sub><b>Gagandeep Singh</b></sub><br />
 </td>
 <td align="center">
 <img src="https://via.placeholder.com/100/0984e3/ffffff?text=SA" width="100px;" alt=""/><br />
 <sub><b>Samuel Alex</b></sub><br />
-<sub>Visualization</sub>
 </td>
 <td align="center">
 <img src="https://via.placeholder.com/100/e17055/ffffff?text=PK" width="100px;" alt=""/><br />
 <sub><b>Prem Kukreja</b></sub><br />
-<sub>Business Logic</sub>
 </td>
 </tr>
 </table>
