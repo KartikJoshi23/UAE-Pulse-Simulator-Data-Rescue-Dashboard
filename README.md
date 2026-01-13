@@ -425,15 +425,9 @@ The dashboard detects and fixes **15+ types** of data quality issues:
 </tr>
 </table>
 
-**Course:** MAIB | **Date:** January 2025 | **Development Time:** ~2 hours
+**Course:** MAIB | **Date:** January 2025 
 
 </div>
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
