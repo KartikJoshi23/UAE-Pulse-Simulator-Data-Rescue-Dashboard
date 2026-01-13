@@ -80,7 +80,6 @@
 - [⚠️ Limitations](#️-limitations)
 - [🗺️ Roadmap](#️-roadmap)
 - [👥 Team](#-team)
-- [📄 License](#-license)
 
 </details>
 
